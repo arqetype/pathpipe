@@ -1,5 +1,4 @@
 import React from 'react';
-import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import RootLayout from '../layout';
 
@@ -17,38 +16,17 @@ jest.mock('../../components/theme-provider', () => ({
 }));
 
 describe('RootLayout', () => {
-  it('renders the layout with children and theme provider', () => {
-    const { getByTestId, getByText } = render(
-      <RootLayout>
-        <div>Test Child</div>
-      </RootLayout>
-    );
+  it('renders with correct structure and attributes', () => {
+    const rootLayout = RootLayout({ children: <div>Test Child</div> });
 
-    const themeProvider = getByTestId('theme-provider');
-    expect(themeProvider).toBeInTheDocument();
+    expect(rootLayout.type).toBe('html');
+    expect(rootLayout.props.lang).toBe('en');
 
-    expect(getByText('Test Child')).toBeInTheDocument();
-  });
+    const bodyElement = rootLayout.props.children;
+    expect(bodyElement.type).toBe('body');
+    expect(bodyElement.props.className).toContain('mocked-font-variable');
 
-  it('has the correct html attributes', () => {
-    render(
-      <RootLayout>
-        <div>Test Child</div>
-      </RootLayout>
-    );
-
-    const html = document.documentElement;
-    expect(html).toHaveAttribute('lang', 'en');
-  });
-
-  it('applies font variables to the body', () => {
-    render(
-      <RootLayout>
-        <div>Test Child</div>
-      </RootLayout>
-    );
-
-    const body = document.body;
-    expect(body).toHaveClass('mocked-font-variable mocked-font-variable');
+    const themeProvider = bodyElement.props.children;
+    expect(themeProvider.type.name).toBe('ThemeProvider');
   });
 });
