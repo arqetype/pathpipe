@@ -1,7 +1,9 @@
-import type { Config } from "jest";
-import { config as baseConfig } from "./base";
+import { config as baseConfig } from "./base.js";
 
-const config: Config = {
+/**
+ * @type {import("jest").Config}
+ * */
+const config = {
   ...baseConfig,
   rootDir: "src",
   testMatch: ["**/*.spec.ts"],
@@ -11,6 +13,6 @@ const config: Config = {
   collectCoverageFrom: ["**/*.(t|j)s"],
   coverageDirectory: "../coverage",
   testEnvironment: "node",
-} as const;
+};
 
 export { config };

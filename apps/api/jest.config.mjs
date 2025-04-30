@@ -1,7 +1,9 @@
-import type { Config } from 'jest';
 import { config as apiConfig } from '@repo/jest-config/api';
 
-const config: Config = {
+/**
+ * @type {import('jest').Config}
+ * */
+const config = {
   ...apiConfig,
 };
 

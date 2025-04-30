@@ -1,7 +1,9 @@
-import { Config } from "jest";
-import { config as baseConfig } from "./base";
+import { config as baseConfig } from "./base.js";
 
-const config: Config = {
+/**
+ * @type {import("jest").Config}
+ * */
+const config = {
   ...baseConfig,
   moduleFileExtensions: ["js", "ts", "json", "jsx", "tsx"],
   collectCoverageFrom: [
