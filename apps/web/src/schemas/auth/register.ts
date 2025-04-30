@@ -12,7 +12,7 @@ export const registerSchema = z
       .regex(/[A-Z]/, {
         message: "Password must contain at least one uppercase letter",
       })
-      .regex(/[0-9]/, { message: "Password must contain at least one number" })
+      .regex(/\d/, { message: "Password must contain at least one number" })
       .regex(/[^a-zA-Z0-9]/, {
         message: "Password must contain at least one special character",
       }),
