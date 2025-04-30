@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Card,
@@ -7,7 +7,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@repo/ui/components/card";
+} from '@repo/ui/components/card';
 import {
   Form,
   FormControl,
@@ -15,15 +15,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@repo/ui/components/form";
-import { Input } from "@repo/ui/components/input";
-import { loginSchema, type LoginSchema } from "@/schemas/auth/login";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
-import Link from "next/link";
-import { Button } from "@repo/ui/components/button";
-import { Loader2Icon } from "lucide-react";
+} from '@repo/ui/components/form';
+import { Input } from '@repo/ui/components/input';
+import { loginSchema, type LoginSchema } from '@/schemas/auth/login';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useTransition } from 'react';
+import Link from 'next/link';
+import { Button } from '@repo/ui/components/button';
+import { Loader2Icon } from 'lucide-react';
 
 export function LoginForm() {
   const [isPending, startTransition] = useTransition();
@@ -31,14 +31,14 @@ export function LoginForm() {
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
   const handleSubmit = async (data: LoginSchema) => {
     startTransition(() => {
-      console.log("Form submitted", data);
+      console.log('Form submitted', data);
     });
   };
 
@@ -110,7 +110,7 @@ export function LoginForm() {
                   Logging in...
                 </>
               ) : (
-                "Login"
+                'Login'
               )}
             </Button>
             <div className="relative w-full">
@@ -146,7 +146,7 @@ export function LoginForm() {
               Google
             </Button>
             <div className="text-center text-sm">
-              Don&apos;t have an account?{" "}
+              Don&apos;t have an account?{' '}
               <Link
                 href="/app/register"
                 className="text-primary hover:underline"

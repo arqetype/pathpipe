@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
-import { ArrowLeftIcon } from "lucide-react";
-import Link from "next/link";
+import type { ReactNode } from 'react';
+import { ArrowLeftIcon } from 'lucide-react';
+import Link from 'next/link';
 
 type AuthenticationLayoutProps = Readonly<{
   children: ReactNode;

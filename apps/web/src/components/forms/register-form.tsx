@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { registerSchema, RegisterSchema } from "@/schemas/auth/register";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@repo/ui/components/button";
+import { registerSchema, RegisterSchema } from '@/schemas/auth/register';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@repo/ui/components/button';
 import {
   Card,
   CardContent,
@@ -10,7 +10,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@repo/ui/components/card";
+} from '@repo/ui/components/card';
 import {
   Form,
   FormControl,
@@ -18,12 +18,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@repo/ui/components/form";
-import { Input } from "@repo/ui/components/input";
-import { Loader2Icon } from "lucide-react";
-import { useTransition } from "react";
-import { useForm } from "react-hook-form";
-import Link from "next/link";
+} from '@repo/ui/components/form';
+import { Input } from '@repo/ui/components/input';
+import { Loader2Icon } from 'lucide-react';
+import { useTransition } from 'react';
+import { useForm } from 'react-hook-form';
+import Link from 'next/link';
 
 export function RegisterForm() {
   const [isPending, startTransition] = useTransition();
@@ -31,15 +31,15 @@ export function RegisterForm() {
   const form = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: "",
+      email: '',
+      password: '',
+      confirmPassword: '',
     },
   });
 
   const handleSubmit = async (data: RegisterSchema) => {
     startTransition(() => {
-      console.log("Form submitted", data);
+      console.log('Form submitted', data);
     });
   };
 
@@ -118,7 +118,7 @@ export function RegisterForm() {
               )}
             />
           </CardContent>
-          
+
           <CardFooter className="space-y-4 flex-col">
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? (
@@ -127,7 +127,7 @@ export function RegisterForm() {
                   Registering...
                 </>
               ) : (
-                "Register"
+                'Register'
               )}
             </Button>
             <div className="relative w-full">
@@ -163,11 +163,8 @@ export function RegisterForm() {
               Google
             </Button>
             <div className="text-center text-sm">
-              Already have an account?{" "}
-              <Link
-                href="/app/login"
-                className="text-primary hover:underline"
-              >
+              Already have an account?{' '}
+              <Link href="/app/login" className="text-primary hover:underline">
                 Login
               </Link>
             </div>
