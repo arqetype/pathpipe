@@ -6,9 +6,8 @@ import { config as baseConfig } from "./base.js";
 const config = {
   ...baseConfig,
   moduleFileExtensions: ["js", "ts", "json", "jsx", "tsx"],
-  collectCoverageFrom: [
-    'src/**/*.{js,jsx,ts,tsx}',
-  ],
+  collectCoverageFrom: ["src/**/*.{js,jsx,ts,tsx}"],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
 };
 
 export { config };

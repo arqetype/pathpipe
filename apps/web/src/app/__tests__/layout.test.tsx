@@ -9,7 +9,7 @@ jest.mock('next/font/local', () => ({
   }),
 }));
 
-jest.mock('../../components/theme-provider', () => ({
+jest.mock('../../components/providers/theme-provider', () => ({
   ThemeProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="theme-provider">{children}</div>
   ),
