@@ -2,9 +2,17 @@ import { z } from "zod";
 
 export const registerSchema = z
   .object({
-    email: z.string().email({ message: "Please enter a valid email address" }),
+    email: z
+      .string()
+      .nonempty({
+        message: "Email is required",
+      })
+      .email({ message: "Please enter a valid email address" }),
     password: z
       .string()
+      .nonempty({
+        message: "Password is required",
+      })
       .min(8, { message: "Password must be at least 8 characters long" })
       .regex(/[a-z]/, {
         message: "Password must contain at least one lowercase letter",
@@ -22,6 +30,7 @@ export const registerSchema = z
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
+    path: ["confirmPassword"],
   });
 
 export type RegisterSchema = z.infer<typeof registerSchema>;
