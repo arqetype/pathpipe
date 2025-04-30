@@ -20,7 +20,7 @@ describe("ThemeProvider", () => {
     );
 
     const provider = screen.getByTestId("next-themes-provider");
-    const props = JSON.parse(provider.getAttribute("data-props") || "{}");
+    const props = JSON.parse(provider.getAttribute("data-props") ?? "{}");
 
     expect(props.attribute).toBe("class");
     expect(props.defaultTheme).toBe("system");
