@@ -1,0 +1,15 @@
+{
+  "name": "@repo/prettier-config",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./api": "./api.js",
+    "./base": "./base.js",
+    "./web": "./web.js",
+    "./react-internal": "./react-internal.js"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.0"
+  }
+}
