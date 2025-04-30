@@ -16,6 +16,10 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["coverage/**"]
     },
+    "format": {
+      "dependsOn": ["^format"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"]
+    },
     "check-types": {
       "dependsOn": ["^check-types"]
     },
