@@ -124,10 +124,10 @@ export function RegisterForm() {
               {isPending ? (
                 <>
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                  Logging in...
+                  Registering...
                 </>
               ) : (
-                "Login"
+                "Register"
               )}
             </Button>
             <div className="relative w-full">
