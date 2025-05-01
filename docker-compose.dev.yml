@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:17
+    container_name: mealbud-ai-dev-database
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_DATABASE}
+    networks:
+      - dev-network
+
+volumes:
+  pg_data:
+
+networks:
+  dev-network:
