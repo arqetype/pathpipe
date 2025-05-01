@@ -27,6 +27,7 @@
     "healthcheck",
     "isready",
     "libc",
+    "mealbud",
     "nextjs"
   ]
 }

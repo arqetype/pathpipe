@@ -1,8 +1,9 @@
 services:
   # Database (PostgreSQL)
   db:
-    image: postgres:15
+    image: postgres:17
     restart: always
+    container_name: mealbud-ai-database
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
@@ -30,6 +31,7 @@ services:
 
   # API (Nest.js)
   api:
+    container_name: mealbud-ai-api
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -52,6 +54,7 @@ services:
 
   # Web (Next.js)
   web:
+    container_name: mealbud-ai-web
     build:
       context: .
       dockerfile: apps/web/Dockerfile
