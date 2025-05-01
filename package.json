@@ -5,6 +5,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "test": "turbo run test",
+    "start": "node .next/standalone/apps/web/server.js",
     "lint": "turbo run lint",
     "format": "turbo run format",
     "check-types": "turbo run check-types"

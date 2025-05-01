@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import localFont from 'next/font/local';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 
-import '../styles/globals.css';
+import '@repo/ui/globals.css';
 
 const geistSans = localFont({
   src: '../fonts/GeistVF.woff',
