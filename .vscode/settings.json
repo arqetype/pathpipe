@@ -21,5 +21,12 @@
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "cSpell.words": ["addgroup", "adduser", "healthcheck", "isready", "libc"]
+  "cSpell.words": [
+    "addgroup",
+    "adduser",
+    "healthcheck",
+    "isready",
+    "libc",
+    "nextjs"
+  ]
 }
