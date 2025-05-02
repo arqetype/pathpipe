@@ -14,7 +14,7 @@ services:
       - dev-network
 
 volumes:
-  pg_data:
+  pgdata:
 
 networks:
   dev-network:
