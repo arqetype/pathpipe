@@ -1,7 +1,7 @@
-import { nestJSConfig } from '@repo/eslint-config/nest-js';
+import { dbConfig } from '@repo/eslint-config/db';
 
 /** @type {import("eslint").Linter.Config} */
 export default [
   { ignores: ['eslint.config.mjs', 'prettier.config.mjs'] },
-  ...nestJSConfig,
+  ...dbConfig,
 ];

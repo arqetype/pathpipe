@@ -5,11 +5,11 @@ import globals from "globals";
 import { config as baseConfig } from "./base.js";
 
 /**
- * A custom ESLint configuration for libraries that use Nest.js.
+ * A custom ESLint configuration for libraries that use database with Nest.js.
  *
  * @type {import("eslint").Linter.Config[]}
  * */
-export const nestJSConfig = [
+export const dbConfig = [
   ...baseConfig,
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
