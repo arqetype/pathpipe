@@ -2,7 +2,7 @@
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
   "globalEnv": [
-    "PORT",
+    "NEST_PORT",
     "NEST_DATABASE_HOST",
     "NEST_DATABASE_PORT",
     "NEST_DATABASE_USER",

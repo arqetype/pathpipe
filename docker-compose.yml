@@ -7,9 +7,9 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: ${DATABASE_USER}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRES_DB: ${DATABASE_DATABASE}
+      POSTGRES_USER: ${NEST_DATABASE_USER}
+      POSTGRES_PASSWORD: ${NEST_DATABASE_PASS}
+      POSTGRES_DB: ${NEST_DATABASE_NAME}
     networks:
       - app-network
     ports:
@@ -20,9 +20,9 @@ services:
           "CMD",
           "pg_isready",
           "-U",
-          "${DATABASE_USER}",
+          "${NEST_DATABASE_USER}",
           "-d",
-          "${DATABASE_DATABASE}",
+          "${NEST_DATABASE_NAME}",
         ]
       interval: 60s
       retries: 5
@@ -36,7 +36,12 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
     environment:
-      DATABASE_URL: postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@db:5432/${DATABASE_DATABASE}
+      NEST_DATABASE_HOST: ${NEST_DATABASE_HOST}
+      NEST_DATABASE_PORT: ${NEST_DATABASE_PORT}
+      NEST_DATABASE_USER: ${NEST_DATABASE_USER}
+      NEST_DATABASE_PASS: ${NEST_DATABASE_PASS}
+      NEST_DATABASE_NAME: ${NEST_DATABASE_NAME}
+      DATABASE_URL: postgres://${NEST_DATABASE_USER}:${NEST_DATABASE_PASS}@db:5432/${NEST_DATABASE_NAME}
     depends_on:
       - db
     restart: always
