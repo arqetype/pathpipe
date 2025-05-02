@@ -11,6 +11,7 @@ import { Meal } from '@repo/db/entities/meal';
 import { EmailVerificationToken } from '@repo/db/entities/email-verification-token';
 import { Goal } from '@repo/db/entities/goal';
 import { AIRequest } from '@repo/db/entities/ai-request';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { AIRequest } from '@repo/db/entities/ai-request';
         synchronize: process.env.NODE_ENV !== 'production',
       }),
     }),
+    HealthModule,
     UserModule,
   ],
   controllers: [AppController],

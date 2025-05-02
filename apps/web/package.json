@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "test": "jest",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx}\"",
+    "format": "prettier --write . --ignore-unknown",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:update": "jest --update-snapshot",

@@ -1,8 +1,8 @@
-import { config as webConfig } from "@repo/jest-config/web";
-import nextJest from "next/jest.js";
+import { config as webConfig } from '@repo/jest-config/web';
+import nextJest from 'next/jest.js';
 
 const createJestConfig = nextJest({
-  dir: "./",
+  dir: './',
 });
 
 export const config = {

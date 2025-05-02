@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.{ts,js}\" \"test/**/*.{ts,js}\"",
+    "format": "prettier --write . --ignore-unknown",
     "start": "nest start",
     "dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -17,6 +17,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -24,6 +25,8 @@
     "@nestjs/typeorm": "^11.0.0",
     "@repo/db": "workspace:*",
     "pg": "^8.15.6",
+    "@nestjs/terminus": "^11.0.0",
+    "axios": "^1.9.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.22"
