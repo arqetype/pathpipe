@@ -3,7 +3,6 @@ import { UserService } from './user.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '@repo/db/entities/user';
 import { NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
 
 describe('UserService', () => {
   let service: UserService;

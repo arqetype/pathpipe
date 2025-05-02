@@ -1,18 +1,6 @@
 {
   "name": "@repo/db",
   "version": "1.0.0",
-  "scripts": {
-    "dev": "pnpm build --watch",
-    "build": "tsc -b -v"
-  },
-  "dependencies": {
-    "typeorm": "^0.3.22"
-  },
-  "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22.15.3",
-    "typescript": "^5.8.3"
-  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
@@ -27,6 +15,20 @@
         "src/*"
       ]
     }
+  },
+  "scripts": {
+    "dev": "pnpm build --watch",
+    "build": "tsc -b -v",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "dependencies": {
+    "typeorm": "^0.3.22"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "typescript": "^5.8.3"
   },
   "exports": {
     ".": {
