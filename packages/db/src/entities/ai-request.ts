@@ -5,19 +5,19 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
-} from "typeorm";
-import { User } from "./user";
-import { Meal } from "./meal";
+} from 'typeorm';
+import { User } from './user';
+import { Meal } from './meal';
 
 @Entity()
 export class AIRequest {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column("text")
+  @Column('text')
   raw_input: string;
 
-  @Column("jsonb")
+  @Column('jsonb')
   raw_output: object;
 
   @Column({ default: false })
@@ -30,6 +30,6 @@ export class AIRequest {
   user: User;
 
   @ManyToOne(() => Meal, { nullable: true })
-  @JoinColumn({ name: "linked_meal_id" })
+  @JoinColumn({ name: 'linked_meal_id' })
   linked_meal: Meal;
 }

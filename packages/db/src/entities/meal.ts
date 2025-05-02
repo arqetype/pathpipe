@@ -4,27 +4,27 @@ import {
   Column,
   CreateDateColumn,
   ManyToOne,
-} from "typeorm";
-import { User } from "./user";
+} from 'typeorm';
+import { User } from './user';
 
 @Entity()
 export class Meal {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column("text")
+  @Column('text')
   description: string;
 
-  @Column("numeric")
+  @Column('numeric')
   calories: number;
 
-  @Column("numeric")
+  @Column('numeric')
   protein: number;
 
-  @Column("numeric")
+  @Column('numeric')
   carbs: number;
 
-  @Column("numeric")
+  @Column('numeric')
   fat: number;
 
   @Column()

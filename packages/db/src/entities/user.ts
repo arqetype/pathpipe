@@ -4,15 +4,15 @@ import {
   Column,
   CreateDateColumn,
   OneToMany,
-} from "typeorm";
-import { Account } from "./account";
-import { Meal } from "./meal";
-import { Goal } from "./goal";
-import { AIRequest } from "./ai-request";
+} from 'typeorm';
+import { Account } from './account';
+import { Meal } from './meal';
+import { Goal } from './goal';
+import { AIRequest } from './ai-request';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ unique: true })

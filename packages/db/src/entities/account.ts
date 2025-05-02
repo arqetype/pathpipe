@@ -4,12 +4,12 @@ import {
   Column,
   CreateDateColumn,
   ManyToOne,
-} from "typeorm";
-import { User } from "./user";
+} from 'typeorm';
+import { User } from './user';
 
 @Entity()
 export class Account {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
