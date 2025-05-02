@@ -7,9 +7,9 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: ${DATABASE_USER}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRES_DB: ${DATABASE_DATABASE}
+      POSTGRES_USER: ${NEST_DATABASE_USER}
+      POSTGRES_PASSWORD: ${NEST_DATABASE_PASS}
+      POSTGRES_DB: ${NEST_DATABASE_NAME}
     networks:
       - dev-network
 

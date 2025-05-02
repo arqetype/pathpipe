@@ -21,7 +21,7 @@ FROM base AS runner
 WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nestjs
 USER nestjs
-COPY --from=installer --chown=nestjs:nodejs /app . 
+COPY --from=installer --chown=nestjs:nodejs /app .
 
 EXPOSE 4000
 
