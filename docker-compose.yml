@@ -1,0 +1,83 @@
+services:
+  # Database (PostgreSQL)
+  db:
+    image: postgres:17
+    restart: always
+    container_name: mealbud-ai-database
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_DATABASE}
+    networks:
+      - app-network
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-U",
+          "${DATABASE_USER}",
+          "-d",
+          "${DATABASE_DATABASE}",
+        ]
+      interval: 60s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+
+  # API (Nest.js)
+  api:
+    container_name: mealbud-ai-api
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@db:5432/${DATABASE_DATABASE}
+    depends_on:
+      - db
+    restart: always
+    ports:
+      - "4000:4000"
+    networks:
+      - app-network
+    healthcheck:
+      test:
+        ["CMD", "curl", "--silent", "--fail", "http://localhost:4000/health"]
+      interval: 60s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+
+  # Web (Next.js)
+  web:
+    container_name: mealbud-ai-web
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      NEXT_API_URL: http://api:4000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    depends_on:
+      - api
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:3000/"]
+      interval: 60s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+
+volumes:
+  pgdata:
+
+networks:
+  app-network:
+    driver: bridge
