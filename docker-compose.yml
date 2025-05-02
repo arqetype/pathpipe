@@ -41,7 +41,6 @@ services:
       NEST_DATABASE_USER: ${NEST_DATABASE_USER}
       NEST_DATABASE_PASS: ${NEST_DATABASE_PASS}
       NEST_DATABASE_NAME: ${NEST_DATABASE_NAME}
-      DATABASE_URL: postgres://${NEST_DATABASE_USER}:${NEST_DATABASE_PASS}@db:5432/${NEST_DATABASE_NAME}
     depends_on:
       - db
     restart: always
