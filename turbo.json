@@ -3,6 +3,7 @@
   "ui": "tui",
   "globalEnv": [
     "NODE_ENV",
+    "NODE_TLS_REJECT_UNAUTHORIZED",
     "NEST_PORT",
     "NEST_DATABASE_HOST",
     "NEST_DATABASE_PORT",
