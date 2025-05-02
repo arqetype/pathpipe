@@ -1,4 +1,6 @@
 {
+  "_comment": "This file is used in @repo/db and apps/api. Make sure everything works in both.",
+
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "./base.json",
   "compilerOptions": {
