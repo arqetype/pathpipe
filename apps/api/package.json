@@ -24,6 +24,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/typeorm": "^11.0.0",
     "@repo/db": "workspace:*",
+    "@repo/email": "workspace:*",
     "pg": "^8.15.6",
     "@nestjs/terminus": "^11.0.0",
     "axios": "^1.9.0",
