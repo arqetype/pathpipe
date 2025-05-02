@@ -5,6 +5,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "test": "turbo run test",
+    "start": "turbo run start",
     "lint": "turbo run lint",
     "format": "turbo run format",
     "check-types": "turbo run check-types"
@@ -16,6 +17,6 @@
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }
