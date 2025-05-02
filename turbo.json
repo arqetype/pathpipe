@@ -8,6 +8,10 @@
     "NEST_DATABASE_USER",
     "NEST_DATABASE_PASS",
     "NEST_DATABASE_NAME",
+
+    "NEXT_PUBLIC_POSTHOG_KEY",
+    "NEXT_PUBLIC_POSTHOG_HOST",
+
     "NODE_ENV"
   ],
   "tasks": {
