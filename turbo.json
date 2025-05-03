@@ -2,13 +2,18 @@
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
   "globalEnv": [
+    "NODE_ENV",
+    "NODE_TLS_REJECT_UNAUTHORIZED",
     "NEST_PORT",
     "NEST_DATABASE_HOST",
     "NEST_DATABASE_PORT",
     "NEST_DATABASE_USER",
     "NEST_DATABASE_PASS",
     "NEST_DATABASE_NAME",
-    "NODE_ENV"
+    "NEST_EMAIL_HOST",
+    "NEST_EMAIL_PORT",
+    "NEST_EMAIL_USER",
+    "NEST_EMAIL_PASS"
   ],
   "tasks": {
     "build": {

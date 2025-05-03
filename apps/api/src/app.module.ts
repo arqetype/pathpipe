@@ -12,6 +12,7 @@ import { EmailVerificationToken } from '@repo/db/entities/email-verification-tok
 import { Goal } from '@repo/db/entities/goal';
 import { AIRequest } from '@repo/db/entities/ai-request';
 import { HealthModule } from './health/health.module';
+import { MailerModule } from './mailer/mailer.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { HealthModule } from './health/health.module';
     }),
     HealthModule,
     UserModule,
+    MailerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
