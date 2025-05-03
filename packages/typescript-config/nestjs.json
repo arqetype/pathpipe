@@ -1,5 +1,5 @@
 {
-  "_comment": "This file is used in @repo/db and apps/api. Make sure everything works in both.",
+  "_comment": "This file is used in @repo/db, @repo/email(extended) and apps/api. Make sure everything works in the three packages.",
 
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "./base.json",
