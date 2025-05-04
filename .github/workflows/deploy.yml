@@ -255,5 +255,6 @@ jobs:
     needs: [lint, test]
     steps:
       - name: Deploy Application
+        # Placeholder for deployment logic. Replace this with actual deployment commands.
         run: |
           echo "✅ All checks have passed successfully! TODO: Deploy the application"
