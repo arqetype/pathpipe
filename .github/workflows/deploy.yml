@@ -8,7 +8,8 @@ permissions:
   contents: read
 
 jobs:
-  lint:
+  setup:
+    name: Setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -16,8 +17,6 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          run_install: false
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -25,24 +24,175 @@ jobs:
           node-version: 22
           cache: "pnpm"
 
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install Turbo globally
+        run: pnpm add -g turbo
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          pnpm install --frozen-lockfile
+          # Verify turbo is installed and accessible
+          turbo --version || pnpm dlx turbo --version
+
+      - name: Cache Turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Cache build directories
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/dist
+            **/.next
+            !**/.next/cache
+          key: ${{ runner.os }}-build-${{ github.sha }}
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      # Restore pnpm store
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Restore cached node_modules
+        uses: actions/cache@v4
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Reinstall if needed
+        run: |
+          if [ ! -d "node_modules" ] || [ ! -d "node_modules/.bin/turbo" ]; then
+            echo "node_modules not found or turbo missing, reinstalling..."
+            pnpm install --frozen-lockfile
+          fi
+          # Ensure turbo is available
+          pnpm turbo --version || pnpm dlx turbo --version
+
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Cache build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/dist
+            **/.next
+            !**/.next/cache
+          key: ${{ runner.os }}-build-output-${{ github.sha }}
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Restore cached node_modules
+        uses: actions/cache@v4
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Reinstall if needed
+        run: |
+          if [ ! -d "node_modules" ]; then
+            echo "node_modules not found, reinstalling..."
+            pnpm install --frozen-lockfile
+          fi
+
+      - name: Restore build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/dist
+            **/.next
+            !**/.next/cache
+          key: ${{ runner.os }}-build-output-${{ github.sha }}
+
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
 
       - name: Run lint
         run: pnpm lint
 
   test:
+    name: Test
     runs-on: ubuntu-latest
-    needs:
-      - build
+    needs: build
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          run_install: false
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -50,36 +200,60 @@ jobs:
           node-version: 22
           cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
-      - name: Build project
-        run: pnpm build
+      - name: Restore cached node_modules
+        uses: actions/cache@v4
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Reinstall if needed
+        run: |
+          if [ ! -d "node_modules" ]; then
+            echo "node_modules not found, reinstalling..."
+            pnpm install --frozen-lockfile
+          fi
+
+      - name: Restore build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/dist
+            **/.next
+            !**/.next/cache
+          key: ${{ runner.os }}-build-output-${{ github.sha }}
+
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
 
       - name: Run tests
-        run: pnpm test -- --ci --passWithNoTests
+        run: pnpm test
 
-  build:
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            **/coverage/
+          retention-days: 7
+
+  deploy:
+    name: Deploy Application
     runs-on: ubuntu-latest
-    needs:
-      - lint
+    needs: [lint, test]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build project
-        run: pnpm build
+      - name: Deploy Application
+        run: |
+          echo "✅ All checks have passed successfully! TODO: Deploy the application"
