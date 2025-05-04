@@ -4,7 +4,6 @@ import '@testing-library/jest-dom';
 import { PostHogProvider } from '../posthog-provider';
 import posthog from 'posthog-js';
 
-// Mock external dependencies
 jest.mock('posthog-js', () => ({
   init: jest.fn(),
   capture: jest.fn(),
@@ -19,7 +18,6 @@ jest.mock('posthog-js/react', () => ({
   })),
 }));
 
-// Mock Next.js navigation hooks
 const mockPathname = jest.fn();
 const mockSearchParams = jest.fn();
 
@@ -30,13 +28,11 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
-// Store original env vars
 const originalEnv = process.env;
 
 describe('PostHogProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Setup mock environment variables
     process.env = {
       ...originalEnv,
       NEXT_PUBLIC_POSTHOG_KEY: 'test-key',
@@ -44,11 +40,9 @@ describe('PostHogProvider', () => {
       NODE_ENV: 'test',
     };
 
-    // Configure default mock values
     mockPathname.mockReturnValue('/test-path');
     mockSearchParams.mockReturnValue('param=value');
 
-    // Mock window.origin
     Object.defineProperty(window, 'origin', {
       value: 'http://localhost',
       writable: true,
