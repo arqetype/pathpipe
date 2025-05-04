@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import localFont from 'next/font/local';
-import { CookieConsent } from '@repo/ui/components/cookie-consent';
+import { cookies } from 'next/headers';
+import CookieBanner from '../components/cookie-banner/cookie-banner';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { PostHogProvider } from '@/components/providers/posthog-provider';
+import { CookieConsentProvider } from '@/components/providers/cookie-consent-provider';
 
 import '@repo/ui/globals.css';
 
@@ -25,14 +27,20 @@ type RootLayoutProps = Readonly<{
   children: ReactNode;
 }>;
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const cookieStore = await cookies();
+
+  const initialConsent = cookieStore.get('cookieConsent')?.value === 'true';
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <PostHogProvider>
-          <CookieConsent variant="small" />
-          <ThemeProvider>{children}</ThemeProvider>
-        </PostHogProvider>
+        <ThemeProvider>
+          <CookieConsentProvider initialConsent={initialConsent}>
+            <PostHogProvider>{children}</PostHogProvider>
+            <CookieBanner />
+          </CookieConsentProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

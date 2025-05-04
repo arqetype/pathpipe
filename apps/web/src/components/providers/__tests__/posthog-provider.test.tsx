@@ -7,6 +7,8 @@ import posthog from 'posthog-js';
 jest.mock('posthog-js', () => ({
   init: jest.fn(),
   capture: jest.fn(),
+  opt_in_capturing: jest.fn(),
+  opt_out_capturing: jest.fn(),
 }));
 
 jest.mock('posthog-js/react', () => ({
@@ -15,6 +17,15 @@ jest.mock('posthog-js/react', () => ({
   ),
   usePostHog: jest.fn(() => ({
     capture: jest.fn(),
+  })),
+}));
+
+import * as cookieConsentModule from '../cookie-consent-provider';
+
+jest.mock('../cookie-consent-provider', () => ({
+  useCookieConsent: jest.fn(() => ({
+    hasCookieConsent: false,
+    setHasCookieConsent: jest.fn(),
   })),
 }));
 
@@ -45,12 +56,42 @@ describe('PostHogProvider', () => {
 
     Object.defineProperty(window, 'origin', {
       value: 'http://localhost',
-      writable: true,
+    });
+    (cookieConsentModule.useCookieConsent as jest.Mock).mockReturnValue({
+      hasCookieConsent: false,
+      setHasCookieConsent: jest.fn(),
     });
   });
 
   afterEach(() => {
     process.env = originalEnv;
+  });
+
+  it('opts out of capturing when cookie consent is false', () => {
+    render(
+      <PostHogProvider>
+        <div>Test Child</div>
+      </PostHogProvider>,
+    );
+
+    expect(posthog.opt_out_capturing).toHaveBeenCalled();
+    expect(posthog.opt_in_capturing).not.toHaveBeenCalled();
+  });
+
+  it('opts in to capturing when cookie consent is true', () => {
+    (cookieConsentModule.useCookieConsent as jest.Mock).mockReturnValue({
+      hasCookieConsent: true,
+      setHasCookieConsent: jest.fn(),
+    });
+
+    render(
+      <PostHogProvider>
+        <div>Test Child</div>
+      </PostHogProvider>,
+    );
+
+    expect(posthog.opt_in_capturing).toHaveBeenCalled();
+    expect(posthog.opt_out_capturing).not.toHaveBeenCalled();
   });
 
   it('initializes posthog with the correct parameters', () => {
