@@ -4,8 +4,11 @@ import posthog from 'posthog-js';
 import { PostHogProvider as PHProvider, usePostHog } from 'posthog-js/react';
 import { Suspense, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { useCookieConsent } from './cookie-consent-provider';
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
+  const { hasCookieConsent } = useCookieConsent();
+
   useEffect(() => {
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY as string, {
       api_host:
@@ -16,6 +19,14 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       debug: process.env.NODE_ENV === 'development',
     });
   }, []);
+
+  useEffect(() => {
+    if (hasCookieConsent) {
+      posthog.opt_in_capturing();
+    } else {
+      posthog.opt_out_capturing();
+    }
+  }, [hasCookieConsent]);
 
   return (
     <PHProvider client={posthog}>
