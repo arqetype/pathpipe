@@ -45,7 +45,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          key: ${{ runner.os }}-turbo-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-turbo-
 
@@ -62,7 +62,7 @@ jobs:
             **/dist
             **/.next
             !**/.next/cache
-          key: ${{ runner.os }}-build-${{ github.sha }}
+          key: ${{ runner.os }}-build-${{ hashFiles('**/pnpm-lock.yaml') }}
 
   build:
     name: Build
@@ -109,7 +109,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          key: ${{ runner.os }}-turbo-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-turbo-
 
@@ -123,7 +123,7 @@ jobs:
             **/dist
             **/.next
             !**/.next/cache
-          key: ${{ runner.os }}-build-output-${{ github.sha }}
+          key: ${{ runner.os }}-build-output-${{ hashFiles('**/pnpm-lock.yaml') }}
 
   lint:
     name: Lint
@@ -170,13 +170,13 @@ jobs:
             **/dist
             **/.next
             !**/.next/cache
-          key: ${{ runner.os }}-build-output-${{ github.sha }}
+          key: ${{ runner.os }}-build-output-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Restore Turbo cache
         uses: actions/cache@v4
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          key: ${{ runner.os }}-turbo-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-turbo-
 
@@ -228,13 +228,13 @@ jobs:
             **/dist
             **/.next
             !**/.next/cache
-          key: ${{ runner.os }}-build-output-${{ github.sha }}
+          key: ${{ runner.os }}-build-output-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Restore Turbo cache
         uses: actions/cache@v4
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          key: ${{ runner.os }}-turbo-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-turbo-
 
