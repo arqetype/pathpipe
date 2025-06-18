@@ -37,7 +37,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ThemeProvider>
           <CookieConsentProvider initialConsent={initialConsent}>
-            <PostHogProvider>{children}</PostHogProvider>
+            <>{children}</>
             <CookieBanner />
           </CookieConsentProvider>
         </ThemeProvider>

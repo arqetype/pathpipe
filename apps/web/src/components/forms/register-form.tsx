@@ -39,7 +39,13 @@ export function RegisterForm() {
 
   const handleSubmit = async (data: RegisterSchema) => {
     startTransition(() => {
-      console.log('Form submitted', data);
+      fetch(process.env.NEXT_PUBLIC_API_URL + '/auth/sign-up', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
     });
   };
 
@@ -164,7 +170,10 @@ export function RegisterForm() {
             </Button>
             <div className="text-center text-sm">
               Already have an account?{' '}
-              <Link href="/app/login" className="text-primary hover:underline">
+              <Link
+                href="/app/sign-in"
+                className="text-primary hover:underline"
+              >
                 Login
               </Link>
             </div>

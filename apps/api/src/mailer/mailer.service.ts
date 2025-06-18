@@ -16,11 +16,15 @@ export class MailerService {
         user: process.env.NEST_EMAIL_USER,
         pass: process.env.NEST_EMAIL_PASS,
       },
-      from: '"Ton App 👋" <no-reply@tonapp.com>',
+      from: '"MealBud AI" <no-reply@mealbud.ai>',
     });
   }
 
   async sendWelcome(to: string, name: string) {
     await this.mailer.sendWelcomeEmail(to, name);
+  }
+
+  async sendVerificationEmail(to: string, token: string) {
+    await this.mailer.sendVerificationEmail(to, token);
   }
 }
