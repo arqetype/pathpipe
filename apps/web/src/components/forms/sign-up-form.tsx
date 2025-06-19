@@ -1,7 +1,6 @@
 'use client';
 
-import { registerSchema, RegisterSchema } from '@/schemas/auth/register';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { Button } from '@repo/ui/components/button';
 import {
   Card,
@@ -23,13 +22,16 @@ import { Input } from '@repo/ui/components/input';
 import { Loader2Icon } from 'lucide-react';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
+import { SignUpDto } from '@repo/db/dto/signUp.dto';
 import Link from 'next/link';
 
-export function RegisterForm() {
+const resolver = classValidatorResolver(SignUpDto);
+
+export function SignUpForm() {
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<RegisterSchema>({
-    resolver: zodResolver(registerSchema),
+  const form = useForm<SignUpDto>({
+    resolver,
     defaultValues: {
       email: '',
       password: '',
@@ -37,7 +39,8 @@ export function RegisterForm() {
     },
   });
 
-  const handleSubmit = async (data: RegisterSchema) => {
+  const handleSubmit = async (data: SignUpDto) => {
+    console.log('Submitting sign-up form with data:', data);
     startTransition(() => {
       fetch(process.env.NEXT_PUBLIC_API_URL + '/auth/sign-up', {
         method: 'POST',

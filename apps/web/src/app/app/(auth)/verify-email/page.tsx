@@ -18,7 +18,7 @@ export default async function VerifyEmailPage({
       body: JSON.stringify({ token }),
     },
   );
-  console.log('Response:', response);
+
   return (
     <>
       <h1>Vérification de l&apos;e-mail</h1>

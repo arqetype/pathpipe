@@ -4,7 +4,7 @@ import localFont from 'next/font/local';
 import { cookies } from 'next/headers';
 import CookieBanner from '../components/cookie-banner/cookie-banner';
 import { ThemeProvider } from '@/components/providers/theme-provider';
-import { PostHogProvider } from '@/components/providers/posthog-provider';
+// import { PostHogProvider } from '@/components/providers/posthog-provider';
 import { CookieConsentProvider } from '@/components/providers/cookie-consent-provider';
 
 import '@repo/ui/globals.css';

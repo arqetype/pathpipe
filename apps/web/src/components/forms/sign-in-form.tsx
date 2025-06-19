@@ -17,28 +17,38 @@ import {
   FormMessage,
 } from '@repo/ui/components/form';
 import { Input } from '@repo/ui/components/input';
-import { loginSchema, type LoginSchema } from '@/schemas/auth/login';
+import { SignInDto } from '@repo/db/dto/signIn.dto';
+import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useTransition } from 'react';
 import Link from 'next/link';
 import { Button } from '@repo/ui/components/button';
 import { Loader2Icon } from 'lucide-react';
+import { signInUser } from '@/lib/auth-client';
+import { redirect } from 'next/navigation';
 
-export function LoginForm() {
+export function SignInForm() {
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<LoginSchema>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<SignInDto>({
+    resolver: classValidatorResolver(SignInDto),
     defaultValues: {
       email: '',
       password: '',
     },
   });
 
-  const handleSubmit = async (data: LoginSchema) => {
-    startTransition(() => {
-      console.log('Form submitted', data);
+  const handleSubmit = async (data: SignInDto) => {
+    startTransition(async () => {
+      const result = await signInUser(data);
+      if (result.success) {
+        redirect('/app');
+      } else {
+        form.setError('email', {
+          type: 'manual',
+          message: 'Invalid email or password',
+        });
+      }
     });
   };
 

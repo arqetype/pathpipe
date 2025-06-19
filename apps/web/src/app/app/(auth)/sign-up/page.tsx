@@ -1,5 +1,5 @@
-import { RegisterForm } from '@/components/forms/register-form';
+import { SignUpForm } from '@/components/forms/sign-up-form';
 
-export default function RegisterPage() {
-  return <RegisterForm />;
+export default function SignUpPage() {
+  return <SignUpForm />;
 }
