@@ -16,7 +16,9 @@
     "NEST_EMAIL_HOST",
     "NEST_EMAIL_PORT",
     "NEST_EMAIL_USER",
-    "NEST_EMAIL_PASS"
+    "NEST_EMAIL_PASS",
+    "NEST_JWT_SECRET",
+    "NEST_JWT_EXPIRATION_TIME"
   ],
   "tasks": {
     "build": {

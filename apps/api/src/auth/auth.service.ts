@@ -29,10 +29,13 @@ export class AuthService {
 
   signIn(email: string, response: Response): { success: boolean } {
     const token = this.jwtService.sign({ email });
+
     response.cookie('auth-token', token, {
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
-      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      path: '/',
+      sameSite: 'lax',
     });
 
     return {

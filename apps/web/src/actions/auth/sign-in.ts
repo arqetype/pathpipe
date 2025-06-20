@@ -25,13 +25,17 @@ export default async function signInAction(
       body: JSON.stringify({ email, password }),
     });
 
+    const parsed = await response.json();
+
     if (!response.ok) {
       return {
         success: false,
         message:
           response.status === 401
-            ? 'Unauthorized'
-            : `Error: ${response.statusText}`,
+            ? 'message' in parsed
+              ? parsed.message
+              : 'Invalid email or password'
+            : parsed.message || 'An error occurred during sign-in',
       };
     }
 
@@ -52,6 +56,8 @@ export default async function signInAction(
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
       expires: new Date(Date.now() + COOKIE_MAX_AGE),
+      path: '/',
+      sameSite: 'lax',
     });
 
     return { success: true, message: 'Sign-in successful' };

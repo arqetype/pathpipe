@@ -18,6 +18,18 @@ export class VerificationService {
     const user = await this.userService.findOneByEmail(email);
     if (!user) throw new Error('User not found');
 
+    const existingToken = await this.emailVerificationTokenRepository.findOne({
+      where: { user },
+    });
+
+    if (existingToken) {
+      if (existingToken.expires_at > new Date()) {
+        return existingToken.token;
+      } else {
+        await this.emailVerificationTokenRepository.remove(existingToken);
+      }
+    }
+
     const token = randomUUID();
     const emailVerificationToken = this.emailVerificationTokenRepository.create(
       { token, user, expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000) }, // Token valid for 24 hours

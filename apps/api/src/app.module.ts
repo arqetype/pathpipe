@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from '@repo/db/entities/user';
 import { Meal } from '@repo/db/entities/meal';
 import { EmailVerificationToken } from '@repo/db/entities/email-verification-token';
@@ -22,13 +22,14 @@ import { JwtModule } from '@nestjs/jwt';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: () => ({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: process.env.NEST_DATABASE_HOST,
-        port: parseInt(process.env.NEST_DATABASE_PORT, 10),
-        username: process.env.NEST_DATABASE_USER,
-        password: process.env.NEST_DATABASE_PASS,
-        database: process.env.NEST_DATABASE_NAME,
+        host: configService.getOrThrow('NEST_DATABASE_HOST'),
+        port: parseInt(configService.getOrThrow('NEST_DATABASE_PORT'), 10),
+        username: configService.getOrThrow('NEST_DATABASE_USER'),
+        password: configService.getOrThrow('NEST_DATABASE_PASS'),
+        database: configService.getOrThrow('NEST_DATABASE_NAME'),
         entities: [User, Meal, EmailVerificationToken, Goal, AIRequest],
         synchronize: process.env.NODE_ENV !== 'production',
       }),

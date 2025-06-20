@@ -9,7 +9,7 @@ export default async function VerifyEmailPage({
 }: VerifyEmailPageProps) {
   const { token } = await searchParams;
   const response = await fetch(
-    process.env.NEXT_PUBLIC_API_URL + '/auth/verify-email',
+    process.env.NEXT_PUBLIC_API_URL + 'auth/verify-email',
     {
       method: 'POST',
       headers: {

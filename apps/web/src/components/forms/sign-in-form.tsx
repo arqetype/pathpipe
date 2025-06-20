@@ -46,7 +46,7 @@ export function SignInForm() {
       else {
         form.setError('email', {
           type: 'manual',
-          message: 'Login failed. Please try again.',
+          message: response.message,
         });
       }
     });

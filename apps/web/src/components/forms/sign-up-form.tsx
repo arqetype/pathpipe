@@ -40,7 +40,6 @@ export function SignUpForm() {
   });
 
   const handleSubmit = async (data: SignUpDto) => {
-    console.log('Submitting sign-up form with data:', data);
     startTransition(() => {
       fetch(process.env.NEXT_PUBLIC_API_URL + '/auth/sign-up', {
         method: 'POST',
