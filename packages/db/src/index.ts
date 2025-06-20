@@ -4,9 +4,10 @@ import { AIRequest } from './entities/ai-request';
 import { Goal } from './entities/goal';
 import { EmailVerificationToken } from './entities/email-verification-token';
 
-import { SignInDto } from './dto/signIn.dto';
-import { SignUpDto } from './dto/signUp.dto';
-import { VerifyEmailDto } from './dto/verifyEmail.dto';
+import { SignInDto } from './dto/sign-in.dto';
+import { SignUpDto } from './dto/sign-up.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { ResendEmailDto } from './dto/resend-email.dto';
 
 export default {
   entities: {
@@ -20,5 +21,6 @@ export default {
     SignInDto,
     SignUpDto,
     VerifyEmailDto,
+    ResendEmailDto,
   },
 };

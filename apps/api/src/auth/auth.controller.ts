@@ -9,9 +9,10 @@ import {
   Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignInDto } from '@repo/db/dto/signIn.dto';
-import { SignUpDto } from '@repo/db/dto/signUp.dto';
-import { VerifyEmailDto } from '@repo/db/dto/verifyEmail.dto';
+import { SignInDto } from '@repo/db/dto/sign-in.dto';
+import { SignUpDto } from '@repo/db/dto/sign-up.dto';
+import { ResendEmailDto } from '@repo/db/dto/resend-email.dto';
+import { VerifyEmailDto } from '@repo/db/dto/verify-email.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { LocalAuthGuard } from './guards/local.auth.guard';
 import { Response } from 'express';
@@ -41,6 +42,12 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @Get('me')
+  getMe(@CurrentUser() user: User) {
+    return user;
+  }
+
+  @HttpCode(HttpStatus.OK)
   @Public()
   @Post('verify-email')
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
@@ -48,8 +55,9 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @Get('me')
-  getMe(@CurrentUser() user: User) {
-    return user;
+  @Public()
+  @Post('resend-email')
+  async resendEmail(@Body() resendEmailDto: ResendEmailDto) {
+    return await this.authService.resendEmail(resendEmailDto.email);
   }
 }

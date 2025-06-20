@@ -65,4 +65,34 @@ export class AuthService {
     await this.userService.markEmailAsVerified(user.email);
     return { success: true };
   }
+
+  async resendEmail(email: string): Promise<{ success: boolean }> {
+    const user = await this.userService.findOneByEmail(email);
+    if (!user || user.email_verified) {
+      throw new UnauthorizedException(
+        'User not found or email already verified',
+      );
+    }
+
+    const tokenRecord = await this.verificationService.findTokenByEmail(email);
+    const cooldownPeriod = 30 * 1000; // 30 sec
+    const currentTime = Date.now();
+    let lastEmailSent = 0;
+    if (tokenRecord && tokenRecord.lastEmailSent) {
+      lastEmailSent = new Date(tokenRecord.lastEmailSent).getTime();
+    }
+    if (currentTime - lastEmailSent < cooldownPeriod) {
+      const remainingTime = Math.ceil(
+        (cooldownPeriod - (currentTime - lastEmailSent)) / 1000,
+      );
+      throw new UnauthorizedException(
+        `Please wait ${remainingTime} seconds before requesting another verification email.`,
+      );
+    }
+
+    const token = await this.verificationService.createVerificationToken(email);
+    await this.mailerService.sendVerificationEmail(email, token);
+
+    return { success: true };
+  }
 }

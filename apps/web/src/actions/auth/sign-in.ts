@@ -15,7 +15,7 @@ export default async function signInAction(
   password: string,
 ): Promise<SignInResponse> {
   try {
-    const apiUrl = new URL('auth/sign-in', process.env.NEXT_PUBLIC_API_URL);
+    const apiUrl = new URL('/auth/sign-in', process.env.NEXT_PUBLIC_API_URL);
 
     const response = await fetch(apiUrl.toString(), {
       method: 'POST',

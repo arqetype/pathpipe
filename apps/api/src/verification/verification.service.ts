@@ -18,21 +18,16 @@ export class VerificationService {
     const user = await this.userService.findOneByEmail(email);
     if (!user) throw new Error('User not found');
 
-    const existingToken = await this.emailVerificationTokenRepository.findOne({
-      where: { user },
-    });
-
-    if (existingToken) {
-      if (existingToken.expires_at > new Date()) {
-        return existingToken.token;
-      } else {
-        await this.emailVerificationTokenRepository.remove(existingToken);
-      }
-    }
+    await this.emailVerificationTokenRepository.delete({ user });
 
     const token = randomUUID();
     const emailVerificationToken = this.emailVerificationTokenRepository.create(
-      { token, user, expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000) }, // Token valid for 24 hours
+      {
+        token,
+        user,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        lastEmailSent: new Date(),
+      },
     );
     await this.emailVerificationTokenRepository.save(emailVerificationToken);
     return token;
@@ -52,5 +47,16 @@ export class VerificationService {
 
     await this.emailVerificationTokenRepository.remove(verificationToken);
     return user;
+  }
+
+  async findTokenByEmail(
+    email: string,
+  ): Promise<EmailVerificationToken | null> {
+    const user = await this.userService.findOneByEmail(email);
+    if (!user) return null;
+
+    return await this.emailVerificationTokenRepository.findOne({
+      where: { user: { id: user.id } },
+    });
   }
 }

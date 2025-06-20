@@ -22,8 +22,10 @@ import { Input } from '@repo/ui/components/input';
 import { Loader2Icon } from 'lucide-react';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-import { SignUpDto } from '@repo/db/dto/signUp.dto';
+import { SignUpDto } from '@repo/db/dto/sign-up.dto';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import signUpAction from '@/actions/auth/sign-up';
 
 const resolver = classValidatorResolver(SignUpDto);
 
@@ -40,14 +42,24 @@ export function SignUpForm() {
   });
 
   const handleSubmit = async (data: SignUpDto) => {
-    startTransition(() => {
-      fetch(process.env.NEXT_PUBLIC_API_URL + '/auth/sign-up', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+    startTransition(async () => {
+      const response = await signUpAction(
+        data.email,
+        data.password,
+        data.confirmPassword,
+      );
+
+      if (response.success) {
+        redirect(
+          '/app/verification/resend-email?email=' +
+            encodeURIComponent(data.email),
+        );
+      } else {
+        form.setError('email', {
+          type: 'manual',
+          message: response.message,
+        });
+      }
     });
   };
 

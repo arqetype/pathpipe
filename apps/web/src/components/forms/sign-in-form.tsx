@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from '@repo/ui/components/form';
 import { Input } from '@repo/ui/components/input';
-import { SignInDto } from '@repo/db/dto/signIn.dto';
+import { SignInDto } from '@repo/db/dto/sign-in.dto';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { useForm } from 'react-hook-form';
 import { useTransition } from 'react';
