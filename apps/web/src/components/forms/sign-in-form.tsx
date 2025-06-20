@@ -24,8 +24,8 @@ import { useTransition } from 'react';
 import Link from 'next/link';
 import { Button } from '@repo/ui/components/button';
 import { Loader2Icon } from 'lucide-react';
-import { signInUser } from '@/lib/auth-client';
 import { redirect } from 'next/navigation';
+import signInAction from '@/actions/auth/sign-in';
 
 export function SignInForm() {
   const [isPending, startTransition] = useTransition();
@@ -40,14 +40,13 @@ export function SignInForm() {
 
   const handleSubmit = async (data: SignInDto) => {
     startTransition(async () => {
-      const result = await signInUser(data);
-      if (result.access_token) {
-        localStorage.setItem('auth-token', result.access_token);
-        redirect('/app');
-      } else {
+      const response = await signInAction(data.email, data.password);
+
+      if (response.success) redirect('/app/');
+      else {
         form.setError('email', {
           type: 'manual',
-          message: 'Invalid email or password',
+          message: 'Login failed. Please try again.',
         });
       }
     });
