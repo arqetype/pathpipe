@@ -41,7 +41,8 @@ export function SignInForm() {
   const handleSubmit = async (data: SignInDto) => {
     startTransition(async () => {
       const result = await signInUser(data);
-      if (result.success) {
+      if (result.access_token) {
+        localStorage.setItem('auth-token', result.access_token);
         redirect('/app');
       } else {
         form.setError('email', {

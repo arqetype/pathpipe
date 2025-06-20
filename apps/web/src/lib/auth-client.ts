@@ -10,14 +10,28 @@ export const signInUser = async (data: SignInDto) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include',
       body: JSON.stringify(data),
     },
   );
 
   if (!response.ok) {
-    return { success: false };
+    return { success: false, error: 'Invalid email or password' };
   }
 
-  return { success: true };
+  const result: { access_token: string } = await response.json();
+  return {
+    success: true,
+    access_token: result.access_token,
+  };
 };
+
+export async function fetchWithAuth(url: string, options: RequestInit = {}) {
+  const token = localStorage.getItem('auth-token');
+  const headers = {
+    ...options.headers,
+    ContentType: 'application/json',
+    Authorization: token ? `Bearer ${token}` : '',
+  };
+
+  return fetch(url, { ...options, headers });
+}
