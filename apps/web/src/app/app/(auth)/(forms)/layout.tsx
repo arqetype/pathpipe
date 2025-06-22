@@ -23,7 +23,7 @@ export default async function AuthenticationFormLayout({
   if (authToken) redirect('/app');
 
   return (
-    <Card>
+    <Card className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid lg:grid-cols-2 gap-0">
         <div>
           <CardHeader className="space-x-0 space-y-4 px-6 mb-4">
