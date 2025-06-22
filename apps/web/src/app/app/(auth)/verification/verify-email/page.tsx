@@ -24,7 +24,7 @@ export default async function VerifyEmailPage({
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl font-bold">
-            Verify your email address
+            Email Verification Failed
           </CardTitle>
           <CardDescription className="mt-4">
             Oups ! This link is invalid or has expired. Please check your email.
@@ -45,7 +45,9 @@ export default async function VerifyEmailPage({
     <Card>
       <CardHeader>
         <CardTitle className="text-2xl font-bold">
-          Verify your email address
+          {response.success
+            ? 'Email Address Verified'
+            : 'Email Verification Failed'}
         </CardTitle>
         <CardDescription className="mt-4">
           {response.success
