@@ -12,9 +12,7 @@ export const VerificationEmail: React.FC<VerificationEmailProps> = ({
     <Head>
       <title>Verify your email address</title>
     </Head>{' '}
-    <Button
-      href={`http://localhost:3000/app/verification/verify-email?token=${token}`}
-    >
+    <Button href={`http://localhost:3000/app/verify-email?token=${token}`}>
       Verify Email
     </Button>
   </Html>

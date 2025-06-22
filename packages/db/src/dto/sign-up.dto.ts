@@ -22,6 +22,9 @@ export class PasswordMatchConstraint implements ValidatorConstraintInterface {
 }
 
 export class SignUpDto {
+  @IsString()
+  name: string;
+
   @IsEmail()
   email: string;
 

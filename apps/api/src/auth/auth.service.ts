@@ -43,13 +43,17 @@ export class AuthService {
     };
   }
 
-  async signUp(email: string, password: string): Promise<{ success: boolean }> {
+  async signUp(
+    name: string,
+    email: string,
+    password: string,
+  ): Promise<{ success: boolean }> {
     const existingUser = await this.userService.findOneByEmail(email);
     if (existingUser) {
       throw new UnauthorizedException('Email already exists');
     }
 
-    const user = await this.userService.create(email, password);
+    const user = await this.userService.create(email, password, name);
     void this.sendVerification(user);
 
     return { success: true };
@@ -98,11 +102,7 @@ export class AuthService {
   }
 
   async verifyOTP(user: User, otp: string): Promise<{ success: boolean }> {
-    const isValid = await this.verificationService.verifyOTP(user, otp);
-    if (!isValid) {
-      await this.sendOTP(user);
-      throw new UnauthorizedException('Invalid OTP');
-    }
+    await this.verificationService.verifyOTP(user, otp);
 
     return { success: true };
   }
@@ -110,6 +110,25 @@ export class AuthService {
   async sendOTP(user: User): Promise<{ success: boolean }> {
     if (!user) {
       throw new UnauthorizedException('User not found');
+    }
+
+    const otpRecord = await this.verificationService.findOTPByUser(user);
+    const cooldownPeriod = 15 * 1000; // 15 seconds
+    const currentTime = Date.now();
+    let lastOtpSent = 0;
+
+    if (otpRecord && otpRecord.lastSent) {
+      lastOtpSent = new Date(otpRecord.lastSent).getTime();
+    }
+
+    if (currentTime - lastOtpSent < cooldownPeriod) {
+      const remainingTime = Math.ceil(
+        (cooldownPeriod - (currentTime - lastOtpSent)) / 1000,
+      );
+      throw new UnauthorizedException(
+        `Please wait ${remainingTime} seconds before requesting another OTP.`,
+        'otp_cooldown',
+      );
     }
 
     const otp = await this.verificationService.createOTP(user);

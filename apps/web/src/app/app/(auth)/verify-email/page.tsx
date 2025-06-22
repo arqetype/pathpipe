@@ -1,5 +1,5 @@
 import { UUID } from 'crypto';
-import verifyEmailAction from '../../../../../actions/auth/verify-email';
+import verifyEmailAction from '@/actions/auth/verify-email';
 import {
   Card,
   CardDescription,

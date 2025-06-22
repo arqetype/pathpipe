@@ -6,6 +6,7 @@ type SignUpResponse = {
 };
 
 export default async function signUpAction(
+  name: string,
   email: string,
   password: string,
   confirmPassword: string,
@@ -18,7 +19,7 @@ export default async function signUpAction(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password, confirmPassword }),
+      body: JSON.stringify({ name, email, password, confirmPassword }),
     });
 
     const parsed = await response.json();

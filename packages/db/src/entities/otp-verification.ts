@@ -18,6 +18,9 @@ export class OTPVerification {
   @Column()
   expires_at: Date;
 
+  @Column({ nullable: true })
+  lastSent: Date;
+
   @OneToOne(() => User)
   @JoinColumn()
   user: User;

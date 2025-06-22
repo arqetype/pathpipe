@@ -24,14 +24,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     }
 
     if (!user.email_verified) {
-      try {
-        await this.authService.sendVerification(user);
-      } catch {
-        throw new UnauthorizedException(
-          'Failed to send verification email. Please try again later.',
-          'verification_email_failed',
-        );
-      }
+      await this.authService.sendVerification(user);
 
       throw new UnauthorizedException(
         'Email not verified. An email has been sent to verify your account.',

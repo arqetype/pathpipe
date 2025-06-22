@@ -63,14 +63,24 @@ export class VerificationService {
     });
   }
 
+  async findOTPByUser(user: User): Promise<OTPVerification | null> {
+    if (!user) return null;
+
+    return await this.otpVerificationRepository.findOne({
+      where: { user: { id: user.id } },
+    });
+  }
+
   async createOTP(user: User): Promise<string> {
     await this.otpVerificationRepository.delete({ user });
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     const otpVerification = this.otpVerificationRepository.create({
       otp,
       expires_at: expiresAt,
+      lastSent: new Date(),
       user,
     });
 

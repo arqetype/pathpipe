@@ -42,7 +42,11 @@ export class AuthController {
   @Public()
   @Post('sign-up')
   async signUp(@Body() signUpDto: SignUpDto) {
-    return await this.authService.signUp(signUpDto.email, signUpDto.password);
+    return await this.authService.signUp(
+      signUpDto.name,
+      signUpDto.email,
+      signUpDto.password,
+    );
   }
 
   @HttpCode(HttpStatus.OK)

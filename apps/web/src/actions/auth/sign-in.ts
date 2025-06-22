@@ -1,7 +1,6 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 
 type SignInResponse = {
   success: boolean;
@@ -35,16 +34,22 @@ export default async function signInAction(
         parsed.error === 'email_not_verified' ||
         parsed.error === 'email_verification_cooldown'
       ) {
-        redirect(
-          `/app/verification/resend-email?email=${encodeURIComponent(email)}`,
-        );
+        return {
+          success: true,
+          message:
+            parsed.error === 'email_not_verified' ||
+            parsed.error === 'email_verification_cooldown'
+              ? 'Email not verified. Please verify your email before signing in.'
+              : 'Please wait before trying to resend the verification email.',
+          code: parsed.error,
+        };
       }
 
       if (parsed.error === 'otp_required') {
         return {
-          success: false,
+          success: true,
           message: 'OTP is required for this account',
-          code: 'otp_required',
+          code: parsed.error,
         };
       }
 
