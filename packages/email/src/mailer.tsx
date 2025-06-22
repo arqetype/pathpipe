@@ -1,8 +1,8 @@
-import React from "react";
-import { createTransport, Transporter } from "nodemailer";
-import { render } from "@react-email/render";
-import { WelcomeEmail } from "./templates/welcome-email";
-import { VerificationEmail } from "./templates/verification-email";
+import React from 'react';
+import { createTransport, Transporter } from 'nodemailer';
+import { render } from '@react-email/render';
+import { VerificationEmail } from './templates/verification-email';
+import { OTPEmail } from './templates/otp-email';
 
 export type SMTPConfig = {
   host: string;
@@ -35,28 +35,26 @@ export class Mailer {
       await this.transporter.sendMail({
         to,
         from: this.from,
-        subject: "Vérification de votre e-mail",
+        subject: 'Mealbud.ai : Verify your email address',
         html,
       });
-    } catch (error) {
-      console.error("Error sending email:", error);
-      throw new Error("Failed to send email");
+    } catch {
+      throw new Error('Failed to send email');
     }
   }
 
-  public async sendWelcomeEmail(to: string, username: string): Promise<void> {
-    const html = await render(<WelcomeEmail username={username} />);
+  public async sendOTPEmail(to: string, otp: string): Promise<void> {
+    const html = await render(<OTPEmail otp={otp} />);
 
     try {
       await this.transporter.sendMail({
         to,
         from: this.from,
-        subject: "Bienvenue sur MealBud AI",
+        subject: 'Mealbud.ai : Your OTP code',
         html,
       });
-    } catch (error) {
-      console.error("Error sending email:", error);
-      throw new Error("Failed to send email");
+    } catch {
+      throw new Error('Failed to send email');
     }
   }
 }

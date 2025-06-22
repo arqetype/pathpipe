@@ -20,11 +20,11 @@ export class MailerService {
     });
   }
 
-  async sendWelcome(to: string, name: string) {
-    await this.mailer.sendWelcomeEmail(to, name);
-  }
-
   async sendVerificationEmail(to: string, token: string) {
     await this.mailer.sendVerificationEmail(to, token);
+  }
+
+  async sendOTPEmail(to: string, otp: string) {
+    await this.mailer.sendOTPEmail(to, otp);
   }
 }

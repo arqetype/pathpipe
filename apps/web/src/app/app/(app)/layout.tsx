@@ -9,11 +9,11 @@ type ApplicationLayoutProps = {
 export default async function ApplicationLayout({
   children,
 }: ApplicationLayoutProps) {
-  await getCurrentUser();
+  const currentUser = await getCurrentUser();
 
   return (
     <>
-      <Header />
+      <Header {...currentUser} />
       {children}
     </>
   );

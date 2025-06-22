@@ -2,30 +2,23 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  UpdateDateColumn,
   OneToOne,
   JoinColumn,
 } from 'typeorm';
 import { User } from './user';
 
 @Entity()
-export class EmailVerificationToken {
+export class OTPVerification {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  token: string;
+  otp: string;
 
   @Column()
   expires_at: Date;
 
-  @Column({ default: false })
-  used: boolean;
-
   @OneToOne(() => User)
   @JoinColumn()
   user: User;
-
-  @UpdateDateColumn()
-  lastEmailSent: Date;
 }

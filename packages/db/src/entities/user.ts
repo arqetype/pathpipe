@@ -31,6 +31,9 @@ export class User {
   @Column({ default: false })
   email_verified: boolean;
 
+  @Column({ default: false })
+  need_otp: boolean;
+
   @CreateDateColumn()
   created_at: Date;
 

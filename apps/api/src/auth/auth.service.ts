@@ -49,9 +49,8 @@ export class AuthService {
       throw new UnauthorizedException('Email already exists');
     }
 
-    await this.userService.create(email, password);
-    const token = await this.verificationService.createVerificationToken(email);
-    await this.mailerService.sendVerificationEmail(email, token);
+    const user = await this.userService.create(email, password);
+    void this.sendVerification(user);
 
     return { success: true };
   }
@@ -66,15 +65,16 @@ export class AuthService {
     return { success: true };
   }
 
-  async resendEmail(email: string): Promise<{ success: boolean }> {
-    const user = await this.userService.findOneByEmail(email);
+  async sendVerification(user: User): Promise<{ success: boolean }> {
     if (!user || user.email_verified) {
       throw new UnauthorizedException(
         'User not found or email already verified',
       );
     }
 
-    const tokenRecord = await this.verificationService.findTokenByEmail(email);
+    const tokenRecord = await this.verificationService.findTokenByEmail(
+      user.email,
+    );
     const cooldownPeriod = 30 * 1000; // 30 sec
     const currentTime = Date.now();
     let lastEmailSent = 0;
@@ -87,12 +87,33 @@ export class AuthService {
       );
       throw new UnauthorizedException(
         `Please wait ${remainingTime} seconds before requesting another verification email.`,
+        'email_verification_cooldown',
       );
     }
 
-    const token = await this.verificationService.createVerificationToken(email);
-    await this.mailerService.sendVerificationEmail(email, token);
+    const token = await this.verificationService.createVerificationToken(user);
+    await this.mailerService.sendVerificationEmail(user.email, token);
 
+    return { success: true };
+  }
+
+  async verifyOTP(user: User, otp: string): Promise<{ success: boolean }> {
+    const isValid = await this.verificationService.verifyOTP(user, otp);
+    if (!isValid) {
+      await this.sendOTP(user);
+      throw new UnauthorizedException('Invalid OTP');
+    }
+
+    return { success: true };
+  }
+
+  async sendOTP(user: User): Promise<{ success: boolean }> {
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const otp = await this.verificationService.createOTP(user);
+    await this.mailerService.sendOTPEmail(user.email, otp);
     return { success: true };
   }
 }

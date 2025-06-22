@@ -14,6 +14,7 @@ import { VerificationModule } from './verification/verification.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt.auth.guard';
 import { JwtModule } from '@nestjs/jwt';
+import { OTPVerification } from '@repo/db/entities/otp-verification';
 
 @Module({
   imports: [
@@ -30,7 +31,14 @@ import { JwtModule } from '@nestjs/jwt';
         username: configService.getOrThrow('NEST_DATABASE_USER'),
         password: configService.getOrThrow('NEST_DATABASE_PASS'),
         database: configService.getOrThrow('NEST_DATABASE_NAME'),
-        entities: [User, Meal, EmailVerificationToken, Goal, AIRequest],
+        entities: [
+          User,
+          Meal,
+          EmailVerificationToken,
+          Goal,
+          AIRequest,
+          OTPVerification,
+        ],
         synchronize: process.env.NODE_ENV !== 'production',
       }),
     }),

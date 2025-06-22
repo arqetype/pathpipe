@@ -25,7 +25,6 @@ export default async function verifyEmailAction(
     });
 
     const parsed = await response.json();
-    console.log('Email verification response:', parsed);
 
     if (!response.ok) {
       return {

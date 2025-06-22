@@ -18,10 +18,14 @@ import { LocalAuthGuard } from './guards/local.auth.guard';
 import { Response } from 'express';
 import { User } from '@repo/db/entities/user';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { UserService } from '../user/user.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
@@ -58,6 +62,11 @@ export class AuthController {
   @Public()
   @Post('resend-email')
   async resendEmail(@Body() resendEmailDto: ResendEmailDto) {
-    return await this.authService.resendEmail(resendEmailDto.email);
+    const user = await this.userService.findOneByEmail(resendEmailDto.email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return await this.authService.sendVerification(user);
   }
 }

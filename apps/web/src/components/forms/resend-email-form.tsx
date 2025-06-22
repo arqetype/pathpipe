@@ -18,7 +18,7 @@ import {
 } from '@repo/ui/components/form';
 import { Input } from '@repo/ui/components/input';
 import { useForm } from 'react-hook-form';
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { Button } from '@repo/ui/components/button';
 import { Loader2Icon } from 'lucide-react';
 import resendEmailAction from '@/actions/auth/resend-email';
@@ -29,6 +29,7 @@ export function ResendEmailForm() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
   const [isPending, startTransition] = useTransition();
+  const [isSuccess, setIsSuccess] = useState(false);
 
   if (!email) {
     redirect('/app/sign-in');
@@ -41,6 +42,9 @@ export function ResendEmailForm() {
   });
 
   const handleSubmit = async (data: ResendEmailDto) => {
+    setIsSuccess(false);
+    form.clearErrors();
+
     startTransition(async () => {
       const response = await resendEmailAction(data.email);
 
@@ -49,6 +53,8 @@ export function ResendEmailForm() {
           type: 'manual',
           message: response.message,
         });
+      } else {
+        setIsSuccess(true);
       }
     });
   };
@@ -56,12 +62,12 @@ export function ResendEmailForm() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col">
           <CardTitle className="text-2xl font-bold">
             Verify your email address
           </CardTitle>
         </div>
-        <CardDescription className="text-center mt-4">
+        <CardDescription className="mt-4">
           Please check your email for a verification link. If you didn&apos;t
           receive the email, you can request a new one.
         </CardDescription>
@@ -94,6 +100,12 @@ export function ResendEmailForm() {
                 'Resend Verification Link'
               )}
             </Button>
+            {isSuccess && (
+              <div className="text-green-600 text-sm bg-green-50 p-3 rounded-md border border-green-200">
+                ✅ Verification email sent successfully! Please check your
+                inbox.
+              </div>
+            )}
           </CardFooter>
         </form>
       </Form>

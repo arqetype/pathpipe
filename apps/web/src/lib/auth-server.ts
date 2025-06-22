@@ -16,15 +16,13 @@ export const getCurrentUser = cache(async () => {
     const response = await get('/auth/me');
 
     if (!response.ok) {
-      console.error('Response not OK:', response.status, response.statusText);
       return redirect('/app/sign-in');
     }
 
     const user: User = await response.json();
 
     return user;
-  } catch (error: unknown) {
-    console.error(error);
+  } catch {
     return redirect('/app/sign-in');
   }
 });

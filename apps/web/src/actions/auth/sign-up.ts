@@ -22,7 +22,6 @@ export default async function signUpAction(
     });
 
     const parsed = await response.json();
-    console.log('Sign up response:', parsed);
 
     if (!response.ok) {
       return {
@@ -38,7 +37,6 @@ export default async function signUpAction(
 
     return { success: true, message: 'Sign up successful' };
   } catch (error) {
-    console.error('Sign up error:', error);
     return {
       success: false,
       message:

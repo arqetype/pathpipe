@@ -51,8 +51,7 @@ export function SignUpForm() {
 
       if (response.success) {
         redirect(
-          '/app/verification/resend-email?email=' +
-            encodeURIComponent(data.email),
+          `/app/verification/resend-email?email=${encodeURIComponent(data.email)}`,
         );
       } else {
         form.setError('email', {
