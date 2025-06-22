@@ -12,6 +12,7 @@ import {
   FormMessage,
 } from '@repo/ui/components/form';
 import { Input } from '@repo/ui/components/input';
+import { Checkbox } from '@repo/ui/components/checkbox';
 import { Loader2Icon, MailIcon } from 'lucide-react';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
@@ -20,6 +21,8 @@ import Link from 'next/link';
 import signUpAction from '@/actions/auth/sign-up';
 import { useState } from 'react';
 import resendEmailAction from '@/actions/auth/resend-email';
+import { AuthVerificationAlert } from '@repo/ui/components/auth-verification-alert';
+import { AuthVerificationError } from '@repo/ui/components/auth-verification-error';
 
 const resolver = classValidatorResolver(SignUpDto);
 
@@ -34,6 +37,7 @@ export function SignUpForm() {
       email: '',
       password: '',
       confirmPassword: '',
+      termsAccepted: false,
     },
   });
 
@@ -109,38 +113,24 @@ export function SignUpForm() {
 
       {isVerificationSent ? (
         <div className="px-6">
-          <div className="rounded-lg border p-4 mb-4 bg-muted/50">
-            <div className="flex items-start gap-4">
-              <div className="rounded-full bg-primary/10 p-2">
-                <MailIcon className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-sm font-medium">
-                  Email Verification Required
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  We&apos;ve sent a verification email to
-                  <span className="font-medium">
-                    {' '}
-                    {form.getValues('email')}
-                  </span>
-                  . Please check your inbox and click the verification link to
-                  activate your account.
-                </p>
-              </div>
-            </div>
-          </div>
+          <AuthVerificationAlert
+            icon={MailIcon}
+            title="Email Verification Required"
+            description={
+              <>
+                We&apos;ve sent a verification email to
+                <span className="font-medium"> {form.getValues('email')}</span>.
+                Please check your inbox and click the verification link to
+                activate your account.
+              </>
+            }
+          />
           <div className="space-y-3">
             {resendStatus.message && (
-              <div
-                className={`p-3 rounded-md text-sm ${
-                  resendStatus.success
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
-                    : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
-                }`}
-              >
-                {resendStatus.message}
-              </div>
+              <AuthVerificationError
+                success={resendStatus.success}
+                message={resendStatus.message}
+              />
             )}
 
             <Button
@@ -169,6 +159,7 @@ export function SignUpForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Name</FormLabel>
+                  <FormMessage />
                   <FormControl>
                     <Input
                       placeholder="John Doe"
@@ -177,7 +168,6 @@ export function SignUpForm() {
                       autoComplete="name"
                     />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -187,6 +177,7 @@ export function SignUpForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
+                  <FormMessage />
                   <FormControl>
                     <Input
                       placeholder="name@example.com"
@@ -195,7 +186,6 @@ export function SignUpForm() {
                       autoComplete="email"
                     />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -237,6 +227,33 @@ export function SignUpForm() {
                       placeholder="••••••••••••••••"
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="termsAccepted"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center space-x-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked: boolean) => {
+                          return checked
+                            ? field.onChange(true)
+                            : field.onChange(false);
+                        }}
+                      />
+                    </FormControl>
+                    <FormLabel className="text-sm">
+                      I accept the{' '}
+                      <Link href="" className="text-primary underline">
+                        terms and conditions
+                      </Link>
+                    </FormLabel>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

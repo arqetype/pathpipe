@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEmail,
   IsString,
   Matches,
@@ -40,4 +41,10 @@ export class SignUpDto {
   @IsString()
   @Validate(PasswordMatchConstraint)
   confirmPassword: string;
+
+  @IsBoolean()
+  @Matches(/true/i, {
+    message: 'You must accept the terms and conditions',
+  })
+  termsAccepted: boolean;
 }

@@ -12,9 +12,9 @@ export default async function ApplicationLayout({
   const currentUser = await getCurrentUser();
 
   return (
-    <>
+    <div className="bg-muted/50 min-h-screen">
       <Header {...currentUser} />
       {children}
-    </>
+    </div>
   );
 }

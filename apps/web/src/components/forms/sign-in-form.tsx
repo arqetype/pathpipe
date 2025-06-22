@@ -26,6 +26,8 @@ import { redirect } from 'next/navigation';
 import signInAction from '@/actions/auth/sign-in';
 import resendEmailAction from '@/actions/auth/resend-email';
 import { useState } from 'react';
+import { AuthVerificationAlert } from '@repo/ui/components/auth-verification-alert';
+import { AuthVerificationError } from '@repo/ui/components/auth-verification-error';
 
 export function SignInForm() {
   const [isPending, startTransition] = useTransition();
@@ -136,38 +138,27 @@ export function SignInForm() {
         <CardContent className="space-y-4">
           {showEmailVerification ? (
             <div className="px-1">
-              <div className="rounded-lg border p-4 mb-4 bg-muted/50">
-                <div className="flex items-start gap-4">
-                  <div className="rounded-full bg-primary/10 p-2">
-                    <MailIcon className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium">
-                      Email Verification Required
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      We&apos;ve sent a verification email to
-                      <span className="font-medium">
-                        {' '}
-                        {form.getValues('email')}
-                      </span>
-                      . Please check your inbox and click the verification link
-                      to activate your account.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <AuthVerificationAlert
+                icon={MailIcon}
+                title="Email Verification Required"
+                description={
+                  <>
+                    We&apos;ve sent a verification email to
+                    <span className="font-medium">
+                      {' '}
+                      {form.getValues('email')}
+                    </span>
+                    . Please check your inbox and click the verification link to
+                    activate your account.
+                  </>
+                }
+              />
               <div className="space-y-3">
                 {resendStatus.message && (
-                  <div
-                    className={`p-3 rounded-md text-sm ${
-                      resendStatus.success
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
-                    }`}
-                  >
-                    {resendStatus.message}
-                  </div>
+                  <AuthVerificationError
+                    success={resendStatus.success}
+                    message={resendStatus.message}
+                  />
                 )}
 
                 <Button
@@ -246,26 +237,21 @@ export function SignInForm() {
             </>
           ) : (
             <>
-              <div className="rounded-lg border p-4 mb-4 bg-muted/50">
-                <div className="flex items-start gap-4">
-                  <div className="rounded-full bg-primary/10 p-2">
-                    <ShieldCheckIcon className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium">
-                      Two-Factor Authentication
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
+              <div className="mb-4">
+                <AuthVerificationAlert
+                  icon={ShieldCheckIcon}
+                  title="Two-Factor Authentication"
+                  description={
+                    <>
                       For added security, please enter the 6-digit code sent to
                       <span className="font-medium">
                         {' '}
                         {form.getValues('email')}.
                       </span>
-                    </p>
-                  </div>
-                </div>
+                    </>
+                  }
+                />
               </div>
-
               <FormField
                 key={'otp'}
                 control={form.control}
@@ -310,15 +296,10 @@ export function SignInForm() {
                     <FormMessage />
 
                     {otpStatus.message && (
-                      <div
-                        className={`p-3 rounded-md text-sm mt-3 mb-2 ${
-                          otpStatus.success
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
-                        }`}
-                      >
-                        {otpStatus.message}
-                      </div>
+                      <AuthVerificationError
+                        success={otpStatus.success}
+                        message={otpStatus.message}
+                      />
                     )}
 
                     <p className="text-sm text-muted-foreground mt-2">
