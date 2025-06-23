@@ -48,6 +48,7 @@ export function SignUpForm() {
         data.email,
         data.password,
         data.confirmPassword,
+        data.terms,
       );
 
       if (response.success) {

@@ -10,6 +10,7 @@ export default async function signUpAction(
   email: string,
   password: string,
   confirmPassword: string,
+  terms: boolean,
 ): Promise<SignUpResponse> {
   try {
     const apiUrl = new URL('/auth/sign-up', process.env.NEXT_PUBLIC_API_URL);
@@ -19,7 +20,7 @@ export default async function signUpAction(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name, email, password, confirmPassword }),
+      body: JSON.stringify({ name, email, password, confirmPassword, terms }),
     });
 
     const parsed = await response.json();
