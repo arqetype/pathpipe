@@ -16,7 +16,7 @@ import { Checkbox } from '@repo/ui/components/checkbox';
 import { Loader2Icon, MailIcon } from 'lucide-react';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-import { SignUpDto } from '@repo/db/dto/sign-up.dto';
+import { SignUpDto } from '@repo/db/dto/auth/sign-up.dto';
 import Link from 'next/link';
 import signUpAction from '@/actions/auth/sign-up';
 import { useState } from 'react';
@@ -37,7 +37,7 @@ export function SignUpForm() {
       email: '',
       password: '',
       confirmPassword: '',
-      termsAccepted: false,
+      terms: false,
     },
   });
 
@@ -159,7 +159,6 @@ export function SignUpForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Name</FormLabel>
-                  <FormMessage />
                   <FormControl>
                     <Input
                       placeholder="John Doe"
@@ -168,6 +167,7 @@ export function SignUpForm() {
                       autoComplete="name"
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -177,7 +177,6 @@ export function SignUpForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
-                  <FormMessage />
                   <FormControl>
                     <Input
                       placeholder="name@example.com"
@@ -186,6 +185,7 @@ export function SignUpForm() {
                       autoComplete="email"
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -233,7 +233,7 @@ export function SignUpForm() {
             />
             <FormField
               control={form.control}
-              name="termsAccepted"
+              name="terms"
               render={({ field }) => (
                 <FormItem>
                   <div className="flex items-center space-x-2">
@@ -241,9 +241,7 @@ export function SignUpForm() {
                       <Checkbox
                         checked={field.value}
                         onCheckedChange={(checked: boolean) => {
-                          return checked
-                            ? field.onChange(true)
-                            : field.onChange(false);
+                          return field.onChange(checked);
                         }}
                       />
                     </FormControl>

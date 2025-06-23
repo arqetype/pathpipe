@@ -9,10 +9,13 @@ import {
   Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignInDto } from '@repo/db/dto/sign-in.dto';
-import { SignUpDto } from '@repo/db/dto/sign-up.dto';
-import { ResendEmailDto } from '@repo/db/dto/resend-email.dto';
-import { VerifyEmailDto } from '@repo/db/dto/verify-email.dto';
+import { SignInDto } from '@repo/db/dto/auth/sign-in.dto';
+import { SignUpDto } from '@repo/db/dto/auth/sign-up.dto';
+import { ResendEmailDto } from '@repo/db/dto/auth/resend-email.dto';
+import { VerifyEmailDto } from '@repo/db/dto/auth/verify-email.dto';
+import { ResetPasswordDto } from '@repo/db/dto/auth/reset-password.dto';
+import { ForgotPasswordDto } from '@repo/db/dto/auth/forgot-password.dto';
+import { VerifyPasswordDto } from '@repo/db/dto/auth/verify-password.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { LocalAuthGuard } from './guards/local.auth.guard';
 import { Response } from 'express';
@@ -27,6 +30,7 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
 
+  // SIGN IN / SIGN UP FLOW
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
   @Public()
@@ -55,6 +59,7 @@ export class AuthController {
     return user;
   }
 
+  // EMAIL VERIFICATION FLOW
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('verify-email')
@@ -72,5 +77,38 @@ export class AuthController {
     }
 
     return await this.authService.sendVerification(user);
+  }
+
+  // RESET PASSWORD FLOW
+  @HttpCode(HttpStatus.OK)
+  @Public()
+  @Post('forgot-password')
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    const user = await this.userService.findOneByEmail(forgotPasswordDto.email);
+    if (!user) {
+      return {
+        success: true,
+        message: 'If the email exists, a reset link has been sent.',
+      };
+    }
+
+    return await this.authService.forgotPassword(user);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Public()
+  @Get('verify-password')
+  async verifyForgotPassword(@Body() verifyPasswordDto: VerifyPasswordDto) {
+    return await this.authService.verifyForgotPassword(verifyPasswordDto.token);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Public()
+  @Post('reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return await this.authService.resetPassword(
+      resetPasswordDto.token,
+      resetPasswordDto.newPassword,
+    );
   }
 }

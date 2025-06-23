@@ -47,7 +47,7 @@ export default async function VerifyEmailPage({
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2 px-6 pt-2 pb-6">
+        <CardFooter className="flex flex-col gap-2 px-6 pt-2">
           <Link className="w-full" href="/app/sign-in">
             <Button className="w-full" variant="default">
               Go to Sign In
@@ -84,7 +84,7 @@ export default async function VerifyEmailPage({
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2 px-6 pt-2 pb-6">
+        <CardFooter className="flex flex-col gap-2 px-6 pt-2">
           <Link className="w-full" href="/app/sign-in">
             <Button className="w-full" variant="default">
               Continue to Sign In
@@ -119,7 +119,7 @@ export default async function VerifyEmailPage({
             </ul>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2 px-6 pt-2 pb-6">
+        <CardFooter className="flex flex-col gap-2 px-6 pt-2">
           <Link className="w-full" href="/app/sign-in">
             <Button className="w-full" variant="default">
               Go to Sign In

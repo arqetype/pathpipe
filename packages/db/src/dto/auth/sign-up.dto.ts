@@ -22,8 +22,22 @@ export class PasswordMatchConstraint implements ValidatorConstraintInterface {
   }
 }
 
+@ValidatorConstraint({ name: 'TermsAccepted', async: false })
+export class TermsAcceptedConstraint implements ValidatorConstraintInterface {
+  validate(terms: boolean) {
+    return terms === true;
+  }
+
+  defaultMessage() {
+    return 'You must accept the terms and conditions to sign up';
+  }
+}
+
 export class SignUpDto {
   @IsString()
+  @MinLength(1, {
+    message: 'Name must not be empty',
+  })
   name: string;
 
   @IsEmail()
@@ -43,8 +57,6 @@ export class SignUpDto {
   confirmPassword: string;
 
   @IsBoolean()
-  @Matches(/true/i, {
-    message: 'You must accept the terms and conditions',
-  })
-  termsAccepted: boolean;
+  @Validate(TermsAcceptedConstraint)
+  terms: boolean;
 }

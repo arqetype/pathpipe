@@ -3,6 +3,7 @@ import { createTransport, Transporter } from 'nodemailer';
 import { render } from '@react-email/render';
 import { VerificationEmail } from './templates/verification-email';
 import { OTPEmail } from './templates/otp-email';
+import { ResetPasswordEmail } from './templates/reset-password-email';
 
 export type SMTPConfig = {
   host: string;
@@ -51,6 +52,24 @@ export class Mailer {
         to,
         from: this.from,
         subject: 'Mealbud.ai : Your OTP code',
+        html,
+      });
+    } catch {
+      throw new Error('Failed to send email');
+    }
+  }
+
+  public async sendResetPasswordEmail(
+    to: string,
+    token: string,
+  ): Promise<void> {
+    const html = await render(<ResetPasswordEmail token={token} />);
+
+    try {
+      await this.transporter.sendMail({
+        to,
+        from: this.from,
+        subject: 'Mealbud.ai : Reset your password',
         html,
       });
     } catch {
