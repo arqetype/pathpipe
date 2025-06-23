@@ -15,6 +15,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt.auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { OTPVerification } from '@repo/db/entities/otp-verification';
+import { ResetPasswordToken } from '@repo/db/entities/reset-password-token';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { OTPVerification } from '@repo/db/entities/otp-verification';
           Goal,
           AIRequest,
           OTPVerification,
+          ResetPasswordToken,
         ],
         synchronize: process.env.NODE_ENV !== 'production',
       }),
