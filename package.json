@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "npm run docker:dev && (trap 'npm run docker:down' EXIT; turbo run dev)",
+    "dev": "turbo run dev",
     "test": "turbo run test",
     "start": "turbo run start",
     "lint": "turbo run lint",

@@ -1,4 +1,4 @@
-name: "🔀 Pull Request Jobs"
+name: '🔀 Pull Request Jobs'
 on:
   pull_request:
 
@@ -23,9 +23,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "pnpm"
+          cache: 'pnpm'
 
-      # Make sure pnpm store is properly cached
       - name: Setup pnpm cache
         uses: actions/cache@v4
         with:
@@ -54,7 +53,7 @@ jobs:
       - name: Cache node_modules
         uses: actions/cache@v4
         with:
-          path: "**/node_modules"
+          path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Cache build directories
@@ -83,7 +82,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Restore pnpm cache
         uses: actions/cache@v4
@@ -96,7 +95,7 @@ jobs:
       - name: Restore cached node_modules
         uses: actions/cache@v4
         with:
-          path: "**/node_modules"
+          path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Restore Turbo cache
@@ -136,7 +135,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Restore pnpm cache
         uses: actions/cache@v4
@@ -149,7 +148,7 @@ jobs:
       - name: Restore cached node_modules
         uses: actions/cache@v4
         with:
-          path: "**/node_modules"
+          path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Restore build outputs
@@ -189,7 +188,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Restore pnpm cache
         uses: actions/cache@v4
@@ -202,7 +201,7 @@ jobs:
       - name: Restore cached node_modules
         uses: actions/cache@v4
         with:
-          path: "**/node_modules"
+          path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Restore build outputs

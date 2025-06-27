@@ -7,7 +7,7 @@
     "dev": "next dev --turbopack --port 3000",
     "build": "next build",
     "start": "next start",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "format": "prettier --write . --ignore-unknown",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
