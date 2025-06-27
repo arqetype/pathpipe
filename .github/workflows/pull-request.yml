@@ -25,22 +25,8 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install Turbo globally
-        run: pnpm add -g turbo
-
       - name: Install dependencies
-        run: |
-          pnpm install --frozen-lockfile
-          # Verify turbo is installed and accessible
-          turbo --version || pnpm dlx turbo --version
+        run: pnpm install --frozen-lockfile
 
       - name: Cache Turbo
         uses: actions/cache@v4
@@ -49,12 +35,6 @@ jobs:
           key: ${{ runner.os }}-turbo-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-turbo-
-
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Cache build directories
         uses: actions/cache@v4
@@ -83,19 +63,8 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
-      - name: Restore pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Restore cached node_modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Install dependencies from cache
+        run: pnpm install --frozen-lockfile
 
       - name: Restore Turbo cache
         uses: actions/cache@v4
@@ -114,7 +83,6 @@ jobs:
           path: |
             **/dist
             **/.next
-            !**/.next/cache
           key: ${{ runner.os }}-build-output-${{ hashFiles('**/pnpm-lock.yaml') }}
 
   lint:
@@ -136,19 +104,8 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
-      - name: Restore pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Restore cached node_modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Install dependencies from cache
+        run: pnpm install --frozen-lockfile
 
       - name: Restore build outputs
         uses: actions/cache@v4
@@ -156,7 +113,6 @@ jobs:
           path: |
             **/dist
             **/.next
-            !**/.next/cache
           key: ${{ runner.os }}-build-output-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Restore Turbo cache
@@ -189,19 +145,8 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
-      - name: Restore pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Restore cached node_modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Install dependencies from cache
+        run: pnpm install --frozen-lockfile
 
       - name: Restore build outputs
         uses: actions/cache@v4
@@ -209,7 +154,6 @@ jobs:
           path: |
             **/dist
             **/.next
-            !**/.next/cache
           key: ${{ runner.os }}-build-output-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Restore Turbo cache
