@@ -62,7 +62,6 @@ jobs:
           path: |
             **/dist
             **/.next
-            !**/.next/cache
           key: ${{ runner.os }}-build-${{ hashFiles('**/pnpm-lock.yaml') }}
 
   build:
