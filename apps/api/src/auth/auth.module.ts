@@ -7,6 +7,7 @@ import { MailerModule } from '../mailer/mailer.module';
 import { VerificationModule } from '../verification/verification.module';
 import { JwtStrategy } from './strategies/jwt.stategy';
 import { LocalStrategy } from './strategies/local.strategy';
+import { GithubStrategy } from './strategies/github.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
@@ -29,7 +30,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, GithubStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

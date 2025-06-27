@@ -27,6 +27,7 @@
     - Show clear "before" and "after" snippets when proposing changes
     - Include concise explanations of what changed and why
     - Always check if the edit maintains the project's coding style
+    - Make sure the edit does not introduce logic where it should not be
 
 ### EXECUTION PHASE
 

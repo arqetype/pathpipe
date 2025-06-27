@@ -28,6 +28,12 @@ export class User {
   @Column({ nullable: true })
   avatar_url: string;
 
+  @Column({ nullable: true })
+  github_id: string;
+
+  @Column({ default: false })
+  is_github_user: boolean;
+
   @Column({ default: false })
   email_verified: boolean;
 

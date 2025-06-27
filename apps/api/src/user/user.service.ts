@@ -67,12 +67,54 @@ export class UserService {
   /**
    * Marks a user's email as verified.
    *
-   * @param email - The email address of the user to update
-   * @throws {Error} If user not found with the given email
+   * @param email - The email address to mark as verified
+   * @throws {Error} If user not found
    */
   async markEmailAsVerified(email: string): Promise<void> {
-    const user = await this.findOneByEmail(email);
+    const user = await this.usersRepository.findOne({ where: { email } });
+    if (!user) throw new Error('User not found');
+
     user.email_verified = true;
     await this.usersRepository.save(user);
+  }
+
+  /**
+   * Creates a new GitHub user in the database.
+   *
+   * @param email - The user's email address from GitHub
+   * @param password - A randomly generated password (will be hashed)
+   * @param name - The user's display name from GitHub
+   * @param githubId - The user's GitHub ID
+   * @param avatarUrl - The user's avatar URL from GitHub
+   * @returns The newly created user entity
+   */
+  async createGithubUser(
+    email: string,
+    password: string,
+    name: string,
+    githubId: string,
+    avatarUrl?: string,
+  ): Promise<User> {
+    const user = this.usersRepository.create({
+      email,
+      password,
+      name,
+      github_id: githubId,
+      avatar_url: avatarUrl,
+      is_github_user: true,
+      email_verified: true, // GitHub users are pre-verified
+      need_otp: false, // Skip OTP for GitHub users
+    });
+    return this.usersRepository.save(user);
+  }
+
+  /**
+   * Updates an existing user entity.
+   *
+   * @param user - The user entity with updated properties
+   * @returns The updated user entity
+   */
+  async update(user: User): Promise<User> {
+    return this.usersRepository.save(user);
   }
 }

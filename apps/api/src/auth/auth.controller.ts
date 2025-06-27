@@ -7,6 +7,7 @@ import {
   UseGuards,
   Get,
   Res,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto } from '@repo/db/dto/auth/sign-in.dto';
@@ -18,10 +19,11 @@ import { ForgotPasswordDto } from '@repo/db/dto/auth/forgot-password.dto';
 import { VerifyPasswordDto } from '@repo/db/dto/auth/verify-password.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { LocalAuthGuard } from './guards/local.auth.guard';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { User } from '@repo/db/entities/user';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UserService } from '../user/user.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -109,6 +111,29 @@ export class AuthController {
     return await this.authService.resetPassword(
       resetPasswordDto.token,
       resetPasswordDto.newPassword,
+    );
+  }
+
+  // GITHUB AUTHENTICATION FLOW
+  @Public()
+  @Get('github')
+  @UseGuards(AuthGuard('github'))
+  async githubAuth() {}
+
+  @Public()
+  @Get('github/callback')
+  @UseGuards(AuthGuard('github'))
+  githubCallback(@Req() req: Request, @Res() res: Response) {
+    if (req.user) {
+      const token = this.authService.generateJwtToken((req.user as User).email);
+
+      return res.redirect(
+        `${process.env.NEST_FRONT_URL}/auth/github/callback?token=${token}`,
+      );
+    }
+
+    return res.redirect(
+      `${process.env.NEST_FRONT_URL}/app/sign-in?error=github_auth_failed`,
     );
   }
 }

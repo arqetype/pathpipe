@@ -18,7 +18,8 @@
     "NEST_EMAIL_USER",
     "NEST_EMAIL_PASS",
     "NEST_JWT_SECRET",
-    "NEST_JWT_EXPIRATION_TIME"
+    "NEST_JWT_EXPIRATION_TIME",
+    "NEST_FRONT_URL"
   ],
   "tasks": {
     "build": {

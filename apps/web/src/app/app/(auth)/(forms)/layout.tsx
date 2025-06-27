@@ -5,11 +5,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/components/card';
-import { Button } from '@repo/ui/components/button';
-import GoogleIcon from '@/components/icons/google';
-import GitHubIcon from '@/components/icons/github';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { OAuthButtons } from '@/components/forms/oauth-buttons';
 
 type AuthenticationFormLayoutProps = Readonly<{
   children: ReactNode;
@@ -34,26 +32,7 @@ export default async function AuthenticationFormLayout({
               Join our application to access your personalized dashboard, manage
               your preferences, and enjoy a seamless experience.
             </CardDescription>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                type="button"
-                disabled
-              >
-                <GoogleIcon />
-                Connect with Google
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1"
-                type="button"
-                disabled
-              >
-                <GitHubIcon />
-                Connect with GitHub
-              </Button>
-            </div>
+            <OAuthButtons />
             <div className="relative w-full">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />

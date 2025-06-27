@@ -40,13 +40,22 @@ export class AuthService {
   }
 
   /**
+   * Generates a JWT token for the given email.
+   * @param email - The user's email.
+   * @returns The JWT token as a string.
+   */
+  generateJwtToken(email: string): string {
+    return this.jwtService.sign({ email });
+  }
+
+  /**
    * Signs in a user by generating a JWT token and setting it in the response cookie.
    * @param email - The user's email.
    * @param response - The HTTP response object.
    * @returns An object indicating success.
    */
   signIn(email: string, response: Response): { success: boolean } {
-    const token = this.jwtService.sign({ email });
+    const token = this.generateJwtToken(email);
 
     response.cookie('auth-token', token, {
       secure: process.env.NODE_ENV === 'production',
@@ -242,5 +251,46 @@ export class AuthService {
 
     await this.userService.updatePassword(user.id, newPassword);
     return { success: true };
+  }
+
+  /**
+   * Finds or creates a user from GitHub authentication data.
+   * @param githubUserData - Object containing user information from GitHub.
+   * @returns The user entity.
+   */
+  async findOrCreateGithubUser(githubUserData: {
+    email: string;
+    githubId: string;
+    name?: string;
+    avatarUrl?: string;
+  }): Promise<User> {
+    // Check if user already exists with this email
+    let user = await this.userService.findOneByEmail(githubUserData.email);
+
+    if (user) {
+      // If the user exists but doesn't have GitHub ID set
+      if (!user.github_id) {
+        user.github_id = githubUserData.githubId;
+        user.is_github_user = true;
+        if (githubUserData.avatarUrl && !user.avatar_url) {
+          user.avatar_url = githubUserData.avatarUrl;
+        }
+        await this.userService.update(user);
+      }
+      return user;
+    }
+
+    // Create new user with GitHub data
+    // Note: For GitHub users, we generate a random password since they'll never use password login
+    const randomPassword = Math.random().toString(36).slice(-10);
+    user = await this.userService.createGithubUser(
+      githubUserData.email,
+      randomPassword,
+      githubUserData.name || 'GitHub User',
+      githubUserData.githubId,
+      githubUserData.avatarUrl,
+    );
+
+    return user;
   }
 }
