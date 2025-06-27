@@ -7,13 +7,13 @@ import { AuthService } from '../auth.service';
 @Injectable()
 export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
   constructor(
-    private readonly configService: ConfigService,
     private readonly authService: AuthService,
+    private readonly configService: ConfigService,
   ) {
     super({
-      clientID: configService.get<string>('GITHUB_CLIENT_ID'),
-      clientSecret: configService.get<string>('GITHUB_CLIENT_SECRET'),
-      callbackURL: configService.get<string>('GITHUB_CALLBACK_URL'),
+      clientID: configService.get<string>('NEST_GITHUB_CLIENT_ID'),
+      clientSecret: configService.get<string>('NEST_GITHUB_CLIENT_SECRET'),
+      callbackURL: configService.get<string>('NEST_GITHUB_CALLBACK_URL'),
       scope: ['user:email'],
     });
   }
@@ -32,7 +32,10 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
       email: primaryEmail,
       name: profile.displayName || `${profile.username}`,
       githubId: profile.id,
-      avatarUrl: profile._json.avatar_url,
+      avatarUrl:
+        profile.photos && profile.photos.length > 0
+          ? profile.photos[0].value
+          : null,
     });
   }
 }
