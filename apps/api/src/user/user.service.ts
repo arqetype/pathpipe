@@ -1,3 +1,5 @@
+import { dylan } from '@dicebear/collection';
+import { createAvatar } from '@dicebear/core';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@repo/db/entities/user';
@@ -25,7 +27,12 @@ export class UserService {
    * @returns The newly created user entity
    */
   async create(email: string, password: string, name: string): Promise<User> {
-    const user = this.usersRepository.create({ email, password, name });
+    const user = this.usersRepository.create({
+      email,
+      password,
+      name,
+      avatar_url: this.generateProfilePicture(email),
+    });
     return this.usersRepository.save(user);
   }
 
@@ -102,8 +109,8 @@ export class UserService {
       github_id: githubId,
       avatar_url: avatarUrl,
       is_github_user: true,
-      email_verified: true, // GitHub users are pre-verified
-      need_otp: false, // Skip OTP for GitHub users
+      email_verified: true,
+      need_otp: false,
     });
     return this.usersRepository.save(user);
   }
@@ -116,5 +123,24 @@ export class UserService {
    */
   async update(user: User): Promise<User> {
     return this.usersRepository.save(user);
+  }
+
+  /**
+   * Generates a profile picture for a user based on a seed string.
+   *
+   * Uses the DiceBear library to create a unique avatar.
+   *
+   * @param seed - A string used to generate a consistent avatar
+   * @returns A data URI representing the generated avatar image
+   */
+  generateProfilePicture(seed: string): string {
+    const avatar = createAvatar(dylan, {
+      seed,
+      size: 64,
+      backgroundColor: ['#ffccb5'],
+      randomizeIds: true,
+    });
+
+    return avatar.toDataUri();
   }
 }
