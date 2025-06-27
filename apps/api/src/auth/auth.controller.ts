@@ -128,7 +128,7 @@ export class AuthController {
       const token = this.authService.generateJwtToken((req.user as User).email);
 
       return res.redirect(
-        `${process.env.NEST_FRONT_URL}/github/callback?token=${token}`,
+        `${process.env.NEST_FRONT_URL}/app/github/callback?token=${token}`,
       );
     }
 
