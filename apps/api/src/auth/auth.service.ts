@@ -241,16 +241,39 @@ export class AuthService {
     token: string,
     newPassword: string,
   ): Promise<{ success: boolean }> {
-    const user =
+    const resetPasswordToken =
       await this.verificationService.findOneByResetPasswordToken(token);
-    if (!user) {
+
+    if (!resetPasswordToken) {
       throw new UnauthorizedException(
         'Invalid or expired reset password token',
       );
     }
 
-    await this.userService.updatePassword(user.id, newPassword);
+    await this.userService.updatePassword(
+      resetPasswordToken.user.id,
+      createHash('sha256').update(newPassword).digest('hex'),
+    );
+
     return { success: true };
+  }
+
+  /**
+   * Retrieves the user associated with a reset password token.
+   * @param token - The reset password token.
+   * @returns The user entity if found, otherwise throws an error.
+   * @throws {UnauthorizedException} If token is invalid or expired.
+   */
+  async getResetPasswordUser(token: string): Promise<User | null> {
+    const resetPasswordUser =
+      await this.verificationService.findOneByResetPasswordToken(token);
+
+    if (!resetPasswordUser) {
+      throw new UnauthorizedException(
+        'Invalid or expired reset password token',
+      );
+    }
+    return resetPasswordUser.user;
   }
 
   /**

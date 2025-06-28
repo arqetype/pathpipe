@@ -38,7 +38,7 @@ export default async function signUpAction(
     }
 
     return { success: true, message: 'Sign up successful' };
-  } catch (error) {
+  } catch (error: unknown) {
     return {
       success: false,
       message:
