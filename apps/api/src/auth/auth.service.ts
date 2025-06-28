@@ -144,7 +144,11 @@ export class AuthService {
     }
 
     const token = await this.verificationService.createVerificationToken(user);
-    await this.mailerService.sendVerificationEmail(user.email, token);
+
+    await this.mailerService.sendVerificationEmail(user.email, token, {
+      name: user.name,
+      profilePictureUrl: user.avatar_url,
+    });
 
     return { success: true };
   }
@@ -194,7 +198,10 @@ export class AuthService {
     }
 
     const otp = await this.verificationService.createOTP(user);
-    await this.mailerService.sendOTPEmail(user.email, otp);
+    await this.mailerService.sendOTPEmail(user.email, otp, {
+      name: user.name,
+      profilePictureUrl: user.avatar_url,
+    });
     return { success: true };
   }
 
@@ -207,7 +214,11 @@ export class AuthService {
    */
   async forgotPassword(user: User): Promise<{ success: boolean }> {
     const token = await this.verificationService.createResetPasswordToken(user);
-    await this.mailerService.sendResetPasswordEmail(user.email, token);
+
+    await this.mailerService.sendResetPasswordEmail(user.email, token, {
+      name: user.name,
+      profilePictureUrl: user.avatar_url,
+    });
 
     return { success: true };
   }

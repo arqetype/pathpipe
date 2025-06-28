@@ -29,8 +29,12 @@ export class Mailer {
     this.from = config.from;
   }
 
-  public async sendVerificationEmail(to: string, token: string): Promise<void> {
-    const html = await render(<VerificationEmail token={token} />);
+  public async sendVerificationEmail(
+    to: string,
+    token: string,
+    user: { name: string; profilePictureUrl: string },
+  ): Promise<void> {
+    const html = await render(<VerificationEmail token={token} user={user} />);
 
     try {
       await this.transporter.sendMail({
@@ -44,8 +48,12 @@ export class Mailer {
     }
   }
 
-  public async sendOTPEmail(to: string, otp: string): Promise<void> {
-    const html = await render(<OTPEmail otp={otp} />);
+  public async sendOTPEmail(
+    to: string,
+    otp: string,
+    user: { name: string; profilePictureUrl: string },
+  ): Promise<void> {
+    const html = await render(<OTPEmail otp={otp} user={user} />);
 
     try {
       await this.transporter.sendMail({
@@ -62,8 +70,9 @@ export class Mailer {
   public async sendResetPasswordEmail(
     to: string,
     token: string,
+    user: { name: string; profilePictureUrl: string },
   ): Promise<void> {
-    const html = await render(<ResetPasswordEmail token={token} />);
+    const html = await render(<ResetPasswordEmail token={token} user={user} />);
 
     try {
       await this.transporter.sendMail({

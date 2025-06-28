@@ -34,8 +34,12 @@ export class MailerService {
    * @param token - The verification token to include in the email
    * @returns A promise that resolves when the email is sent
    */
-  async sendVerificationEmail(to: string, token: string) {
-    await this.mailer.sendVerificationEmail(to, token);
+  async sendVerificationEmail(
+    to: string,
+    token: string,
+    user: { name: string; profilePictureUrl: string },
+  ) {
+    await this.mailer.sendVerificationEmail(to, token, user);
   }
 
   /**
@@ -45,8 +49,12 @@ export class MailerService {
    * @param otp - The one-time password to include in the email
    * @returns A promise that resolves when the email is sent
    */
-  async sendOTPEmail(to: string, otp: string) {
-    await this.mailer.sendOTPEmail(to, otp);
+  async sendOTPEmail(
+    to: string,
+    otp: string,
+    user: { name: string; profilePictureUrl: string },
+  ) {
+    await this.mailer.sendOTPEmail(to, otp, user);
   }
 
   /**
@@ -56,7 +64,11 @@ export class MailerService {
    * @param token - The password reset token to include in the email
    * @returns A promise that resolves when the email is sent
    */
-  async sendResetPasswordEmail(to: string, token: string) {
-    await this.mailer.sendResetPasswordEmail(to, token);
+  async sendResetPasswordEmail(
+    to: string,
+    token: string,
+    user: { name: string; profilePictureUrl: string },
+  ) {
+    await this.mailer.sendResetPasswordEmail(to, token, user);
   }
 }

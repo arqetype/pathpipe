@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "dev": "concurrently \"pnpm build --watch\" \"maildev --outgoing-secure --outgoing-user 'dev@mealbud.ai' --outgoing-pass 'specialdevpassword'\" \"pnpm dlx react-email dev --dir=src/emails --port=1081\"",
+    "dev": "concurrently \"pnpm build --watch\" \"maildev --outgoing-secure --outgoing-user 'dev@mealbud.ai' --outgoing-pass 'specialdevpassword'\" \"pnpm dlx react-email dev --dir=src/templates --port=1081\"",
     "build": "tsc -b -v"
   },
   "devDependencies": {
