@@ -1,11 +1,9 @@
 'use server';
 
-import { User } from '@repo/db/entities/user';
-
-type ClientUser = Omit<User, 'password'>;
+import { ResetPasswordUserResponseDto } from '@repo/db/dto/auth/reset-password-user.dto';
 
 type ResetPasswordUserResponse = {
-  user: ClientUser | null;
+  user: ResetPasswordUserResponseDto | null;
 };
 
 export default async function resetPasswordUserAction(

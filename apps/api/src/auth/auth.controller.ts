@@ -15,7 +15,10 @@ import { SignUpDto } from '@repo/db/dto/auth/sign-up.dto';
 import { ResendEmailDto } from '@repo/db/dto/auth/resend-email.dto';
 import { VerifyEmailDto } from '@repo/db/dto/auth/verify-email.dto';
 import { ResetPasswordDto } from '@repo/db/dto/auth/reset-password.dto';
-import { ResetPasswordUserDto } from '@repo/db/dto/auth/reset-password-user.dto';
+import {
+  ResetPasswordUserDto,
+  ResetPasswordUserResponseDto,
+} from '@repo/db/dto/auth/reset-password-user.dto';
 import { ForgotPasswordDto } from '@repo/db/dto/auth/forgot-password.dto';
 import { VerifyPasswordDto } from '@repo/db/dto/auth/verify-password.dto';
 import { Public } from '../common/decorators/public.decorator';
@@ -118,13 +121,20 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('reset-password/user')
-  async getResetPasswordUser(@Body() resetPasswordUser: ResetPasswordUserDto) {
+  async getResetPasswordUser(
+    @Body() resetPasswordUser: ResetPasswordUserDto,
+  ): Promise<ResetPasswordUserResponseDto> {
     const user = await this.authService.getResetPasswordUser(
       resetPasswordUser.token,
     );
 
-    const { password, github_id, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      avatar_url: user.avatar_url,
+      is_github_user: user.is_github_user,
+    };
   }
 
   // GITHUB AUTHENTICATION FLOW

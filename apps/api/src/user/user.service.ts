@@ -1,6 +1,6 @@
 import { dylan } from '@dicebear/collection';
 import { createAvatar } from '@dicebear/core';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@repo/db/entities/user';
 import { Repository } from 'typeorm';
@@ -47,7 +47,9 @@ export class UserService {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
     if (!user) throw new Error('User not found');
     if (user.password === newPassword) {
-      throw new Error('New password must be different from the old one');
+      throw new BadRequestException(
+        'New password must be different from the old one',
+      );
     }
 
     user.password = newPassword;

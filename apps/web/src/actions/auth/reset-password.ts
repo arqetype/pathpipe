@@ -26,6 +26,8 @@ export default async function resetPasswordAction(
 
     const parsed = await response.json();
 
+    console.log(parsed);
+
     if (!response.ok) {
       return {
         success: false,

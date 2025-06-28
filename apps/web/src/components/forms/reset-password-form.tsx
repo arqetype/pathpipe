@@ -1,6 +1,5 @@
 'use client';
 
-import { User } from '@repo/db/entities/user';
 import {
   Card,
   CardContent,
@@ -30,10 +29,11 @@ import { Alert, AlertDescription, AlertTitle } from '@repo/ui/components/alert';
 import { CheckCircleIcon } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@repo/ui/lib/utils';
+import { ResetPasswordUserResponseDto } from '@repo/db/dto/auth/reset-password-user.dto';
 
 type ResetPasswordPageProps = {
   token: UUID;
-  user: Omit<User, 'password'>;
+  user: ResetPasswordUserResponseDto;
 };
 
 export default function ResetPasswordForm({
@@ -64,7 +64,7 @@ export default function ResetPasswordForm({
         setSuccess(response.message);
         form.reset();
       } else {
-        form.setError('confirmPassword', {
+        form.setError('newPassword', {
           type: 'manual',
           message: response.message,
         });
