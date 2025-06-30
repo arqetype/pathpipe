@@ -30,7 +30,7 @@
     "@repo/prettier-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4.0.8",
-    "@turbo/gen": "^2.4.2",
+    "@turbo/gen": "^2.5.4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
