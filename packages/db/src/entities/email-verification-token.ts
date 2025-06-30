@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './user';
 
 @Entity()
@@ -15,6 +22,10 @@ export class EmailVerificationToken {
   @Column({ default: false })
   used: boolean;
 
-  @ManyToOne(() => User)
+  @OneToOne(() => User)
+  @JoinColumn()
   user: User;
+
+  @UpdateDateColumn()
+  lastEmailSent: Date;
 }

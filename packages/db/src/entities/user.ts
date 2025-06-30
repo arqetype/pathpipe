@@ -4,11 +4,12 @@ import {
   Column,
   CreateDateColumn,
   OneToMany,
+  BeforeInsert,
 } from 'typeorm';
-import { Account } from './account';
 import { Meal } from './meal';
 import { Goal } from './goal';
 import { AIRequest } from './ai-request';
+import { createHash } from 'node:crypto';
 
 @Entity()
 export class User {
@@ -19,19 +20,28 @@ export class User {
   email: string;
 
   @Column()
+  password: string;
+
+  @Column({ nullable: true })
   name: string;
 
   @Column({ nullable: true })
   avatar_url: string;
 
+  @Column({ nullable: true })
+  github_id: string;
+
+  @Column({ default: false })
+  is_github_user: boolean;
+
   @Column({ default: false })
   email_verified: boolean;
 
+  @Column({ default: true })
+  need_otp: boolean;
+
   @CreateDateColumn()
   created_at: Date;
-
-  @OneToMany(() => Account, (account) => account.user)
-  accounts: Account[];
 
   @OneToMany(() => Meal, (meal) => meal.user)
   meals: Meal[];
@@ -41,4 +51,11 @@ export class User {
 
   @OneToMany(() => AIRequest, (aiRequest) => aiRequest.user)
   aiRequests: AIRequest[];
+
+  @BeforeInsert()
+  hashPassword() {
+    if (this.password) {
+      this.password = createHash('sha256').update(this.password).digest('hex');
+    }
+  }
 }

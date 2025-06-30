@@ -4,13 +4,16 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@repo/ui/*": ["../../packages/ui/src/*"]
+      "@repo/ui/*": ["../../packages/ui/src/*"],
+      "@repo/db/*": ["../../packages/db/src/*"]
     },
     "plugins": [
       {
         "name": "next"
       }
-    ]
+    ],
+    "strictPropertyInitialization": false,
+    "experimentalDecorators": true
   },
   "include": [
     "**/*.ts",
