@@ -58,6 +58,17 @@ export class UserService {
   }
 
   /**
+   * Checks if a user is a GitHub user based on their email.
+   *
+   * @param email - The email address to check
+   * @returns True if the user is a GitHub user, false otherwise
+   */
+  async isGithubUser(email: string): Promise<boolean> {
+    const user = await this.usersRepository.findOne({ where: { email } });
+    return user ? user.is_github_user : false;
+  }
+
+  /**
    * Finds a user by their email address.
    *
    * @param email - The email address to search for

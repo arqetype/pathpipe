@@ -51,7 +51,17 @@ export class AuthService {
    * @param response - The HTTP response object.
    * @returns An object indicating success.
    */
-  signIn(email: string, response: Response): { success: boolean } {
+  async signIn(
+    email: string,
+    response: Response,
+  ): Promise<{ success: boolean }> {
+    // Make sure the user exists as a regular user and not a GitHub user
+    if (await this.userService.isGithubUser(email)) {
+      throw new UnauthorizedException(
+        'GitHub users cannot sign in with email and password',
+      );
+    }
+
     const token = this.generateJwtToken(email);
 
     response.cookie('auth-token', token, {
@@ -311,12 +321,9 @@ export class AuthService {
       return user;
     }
 
-    // Create new user with GitHub data
-    // Note: For GitHub users, we generate a random password since they'll never use password login
-    const randomPassword = Math.random().toString(36).slice(-10);
     user = await this.userService.createGithubUser(
       githubUserData.email,
-      randomPassword,
+      '', // Password is not used for GitHub users, so we pass an empty string
       githubUserData.name || 'GitHub User',
       githubUserData.githubId,
       githubUserData.avatarUrl,
