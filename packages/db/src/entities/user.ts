@@ -4,12 +4,10 @@ import {
   Column,
   CreateDateColumn,
   OneToMany,
-  BeforeInsert,
 } from 'typeorm';
 import { Meal } from './meal';
 import { Goal } from './goal';
 import { AIRequest } from './ai-request';
-import { createHash } from 'node:crypto';
 
 @Entity()
 export class User {
@@ -51,11 +49,4 @@ export class User {
 
   @OneToMany(() => AIRequest, (aiRequest) => aiRequest.user)
   aiRequests: AIRequest[];
-
-  @BeforeInsert()
-  hashPassword() {
-    if (this.password) {
-      this.password = createHash('sha256').update(this.password).digest('hex');
-    }
-  }
 }

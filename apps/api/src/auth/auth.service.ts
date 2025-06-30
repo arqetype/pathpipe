@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { createHash } from 'node:crypto';
 import { MailerService } from '../mailer/mailer.service';
 import { VerificationService } from '../verification/verification.service';
 import { User } from '@repo/db/entities/user';
 import { Response } from 'express';
+import { PasswordUtils } from '../common/utils/password.utils';
 
 /**
  * Service responsible for handling all authentication-related operations.
@@ -30,10 +30,7 @@ export class AuthService {
    */
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.userService.findOneByEmail(email);
-    if (
-      user &&
-      user.password === createHash('sha256').update(password).digest('hex')
-    ) {
+    if (user && (await PasswordUtils.verifyPassword(password, user.password))) {
       return user;
     }
     return null;
@@ -54,7 +51,17 @@ export class AuthService {
    * @param response - The HTTP response object.
    * @returns An object indicating success.
    */
-  signIn(email: string, response: Response): { success: boolean } {
+  async signIn(
+    email: string,
+    response: Response,
+  ): Promise<{ success: boolean }> {
+    // Make sure the user exists as a regular user and not a GitHub user
+    if (await this.userService.isGithubUser(email)) {
+      throw new UnauthorizedException(
+        'GitHub users cannot sign in with email and password',
+      );
+    }
+
     const token = this.generateJwtToken(email);
 
     response.cookie('auth-token', token, {
@@ -263,7 +270,7 @@ export class AuthService {
 
     await this.userService.updatePassword(
       resetPasswordToken.user.id,
-      createHash('sha256').update(newPassword).digest('hex'),
+      await PasswordUtils.hashPassword(newPassword),
     );
 
     return { success: true };
@@ -314,12 +321,9 @@ export class AuthService {
       return user;
     }
 
-    // Create new user with GitHub data
-    // Note: For GitHub users, we generate a random password since they'll never use password login
-    const randomPassword = Math.random().toString(36).slice(-10);
     user = await this.userService.createGithubUser(
       githubUserData.email,
-      randomPassword,
+      '', // Password is not used for GitHub users, so we pass an empty string
       githubUserData.name || 'GitHub User',
       githubUserData.githubId,
       githubUserData.avatarUrl,
