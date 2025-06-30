@@ -16,7 +16,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.0.1",
+    "@hookform/resolvers": "^5.1.1",
     "@repo/db": "workspace:*",
     "@repo/ui": "workspace:*",
     "class-transformer": "^0.5.1",
@@ -28,7 +28,7 @@
     "posthog-node": "^5.1.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-hook-form": "^7.56.1"
+    "react-hook-form": "^7.59.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
