@@ -1,0 +1,392 @@
+version: 2
+
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    target-branch: 'dev'
+    reviewers:
+      - 'arqetype/engineering'
+    schedule:
+      interval: daily
+      timezone: 'Europe/Paris'
+      time: '09:00'
+    labels:
+      - 'dependabot'
+      - 'dependencies'
+      - 'root'
+    commit-message:
+      include: scope
+      prefix: 'chore'
+    open-pull-requests-limit: 15
+    groups:
+      monorepo-tools:
+        patterns:
+          - 'turbo'
+          - '@turbo/*'
+          - 'pnpm'
+      typescript:
+        patterns:
+          - 'typescript'
+          - '@types/*'
+      code-quality:
+        patterns:
+          - 'prettier'
+          - 'eslint'
+
+  - package-ecosystem: 'npm'
+    directory: '/apps/web'
+    target-branch: 'dev'
+    reviewers:
+      - 'arqetype/engineering'
+    schedule:
+      interval: daily
+      timezone: 'Europe/Paris'
+      time: '10:00'
+    labels:
+      - 'dependabot'
+      - 'dependencies'
+      - 'frontend'
+    commit-message:
+      include: scope
+      prefix: 'chore'
+    open-pull-requests-limit: 15
+    groups:
+      react:
+        patterns:
+          - 'react'
+          - 'react-dom'
+          - 'next'
+          - 'next-themes'
+          - '@types/react'
+          - '@types/react-dom'
+      posthog:
+        patterns:
+          - 'posthog-js'
+          - 'posthog-node'
+      forms:
+        patterns:
+          - 'react-hook-form'
+          - 'class-transformer'
+          - 'class-validator'
+          - '@hookform/resolvers'
+      ui:
+        patterns:
+          - 'lucide-react'
+      testing:
+        patterns:
+          - '@testing-library/dom'
+          - '@testing-library/jest-dom'
+          - '@testing-library/react'
+          - '@testing-library/user-event'
+          - 'jest'
+          - 'jest-environment-jsdom'
+          - '@types/jest'
+      node:
+        patterns:
+          - 'ts-node'
+          - '@types/node'
+          - 'typescript'
+      code-quality:
+        patterns:
+          - 'eslint'
+          - 'prettier'
+
+  - package-ecosystem: 'npm'
+    directory: '/apps/api'
+    target-branch: 'dev'
+    reviewers:
+      - 'arqetype/engineering'
+    schedule:
+      interval: daily
+      timezone: 'Europe/Paris'
+      time: '10:00'
+    labels:
+      - 'dependabot'
+      - 'dependencies'
+      - 'backend'
+    commit-message:
+      include: scope
+      prefix: 'chore'
+    open-pull-requests-limit: 15
+    groups:
+      nestjs:
+        patterns:
+          - '@nestjs/*'
+          - 'rxjs'
+          - 'reflect-metadata'
+      database:
+        patterns:
+          - '@nestjs/typeorm'
+          - 'typeorm'
+          - 'pg'
+      authentication:
+        patterns:
+          - 'passport*'
+          - '@nestjs/passport'
+          - '@nestjs/jwt'
+          - '@types/passport*'
+      http:
+        patterns:
+          - '@nestjs/axios'
+          - 'axios'
+          - 'cookie-parser'
+          - '@types/cookie-parser'
+      avatar:
+        patterns:
+          - '@dicebear/*'
+      testing:
+        patterns:
+          - 'jest'
+          - '@types/jest'
+          - 'ts-jest'
+          - 'supertest'
+          - '@types/supertest'
+          - '@nestjs/testing'
+      typescript:
+        patterns:
+          - 'typescript'
+          - 'ts-node'
+          - 'ts-loader'
+          - 'tsconfig-paths'
+          - '@types/node'
+          - '@types/express'
+          - 'typescript-eslint'
+      build-tools:
+        patterns:
+          - '@swc/*'
+          - 'source-map-support'
+      code-quality:
+        patterns:
+          - 'eslint*'
+          - 'prettier'
+          - 'eslint-config-prettier'
+          - 'eslint-plugin-prettier'
+          - 'globals'
+
+  - package-ecosystem: 'npm'
+    directory: '/packages/db'
+    target-branch: 'dev'
+    reviewers:
+      - 'arqetype/engineering'
+    schedule:
+      interval: daily
+      timezone: 'Europe/Paris'
+      time: '10:00'
+    labels:
+      - 'dependabot'
+      - 'dependencies'
+      - 'database'
+    commit-message:
+      include: scope
+      prefix: 'chore'
+    open-pull-requests-limit: 15
+    groups:
+      validation:
+        patterns:
+          - 'class-transformer'
+          - 'class-validator'
+      orm:
+        patterns:
+          - 'typeorm'
+      typescript:
+        patterns:
+          - 'typescript'
+          - '@types/node'
+
+  - package-ecosystem: 'npm'
+    directory: '/packages/ui'
+    target-branch: 'dev'
+    reviewers:
+      - 'arqetype/engineering'
+    schedule:
+      interval: daily
+      timezone: 'Europe/Paris'
+      time: '10:00'
+    labels:
+      - 'dependabot'
+      - 'dependencies'
+      - 'user-interface'
+    commit-message:
+      include: scope
+      prefix: 'chore'
+    open-pull-requests-limit: 15
+    groups:
+      react:
+        patterns:
+          - 'react'
+          - 'react-dom'
+          - '@types/react'
+          - '@types/react-dom'
+      radix-ui:
+        patterns:
+          - '@radix-ui/*'
+      forms:
+        patterns:
+          - 'react-hook-form'
+          - '@hookform/resolvers'
+          - 'zod'
+      styling:
+        patterns:
+          - 'tailwindcss'
+          - '@tailwindcss/*'
+          - 'tailwind-merge'
+          - 'tw-animate-css'
+          - 'class-variance-authority'
+          - 'clsx'
+      themes:
+        patterns:
+          - 'next-themes'
+      icons:
+        patterns:
+          - 'lucide-react'
+      ui-components:
+        patterns:
+          - 'input-otp'
+      build-tools:
+        patterns:
+          - '@turbo/gen'
+      typescript:
+        patterns:
+          - 'typescript'
+          - '@types/node'
+
+  - package-ecosystem: 'npm'
+    directory: '/packages/email'
+    target-branch: 'dev'
+    reviewers:
+      - 'arqetype/engineering'
+    schedule:
+      interval: daily
+      timezone: 'Europe/Paris'
+      time: '10:00'
+    labels:
+      - 'dependabot'
+      - 'dependencies'
+      - 'email'
+    commit-message:
+      include: scope
+      prefix: 'chore'
+    open-pull-requests-limit: 15
+    groups:
+      react-email:
+        patterns:
+          - '@react-email/*'
+      react:
+        patterns:
+          - 'react'
+          - 'react-dom'
+          - '@types/react'
+          - '@types/react-dom'
+      email-services:
+        patterns:
+          - 'nodemailer'
+          - '@types/nodemailer'
+      development:
+        patterns:
+          - 'concurrently'
+          - 'maildev'
+      typescript:
+        patterns:
+          - 'typescript'
+
+  - package-ecosystem: 'npm'
+    directory: '/packages/eslint-config'
+    target-branch: 'dev'
+    reviewers:
+      - 'arqetype/engineering'
+    schedule:
+      interval: daily
+      timezone: 'Europe/Paris'
+      time: '10:00'
+    labels:
+      - 'dependabot'
+      - 'dependencies'
+      - 'eslint'
+    commit-message:
+      include: scope
+      prefix: 'chore'
+    open-pull-requests-limit: 15
+    groups:
+      eslint-core:
+        patterns:
+          - 'eslint'
+          - '@eslint/js'
+          - 'globals'
+      eslint-plugins:
+        patterns:
+          - 'eslint-plugin-*'
+          - '@next/eslint-plugin-next'
+      eslint-configs:
+        patterns:
+          - 'eslint-config-*'
+      typescript:
+        patterns:
+          - 'typescript'
+          - 'typescript-eslint'
+
+  - package-ecosystem: 'npm'
+    directory: '/packages/jest-config'
+    target-branch: 'dev'
+    reviewers:
+      - 'arqetype/engineering'
+    schedule:
+      interval: daily
+      timezone: 'Europe/Paris'
+      time: '10:00'
+    labels:
+      - 'dependabot'
+      - 'dependencies'
+      - 'jest'
+    commit-message:
+      include: scope
+      prefix: 'chore'
+    open-pull-requests-limit: 15
+    groups:
+      jest:
+        patterns:
+          - 'jest'
+          - '@jest/*'
+
+  - package-ecosystem: 'npm'
+    directory: '/packages/prettier-config'
+    target-branch: 'dev'
+    reviewers:
+      - 'arqetype/engineering'
+    schedule:
+      interval: daily
+      timezone: 'Europe/Paris'
+      time: '10:00'
+    labels:
+      - 'dependabot'
+      - 'dependencies'
+      - 'prettier'
+    commit-message:
+      include: scope
+      prefix: 'chore'
+    open-pull-requests-limit: 15
+    groups:
+      prettier:
+        patterns:
+          - 'prettier'
+
+  - package-ecosystem: 'npm'
+    directory: '/packages/typescript-config'
+    target-branch: 'dev'
+    reviewers:
+      - 'arqetype/engineering'
+    schedule:
+      interval: daily
+      timezone: 'Europe/Paris'
+      time: '10:00'
+    labels:
+      - 'dependabot'
+      - 'dependencies'
+      - 'typescript'
+    commit-message:
+      include: scope
+      prefix: 'chore'
+    open-pull-requests-limit: 15
+    groups:
+      typescript:
+        patterns:
+          - 'typescript'
