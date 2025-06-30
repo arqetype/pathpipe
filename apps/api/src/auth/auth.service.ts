@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { createHash } from 'node:crypto';
 import { MailerService } from '../mailer/mailer.service';
 import { VerificationService } from '../verification/verification.service';
 import { User } from '@repo/db/entities/user';
 import { Response } from 'express';
+import { PasswordUtils } from '../common/utils/password.utils';
 
 /**
  * Service responsible for handling all authentication-related operations.
@@ -30,10 +30,7 @@ export class AuthService {
    */
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.userService.findOneByEmail(email);
-    if (
-      user &&
-      user.password === createHash('sha256').update(password).digest('hex')
-    ) {
+    if (user && (await PasswordUtils.verifyPassword(password, user.password))) {
       return user;
     }
     return null;
@@ -263,7 +260,7 @@ export class AuthService {
 
     await this.userService.updatePassword(
       resetPasswordToken.user.id,
-      createHash('sha256').update(newPassword).digest('hex'),
+      await PasswordUtils.hashPassword(newPassword),
     );
 
     return { success: true };

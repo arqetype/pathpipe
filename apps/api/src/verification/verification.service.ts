@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from '@repo/db/entities/user';
 import { createHash } from 'node:crypto';
 import { UserService } from '../user/user.service';
+import { PasswordUtils } from '../common/utils/password.utils';
 
 /**
  * Service responsible for managing verification processes in the application.
@@ -149,7 +150,7 @@ export class VerificationService {
 
     await this.userService.updatePassword(
       user.id,
-      createHash('sha256').update(newPassword).digest('hex'),
+      await PasswordUtils.hashPassword(newPassword),
     );
 
     await this.resetPasswordTokenRepository.remove(resetPasswordToken);
