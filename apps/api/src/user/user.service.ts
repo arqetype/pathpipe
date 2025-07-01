@@ -85,6 +85,17 @@ export class UserService {
     }
   }
 
+  async findOneById(id: string): Promise<User | null> {
+    try {
+      const user: User = await this.usersRepository.findOne({
+        where: { id },
+      });
+      return user;
+    } catch {
+      return null;
+    }
+  }
+
   /**
    * Marks a user's email as verified.
    *

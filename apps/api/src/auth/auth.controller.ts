@@ -75,7 +75,9 @@ export class AuthController {
       throw new UnauthorizedException('GitHub users cannot enable OTP');
     }
 
-    return await this.authService.sendOTP(user);
+    const userData = await this.userService.findOneById(user.id);
+
+    return await this.authService.sendOTP(userData);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -88,17 +90,19 @@ export class AuthController {
       throw new UnauthorizedException('GitHub users cannot enable OTP');
     }
 
+    const userData = await this.userService.findOneById(user.id);
+
     const { success } = await this.authService.verifyOTP(
-      user,
+      userData,
       enableOtpDto.otp,
     );
 
     if (success) {
-      if (user.need_otp) {
-        await this.userService.disableOtp(user);
+      if (userData.need_otp) {
+        await this.userService.disableOtp(userData);
         return { success: true, message: 'OTP disabled successfully' };
       } else {
-        await this.userService.enableOtp(user);
+        await this.userService.enableOtp(userData);
         return { success: true, message: 'OTP enabled successfully' };
       }
     } else {
