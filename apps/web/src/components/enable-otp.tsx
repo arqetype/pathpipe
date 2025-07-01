@@ -33,6 +33,7 @@ import {
   enableOtpAction,
   enableOtpActionConfirm,
 } from '@/actions/auth/enable-otp';
+import { toast } from 'sonner';
 
 type EnableOtpProps = {
   user: User;
@@ -42,12 +43,11 @@ export default function EnableOtp({ user }: EnableOtpProps) {
   const [switchChecked, setSwitchChecked] = useState(user.need_otp);
   const dialogRef = useRef<AlertDialogRef>(null);
 
-  const handleToggle = async (enabled: boolean) => {
-    if (enabled === user.need_otp) return;
-
+  const handleToggle = async () => {
     const { success } = await enableOtpAction();
 
     if (!success) {
+      toast.error('Failed to initiate OTP action. Please try again.');
       return;
     }
     dialogRef.current?.open();
