@@ -3,7 +3,7 @@ services:
   db:
     image: postgres:17
     restart: always
-    container_name: mealbud-ai-database
+    container_name: weaver-database
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
@@ -31,7 +31,7 @@ services:
 
   # API (Nest.js)
   api:
-    container_name: mealbud-ai-api
+    container_name: weaver-api
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -62,7 +62,7 @@ services:
 
   # Web (Next.js)
   web:
-    container_name: mealbud-ai-web
+    container_name: weaver-web
     build:
       context: .
       dockerfile: apps/web/Dockerfile

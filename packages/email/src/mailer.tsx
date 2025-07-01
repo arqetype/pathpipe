@@ -40,7 +40,7 @@ export class Mailer {
       await this.transporter.sendMail({
         to,
         from: this.from,
-        subject: 'Mealbud.ai : Verify your email address',
+        subject: 'Weaver : Verify your email address',
         html,
       });
     } catch {
@@ -59,7 +59,7 @@ export class Mailer {
       await this.transporter.sendMail({
         to,
         from: this.from,
-        subject: 'Mealbud.ai : Your OTP code',
+        subject: 'Weaver : Your OTP code',
         html,
       });
     } catch {
@@ -78,7 +78,7 @@ export class Mailer {
       await this.transporter.sendMail({
         to,
         from: this.from,
-        subject: 'Mealbud.ai : Reset your password',
+        subject: 'Weaver : Reset your password',
         html,
       });
     } catch {

@@ -3,10 +3,7 @@ import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from '@repo/db/entities/user';
-import { Meal } from '@repo/db/entities/meal';
 import { EmailVerificationToken } from '@repo/db/entities/email-verification-token';
-import { Goal } from '@repo/db/entities/goal';
-import { AIRequest } from '@repo/db/entities/ai-request';
 import { HealthModule } from './health/health.module';
 import { MailerModule } from './mailer/mailer.module';
 import { AuthModule } from './auth/auth.module';
@@ -34,10 +31,7 @@ import { ResetPasswordToken } from '@repo/db/entities/reset-password-token';
         database: configService.getOrThrow('NEST_DATABASE_NAME'),
         entities: [
           User,
-          Meal,
           EmailVerificationToken,
-          Goal,
-          AIRequest,
           OTPVerification,
           ResetPasswordToken,
         ],

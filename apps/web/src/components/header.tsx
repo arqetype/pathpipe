@@ -15,7 +15,7 @@ export default function Header(currentUser: Omit<User, 'hashPassword'> | null) {
 
   return (
     <header className="w-full h-16 flex justify-between items-center px-4 border-b border-black/60">
-      <p>Mealbud.AI</p>
+      <p>Weaver</p>
       <div>
         <p>{currentUser ? `Welcome, ${currentUser.email}` : 'Please log in'}</p>
         {currentUser && currentUser.avatar_url && (
