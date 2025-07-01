@@ -1,0 +1,11 @@
+# Global code ownership
+
+# This file defines code ownership for the entire repository
+
+# Learn more about CODEOWNERS: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+
+# Unless a later match takes precedence, @arqetype/engineering will be requested for review when someone opens a pull request
+
+- @arqetype/engineering
