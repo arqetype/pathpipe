@@ -1,5 +1,5 @@
 {
-  "name": "mealbud-ai",
+  "name": "weaver",
   "private": true,
   "scripts": {
     "build": "turbo run build",

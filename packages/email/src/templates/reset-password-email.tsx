@@ -31,7 +31,7 @@ export function ResetPasswordEmail({ token, user }: ResetPasswordEmailProps) {
             Hi {user.name}, forgot your password?
           </Text>
           <Text className="text-lg">
-            Someone recently requested a password change for your Mealbud
+            Someone recently requested a password change for your Weaver
             account. If this was you, you can set a new password here:
           </Text>
           <Button
