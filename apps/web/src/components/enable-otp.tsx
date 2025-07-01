@@ -28,7 +28,7 @@ import {
   InputOTPSlot,
 } from '@repo/ui/components/input-otp';
 import { useForm } from 'react-hook-form';
-import { EnableOtpDto } from '../../../../packages/db/dist/dto/auth/enable-otp.dto';
+import { EnableOtpDto } from '@repo/db/dto/auth/enable-otp.dto';
 import {
   enableOtpAction,
   enableOtpActionConfirm,
@@ -41,20 +41,44 @@ type EnableOtpProps = {
 
 export default function EnableOtp({ user }: EnableOtpProps) {
   const [switchChecked, setSwitchChecked] = useState(user.need_otp);
+  const [isInitiating, setIsInitiating] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
   const dialogRef = useRef<AlertDialogRef>(null);
 
   const handleToggle = async () => {
-    const { success } = await enableOtpAction();
+    if (isInitiating) return;
 
-    if (!success) {
-      toast.error('Failed to initiate OTP action. Please try again.');
-      return;
+    const newState = !switchChecked;
+    setSwitchChecked(newState);
+    setIsInitiating(true);
+
+    try {
+      const response = await enableOtpAction();
+
+      if (!response.success) {
+        toast.error(
+          response.error || 'Failed to initiate OTP action. Please try again.',
+        );
+        setSwitchChecked(user.need_otp);
+        return;
+      }
+
+      dialogRef.current?.open();
+    } catch (error) {
+      console.error('Error initiating OTP action:', error);
+      toast.error('An unexpected error occurred. Please try again.');
+      setSwitchChecked(user.need_otp);
+    } finally {
+      setIsInitiating(false);
     }
-    dialogRef.current?.open();
   };
 
   const handleClose = () => {
+    if (isConfirming) return;
+
     dialogRef.current?.close();
+    form.reset();
+    setSwitchChecked(user.need_otp);
   };
 
   const form = useForm<EnableOtpDto>({
@@ -64,16 +88,37 @@ export default function EnableOtp({ user }: EnableOtpProps) {
   });
 
   const onSubmit = async (data: EnableOtpDto) => {
-    const { success } = await enableOtpActionConfirm(data);
+    if (isConfirming) return; // Prevent multiple submissions
 
-    if (success) {
-      dialogRef.current?.close();
-      setSwitchChecked(!user.need_otp);
-    } else {
+    setIsConfirming(true);
+
+    try {
+      const { success } = await enableOtpActionConfirm(data);
+
+      if (success) {
+        const newOtpState = !user.need_otp;
+        setSwitchChecked(newOtpState);
+        dialogRef.current?.close();
+        form.reset();
+
+        // Show success message
+        toast.success(
+          `OTP has been ${newOtpState ? 'enabled' : 'disabled'} successfully.`,
+        );
+      } else {
+        form.setError('otp', {
+          type: 'manual',
+          message: 'Invalid verification code. Please try again.',
+        });
+      }
+    } catch (error) {
+      console.error('Error confirming OTP action:', error);
       form.setError('otp', {
         type: 'manual',
-        message: 'Invalid verification code. Please try again.',
+        message: 'An unexpected error occurred. Please try again.',
       });
+    } finally {
+      setIsConfirming(false);
     }
   };
 
@@ -88,7 +133,7 @@ export default function EnableOtp({ user }: EnableOtpProps) {
           </p>
         </div>
         <Switch
-          disabled={user.is_github_user}
+          disabled={user.is_github_user || isInitiating}
           onCheckedChange={handleToggle}
           checked={switchChecked}
         />
@@ -144,11 +189,19 @@ export default function EnableOtp({ user }: EnableOtpProps) {
             </div>
             <AlertDialogFooter>
               <div className="flex justify-between w-full">
-                <Button variant="secondary" onClick={handleClose}>
+                <Button
+                  variant="secondary"
+                  onClick={handleClose}
+                  disabled={isConfirming}
+                >
                   Cancel
                 </Button>
-                <Button type="submit">
-                  {user.need_otp ? 'Disable OTP' : 'Enable OTP'}
+                <Button type="submit" disabled={isConfirming}>
+                  {isConfirming
+                    ? 'Processing...'
+                    : user.need_otp
+                      ? 'Disable OTP'
+                      : 'Enable OTP'}
                 </Button>
               </div>
             </AlertDialogFooter>

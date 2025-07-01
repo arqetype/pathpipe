@@ -7,7 +7,10 @@ export async function enableOtpAction() {
   const response = await get('/auth/enable-otp');
 
   if (!response.ok) {
-    return { success: false };
+    const errorData = await response.json();
+    if ('message' in errorData)
+      return { success: false, error: errorData.message as string };
+    else return { success: false };
   }
 
   return { success: true };

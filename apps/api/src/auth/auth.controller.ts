@@ -93,8 +93,6 @@ export class AuthController {
       enableOtpDto.otp,
     );
 
-    console.log('OTP verification result:', success);
-
     if (success) {
       if (user.need_otp) {
         await this.userService.disableOtp(user);
