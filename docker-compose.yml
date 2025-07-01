@@ -13,16 +13,16 @@ services:
     networks:
       - app-network
     ports:
-      - "5432:5432"
+      - '5432:5432'
     healthcheck:
       test:
         [
-          "CMD",
-          "pg_isready",
-          "-U",
-          "${NEST_DATABASE_USER}",
-          "-d",
-          "${NEST_DATABASE_NAME}",
+          'CMD',
+          'pg_isready',
+          '-U',
+          '${NEST_DATABASE_USER}',
+          '-d',
+          '${NEST_DATABASE_NAME}',
         ]
       interval: 60s
       retries: 5
@@ -49,12 +49,12 @@ services:
       - db
     restart: always
     ports:
-      - "4000:4000"
+      - '4000:4000'
     networks:
       - app-network
     healthcheck:
       test:
-        ["CMD", "curl", "--silent", "--fail", "http://localhost:4000/health"]
+        ['CMD', 'curl', '--silent', '--fail', 'http://localhost:4000/health']
       interval: 60s
       retries: 5
       start_period: 5s
@@ -75,11 +75,11 @@ services:
       - api
     restart: always
     ports:
-      - "3000:3000"
+      - '3000:3000'
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:3000/"]
+      test: ['CMD', 'curl', '--silent', '--fail', 'http://localhost:3000/']
       interval: 60s
       retries: 5
       start_period: 5s
