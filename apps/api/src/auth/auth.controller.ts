@@ -8,6 +8,7 @@ import {
   Get,
   Res,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto } from '@repo/db/dto/auth/sign-in.dto';
@@ -15,6 +16,7 @@ import { SignUpDto } from '@repo/db/dto/auth/sign-up.dto';
 import { ResendEmailDto } from '@repo/db/dto/auth/resend-email.dto';
 import { VerifyEmailDto } from '@repo/db/dto/auth/verify-email.dto';
 import { ResetPasswordDto } from '@repo/db/dto/auth/reset-password.dto';
+import { EnableOtpDto } from '@repo/db/dto/auth/enable-otp.dto';
 import {
   ResetPasswordUserDto,
   ResetPasswordUserResponseDto,
@@ -63,6 +65,47 @@ export class AuthController {
   @Get('me')
   getMe(@CurrentUser() user: User) {
     return user;
+  }
+
+  // ENABLE OTP FLOW
+  @HttpCode(HttpStatus.OK)
+  @Get('enable-otp')
+  async enableOtpGet(@CurrentUser() user: User) {
+    if (user.is_github_user) {
+      throw new UnauthorizedException('GitHub users cannot enable OTP');
+    }
+
+    return await this.authService.sendOTP(user);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('enable-otp')
+  async enableOtpPost(
+    @CurrentUser() user: User,
+    @Body() enableOtpDto: EnableOtpDto,
+  ) {
+    if (user.is_github_user) {
+      throw new UnauthorizedException('GitHub users cannot enable OTP');
+    }
+
+    const { success } = await this.authService.verifyOTP(
+      user,
+      enableOtpDto.otp,
+    );
+
+    console.log('OTP verification result:', success);
+
+    if (success) {
+      if (user.need_otp) {
+        await this.userService.disableOtp(user);
+        return { success: true, message: 'OTP disabled successfully' };
+      } else {
+        await this.userService.enableOtp(user);
+        return { success: true, message: 'OTP enabled successfully' };
+      }
+    } else {
+      throw new UnauthorizedException('Invalid OTP');
+    }
   }
 
   // EMAIL VERIFICATION FLOW

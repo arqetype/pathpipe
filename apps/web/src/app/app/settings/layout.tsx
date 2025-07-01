@@ -32,7 +32,7 @@ export default async function SettingsLayout({
         </section>
         <section className="flex-1 h-full">
           <TabNavigation tabs={tabs} />
-          <div className="p-4">{children}</div>
+          <div className="p-4 flex flex-col gap-2">{children}</div>
         </section>
       </div>
     </div>

@@ -158,4 +158,26 @@ export class UserService {
 
     return avatar.toDataUri();
   }
+
+  /**
+   * Disables OTP for a user, marking them as not needing OTP for authentication.
+   *
+   * @param user - The user entity to update
+   * @returns The updated user entity with OTP disabled
+   */
+  async disableOtp(user: User): Promise<User> {
+    user.need_otp = false;
+    return this.usersRepository.save(user);
+  }
+
+  /**
+   * Enables OTP for a user, marking them as needing OTP for authentication.
+   *
+   * @param user - The user entity to update
+   * @returns The updated user entity with OTP enabled
+   */
+  async enableOtp(user: User): Promise<User> {
+    user.need_otp = true;
+    return this.usersRepository.save(user);
+  }
 }
