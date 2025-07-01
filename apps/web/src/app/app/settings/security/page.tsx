@@ -3,5 +3,10 @@ import { getCurrentUser } from '@/lib/auth-server';
 
 export default async function SecuritySettingsPage() {
   const user = await getCurrentUser();
-  return <EnableOtp user={user} />;
+  return (
+    <>
+      <h1 className="text-2xl font-semibold mb-4">Security Settings</h1>
+      <EnableOtp user={user} />
+    </>
+  );
 }

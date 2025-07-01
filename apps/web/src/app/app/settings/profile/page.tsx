@@ -1,3 +1,7 @@
 export default function ProfileSettingsPage() {
-  return <p>Profile Settings Page</p>;
+  return (
+    <>
+      <h1 className="text-2xl font-semibold mb-4">Security Settings</h1>
+    </>
+  );
 }

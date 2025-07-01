@@ -2,6 +2,7 @@
 
 import { get, post } from '@/lib/fetch';
 import { EnableOtpDto } from '@repo/db/dto/auth/enable-otp.dto';
+import { revalidatePath } from 'next/cache';
 
 export async function enableOtpAction() {
   const response = await get('/auth/enable-otp');
@@ -22,6 +23,8 @@ export async function enableOtpActionConfirm(data: EnableOtpDto) {
   if (!response.ok) {
     return { success: false };
   }
+
+  revalidatePath('/app/settings/security', 'layout');
 
   return { success: true };
 }
