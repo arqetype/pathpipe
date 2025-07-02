@@ -1,10 +1,10 @@
-# Mealbud.ai
+# Weaver
 
-AI-powered calorie tracking. Minimal, extensible, and developer-first.
+TODO: describe the product
 
 ## ⚡️ Overview
 
-Mealbud is an open-source application in active development that enables calorie estimation and tracking using artificial intelligence. Built for developers and makers, the project emphasizes architectural simplicity, code clarity, and extensibility. Mealbud serves as an experimentation platform for AI applications in nutrition.
+TODO: write a little text
 
 ## 🏗️ Architecture & Technology Stack
 
@@ -43,7 +43,7 @@ Mealbud is an open-source application in active development that enables calorie
 ## 📁 Project Structure
 
 ```
-mealbud-ai/
+weaver/
 ├── apps/                          # Application packages
 │   ├── api/                       # NestJS backend API
 │   │   ├── src/
@@ -64,7 +64,7 @@ mealbud-ai/
 ├── packages/                     # Shared packages
 │   ├── db/                      # Database entities and DTOs
 │   │   └── src/
-│   │       ├── entities/        # TypeORM entities (User, Meal, Goal, etc.)
+│   │       ├── entities/        # TypeORM entities (User,etc.)
 │   │       └── dto/             # Data transfer objects
 │   ├── email/                   # Email templates and mailer utilities
 │   │   ├── src/
@@ -122,13 +122,13 @@ All services start and stop automatically via `pnpm run dev`.
 - **Health Monitoring** - API health checks and status endpoints
 - **Type Safety** - End-to-end TypeScript for robust development
 
-### Planned Features
+<!-- ### Planned Features
 
 - **AI Meal Analysis** - Automatic calorie estimation from text or image input
 - **Personalized Recommendations** - AI-driven suggestions based on user history
 - **Nutrition Tracking** - Comprehensive macro and micronutrient tracking
 - **Goal Setting** - Custom calorie and nutrition goals
-- **Progress Analytics** - Data visualization and trend analysis
+- **Progress Analytics** - Data visualization and trend analysis -->
 
 ## 🚀 Getting Started
 
@@ -143,8 +143,8 @@ All services start and stop automatically via `pnpm run dev`.
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/arqetype/mealbud-ai.git
-   cd mealbud-ai
+   git clone https://github.com/arqetype/weaver.git
+   cd weaver
    ```
 
 2. **Install dependencies**
@@ -204,7 +204,7 @@ pnpm run test
 
 ## 📚 Philosophy & Goals
 
-Mealbud draws inspiration from tools that make technology enjoyable to use: clear structure, explicit conventions, and development joy. The goal is to build a solid foundation for exploring AI applications in nutrition while keeping the door open for experimentation and innovation.
+TODO: write a little text
 
 The project emphasizes:
 

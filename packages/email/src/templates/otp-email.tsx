@@ -11,7 +11,7 @@ type OTPEmailProps = {
 };
 
 export function OTPEmail({ otp, user }: OTPEmailProps) {
-  const previewMessage = 'Your one-time password (OTP) for Mealbud.ai';
+  const previewMessage = 'Your one-time password (OTP) for Weaver';
 
   return (
     <Layout previewMessage={previewMessage}>

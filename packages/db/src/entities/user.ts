@@ -3,11 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  OneToMany,
 } from 'typeorm';
-import { Meal } from './meal';
-import { Goal } from './goal';
-import { AIRequest } from './ai-request';
 
 @Entity()
 export class User {
@@ -40,13 +36,4 @@ export class User {
 
   @CreateDateColumn()
   created_at: Date;
-
-  @OneToMany(() => Meal, (meal) => meal.user)
-  meals: Meal[];
-
-  @OneToMany(() => Goal, (goal) => goal.user)
-  goals: Goal[];
-
-  @OneToMany(() => AIRequest, (aiRequest) => aiRequest.user)
-  aiRequests: AIRequest[];
 }

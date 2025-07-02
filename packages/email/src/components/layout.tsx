@@ -34,8 +34,8 @@ export function Layout({ children, previewMessage }: EmailLayoutProps) {
           <Container>
             <Section>
               <Img
-                src="https://mealbud.ai/logo.png"
-                alt="Mealbud.ai Logo"
+                src="https://weareweaver.org/logo.png"
+                alt="Weaver Logo"
                 width="130"
                 height="50"
                 className="bg-gray-100"
@@ -46,12 +46,12 @@ export function Layout({ children, previewMessage }: EmailLayoutProps) {
             <Section>
               <Text className="text-gray-500 text-sm">
                 <Link
-                  href="https://mealbud.ai"
+                  href="https://weareweaver.org"
                   className="underline text-primary"
                 >
-                  Mealbud.ai
+                  Weaver
                 </Link>
-                , your AI-powered meal planning assistant.
+                , your AI-powered planning assistant.
               </Text>
             </Section>
           </Container>

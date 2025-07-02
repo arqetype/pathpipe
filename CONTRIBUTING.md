@@ -5,8 +5,8 @@ Thanks for your interest in contributing! Here's how to get started.
 ## 🛠 Setup
 
 ```bash
-git clone https://github.com/mealbud-ai/mealbud-ai.git
-cd mealbud-ai
+git clone git@github.com:arqetype/weaver.git
+cd weaver
 pnpm install
 ```
 > We use pnpm workspaces to manage monorepo dependencies. If you don't have pnpm installed, install it.
@@ -24,7 +24,7 @@ Make sure:
 - Code is clean and typed
 - You've run the linter and formatter before creating a PR
 - What you've done is following the idea of the project (see the discussion github page)
-- YOU DID WRITE TESTS 
+- YOU DID WRITE TESTS
 - You don't break the build (npm run build)
 
 ## ✅ Checklist before PR

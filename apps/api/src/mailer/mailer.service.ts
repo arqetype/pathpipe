@@ -23,7 +23,7 @@ export class MailerService {
         user: process.env.NEST_EMAIL_USER,
         pass: process.env.NEST_EMAIL_PASS,
       },
-      from: '"MealBud AI" <no-reply@mealbud.ai>',
+      from: '"Weaver" <no-reply@weareweaver.org>',
     });
   }
 
