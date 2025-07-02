@@ -16,6 +16,7 @@ import {
 import {
   HexColorPicker,
   SkinColorPicker,
+  SKIN_TONES,
 } from '@repo/ui/components/color-picker';
 import { Button } from '@repo/ui/components/button';
 import { useDebounce } from '@repo/ui/hooks/use-debounce';
@@ -24,7 +25,8 @@ import { previewAvatarCustomizationAction } from '@/actions/user/preview-avatar'
 import { saveAvatarCustomizationAction } from '@/actions/user/save-avatar';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { Loader2Icon, SaveIcon } from 'lucide-react';
+import { DicesIcon, Loader2Icon, SaveIcon } from 'lucide-react';
+import Link from 'next/link';
 
 const moodsOptions = AvatarMoods.map((mood) => ({
   label: mood.name,
@@ -41,6 +43,11 @@ interface ColorFieldProps {
   label: string;
   control: Control<AvatarCustomizationDto>;
 }
+
+const generateRandomColor = () => {
+  const randomColor = Math.floor(Math.random() * 0xffffff).toString(16);
+  return randomColor.padStart(6, '0');
+};
 
 const ColorField = ({ name, label, control }: ColorFieldProps) => (
   <FormField
@@ -65,11 +72,6 @@ export default function ProfilePictureEditor() {
   const form = useForm<AvatarCustomizationDto>({
     resolver: classValidatorResolver(AvatarCustomizationDto),
     defaultValues: {
-      mood: AvatarMoods[0].value,
-      hairStyle: AvatarHairStyles[0].value,
-      hairColor: '502800',
-      skinColor: 'D2B48C',
-      backgroundColor: '18181C',
       facialHair: false,
     },
   });
@@ -136,9 +138,33 @@ export default function ProfilePictureEditor() {
     return unsubscribe;
   }, [form]);
 
-  useEffect(() => {
+  const handleRandomValue = useCallback(() => {
+    form.setValue(
+      'mood',
+      AvatarMoods[Math.floor(Math.random() * AvatarMoods.length)]?.value ||
+        AvatarMoods[0].value,
+    );
+    form.setValue(
+      'hairStyle',
+      AvatarHairStyles[Math.floor(Math.random() * AvatarHairStyles.length)]
+        ?.value || AvatarHairStyles[0].value,
+    );
+    form.setValue('hairColor', generateRandomColor());
+    form.setValue(
+      'skinColor',
+      SKIN_TONES[Math.floor(Math.random() * SKIN_TONES.length)]?.replace(
+        '#',
+        '',
+      ) || '',
+    );
+    form.setValue('backgroundColor', generateRandomColor());
+
     handlePreview(form.getValues());
-  }, [handlePreview, form]);
+  }, [form, handlePreview]);
+
+  useEffect(() => {
+    handleRandomValue();
+  }, [handleRandomValue]);
 
   useEffect(() => {
     if (debouncedAndThrottledFormData)
@@ -148,15 +174,15 @@ export default function ProfilePictureEditor() {
   return (
     <div className="bg-muted w-full min-h-96 rounded-lg p-4">
       <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-        Edit your Weaver Avatar !
+        Create your Weaver Avatar !
       </h2>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1">
           <div className="flex gap-4 py-4">
             <div className="flex flex-col gap-2">
-              {avatarPreview && (
-                <div className="relative size-56 mx-auto rounded overflow-hidden border-2 border-muted-foreground/20 ">
+              <div className="relative size-56 mx-auto rounded overflow-hidden border-2 border-muted-foreground/20 ">
+                {avatarPreview && (
                   <Image
                     src={avatarPreview}
                     alt="Avatar Preview"
@@ -164,13 +190,13 @@ export default function ProfilePictureEditor() {
                     height={96}
                     className="absolute inset-0 object-cover w-full h-full"
                   />
-                  {formData !== debouncedAndThrottledFormData && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-background/70 text-white text-sm">
-                      <Loader2Icon className="animate-spin text-primary" />
-                    </div>
-                  )}
-                </div>
-              )}
+                )}
+                {formData !== debouncedAndThrottledFormData && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/70 text-white text-sm">
+                    <Loader2Icon className="animate-spin text-primary" />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex-1 space-y-4">
@@ -236,10 +262,52 @@ export default function ProfilePictureEditor() {
               control={form.control}
             />
           </div>
-          <Button type="submit" className="w-full mt-4">
-            <SaveIcon />
-            Update my profile avatar
-          </Button>
+          <div className="mt-4 p-3 bg-muted-foreground/5 rounded-md border">
+            <p className="text-xs text-muted-foreground text-center">
+              This avatar style is a remix of:{' '}
+              <Link
+                href="https://www.figma.com/community/file/1356575240759683500/dylan-the-avatar-generator"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-foreground transition-colors"
+              >
+                Dylan! The Avatar Generator
+              </Link>{' '}
+              by{' '}
+              <Link
+                href={'https://nataspvk.tilda.ws/'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-foreground transition-colors"
+              >
+                Natalia Spivak
+              </Link>
+              , licensed under{' '}
+              <Link
+                href="https://creativecommons.org/licenses/by/4.0/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-foreground transition-colors"
+              >
+                CC BY 4.0
+              </Link>
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-4"
+              size="icon"
+              onClick={handleRandomValue}
+            >
+              <DicesIcon />
+            </Button>
+            <Button type="submit" className="flex-1 mt-4">
+              <SaveIcon />
+              Update my profile avatar
+            </Button>
+          </div>
         </form>
       </Form>
     </div>

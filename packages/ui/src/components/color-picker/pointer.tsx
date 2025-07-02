@@ -23,6 +23,7 @@ export const Pointer = ({
 
   return (
     <div
+      suppressHydrationWarning
       className={cn(
         '-translate-y-1/2 -translate-x-1/2 z-5 absolute size-6 border-white border-2 rounded-full overflow-hidden',
         className,
@@ -30,6 +31,7 @@ export const Pointer = ({
       style={style}
     >
       <div
+        suppressHydrationWarning
         style={{ backgroundColor: color }}
         className="absolute inset-0 pointer-events-none"
       />

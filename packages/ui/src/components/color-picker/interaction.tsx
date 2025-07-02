@@ -173,6 +173,7 @@ const InteractiveBase = ({ onMove, onKey, ...rest }: Props) => {
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="slider"
+      suppressHydrationWarning
     />
   );
 };

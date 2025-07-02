@@ -102,6 +102,7 @@ export const SkinColorPicker = ({
               style={{ backgroundColor: swatchColor }}
               aria-label={`Skin tone ${index + 1}`}
               title={swatchColor}
+              suppressHydrationWarning
             />
           ))}
         </div>

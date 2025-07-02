@@ -57,6 +57,7 @@ const HorizontalSelect = React.forwardRef<
             'focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50',
             'data-[state=active]:shadow-sm hover:data-[state=inactive]:bg-background/50 hover:data-[state=inactive]:text-foreground/80',
           )}
+          suppressHydrationWarning
         >
           {option.label}
         </button>

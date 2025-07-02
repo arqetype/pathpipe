@@ -36,7 +36,11 @@ const SaturationBase = ({ hsva, onChange }: Props) => {
   };
 
   return (
-    <div style={containerStyle} className="grow rounded relative">
+    <div
+      style={containerStyle}
+      className="grow rounded relative"
+      suppressHydrationWarning
+    >
       <Interactive
         onMove={handleMove}
         onKey={handleKey}
