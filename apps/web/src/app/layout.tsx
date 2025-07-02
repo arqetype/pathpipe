@@ -8,6 +8,7 @@ import { CookieConsentProvider } from '@/components/providers/cookie-consent-pro
 import { Space_Grotesk } from 'next/font/google';
 
 import '@repo/ui/globals.css';
+import { Toaster } from '@repo/ui/components/sonner';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -33,6 +34,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             <>{children}</>
             <CookieBanner />
           </CookieConsentProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

@@ -208,7 +208,7 @@ export class VerificationService {
    * @param otp - The plaintext OTP (will be hashed for comparison)
    * @returns The user if the OTP is valid, otherwise null
    */
-  async verifyOTP(user: User, otp: string): Promise<User> {
+  async verifyOTP(user: User, otp: string): Promise<User | null> {
     const otpVerification = await this.otpVerificationRepository.findOne({
       where: {
         otp: createHash('sha256').update(otp).digest('hex'),

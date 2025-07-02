@@ -13,7 +13,7 @@ export const getCurrentUser = cache(async () => {
   }
 
   try {
-    const response = await get('/auth/me');
+    const response = await get('/user/me');
 
     if (!response.ok) {
       return redirect('/app/sign-in');

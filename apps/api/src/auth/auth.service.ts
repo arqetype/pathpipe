@@ -169,7 +169,11 @@ export class AuthService {
    * @throws {UnauthorizedException} If OTP is invalid or expired.
    */
   async verifyOTP(user: User, otp: string): Promise<{ success: boolean }> {
-    await this.verificationService.verifyOTP(user, otp);
+    const result = await this.verificationService.verifyOTP(user, otp);
+
+    if (!result) {
+      throw new UnauthorizedException('Invalid or expired OTP');
+    }
 
     return { success: true };
   }
