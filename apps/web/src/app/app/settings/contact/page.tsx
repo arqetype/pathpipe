@@ -1,8 +1,8 @@
 export default async function ContactSettingsPage() {
   return (
     <>
-      <h1 className="text-2xl font-semibold mb-4">
-        A problem ? We can help you!
+      <h1 className="scroll-m-20 text-left text-4xl font-extrabold tracking-tight text-balance mb-4">
+        A problem ? We are here to help !
       </h1>
     </>
   );

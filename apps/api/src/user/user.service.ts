@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@repo/db/entities/user';
 import { Repository } from 'typeorm';
 import { PasswordUtils } from '../common/utils/password.utils';
+import { AvatarHairStyle, AvatarMood } from '@repo/db/types/avatar';
 
 /**
  * Service responsible for managing user data in the application.
@@ -171,6 +172,47 @@ export class UserService {
   }
 
   /**
+   * Generates an avatar with specific settings.
+   *
+   * @param settings - The settings for the avatar, including mood, hair style, colors, and facial hair
+   * @param seed - A string used to generate a consistent avatar
+   * @returns A data URI representing the generated avatar image
+   */
+  generateAvatarWithSettings(
+    settings: {
+      mood: AvatarMood;
+      hairStyle?: AvatarHairStyle;
+      hairColor: string;
+      skinColor: string;
+      backgroundColor: string;
+      facialHair: boolean;
+    },
+    seed: string,
+    size: 64 | 96,
+  ) {
+    const avatar = createAvatar(dylan, {
+      seed: seed,
+      size,
+      randomizeIds: true,
+      backgroundColor: [settings.backgroundColor],
+      backgroundType: ['solid'],
+      facialHairProbability: settings.facialHair ? 100 : 0,
+      hairColor: [settings.hairColor],
+      hair: settings.hairStyle ? [settings.hairStyle] : [],
+      mood: [settings.mood],
+      skinColor: [settings.skinColor],
+    });
+
+    const avatarData = avatar.toDataUri();
+
+    if (['251610', '1F1008', '160B06'].includes(settings.skinColor)) {
+      return avatarData.replaceAll('black', '%23' + '8C7B6A');
+    }
+
+    return avatarData;
+  }
+
+  /**
    * Disables OTP for a user, marking them as not needing OTP for authentication.
    *
    * @param user - The user entity to update
@@ -189,6 +231,27 @@ export class UserService {
    */
   async enableOtp(user: User): Promise<User> {
     user.need_otp = true;
+    return this.usersRepository.save(user);
+  }
+
+  async updateUserAvatar(
+    user: User,
+    avatarCustomizationDto: {
+      mood: AvatarMood;
+      hairStyle?: AvatarHairStyle;
+      hairColor: string;
+      skinColor: string;
+      backgroundColor: string;
+      facialHair: boolean;
+    },
+  ): Promise<User> {
+    const image = this.generateAvatarWithSettings(
+      avatarCustomizationDto,
+      user.email,
+      64,
+    );
+    user.avatar_url = image;
+
     return this.usersRepository.save(user);
   }
 }

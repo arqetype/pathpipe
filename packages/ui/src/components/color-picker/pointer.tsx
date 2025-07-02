@@ -24,7 +24,7 @@ export const Pointer = ({
   return (
     <div
       className={cn(
-        '-translate-y-1/2 -translate-x-1/2 z-5 absolute size-4 border-white border-2 rounded-full overflow-hidden',
+        '-translate-y-1/2 -translate-x-1/2 z-5 absolute size-6 border-white border-2 rounded-full overflow-hidden',
         className,
       )}
       style={style}

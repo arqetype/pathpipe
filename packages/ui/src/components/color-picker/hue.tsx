@@ -32,7 +32,7 @@ const HueBase = ({ className, hue, onChange }: Props) => {
   };
 
   return (
-    <div className={cn('h-2 rounded-sm', className)} style={style}>
+    <div className={cn('h-3 rounded-sm', className)} style={style}>
       <Interactive
         onMove={handleMove}
         onKey={handleKey}
@@ -40,13 +40,13 @@ const HueBase = ({ className, hue, onChange }: Props) => {
         aria-valuenow={round(hue)}
         aria-valuemax="360"
         aria-valuemin="0"
-        className="relative"
+        className="relative h-full rounded-full"
       >
         <Pointer
           left={hue / 360}
-          top={0}
+          top={0.5}
           color={hsvaToHslString({ h: hue, s: 100, v: 100, a: 1 })}
-          className="-translate-x-1/2 -translate-y-1/4"
+          className="-translate-x-1/2 -translate-y-1/2"
         />
       </Interactive>
     </div>
