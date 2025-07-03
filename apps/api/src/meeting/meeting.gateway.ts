@@ -1,10 +1,11 @@
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { JoinMeetingDto } from '@repo/db/dto/meetings/join-meeting.dto';
 import { RoomService } from './room/room.service';
 import { TransportService } from './transport/transport.service';
@@ -13,15 +14,48 @@ import { ConnectTransportDto } from '@repo/db/dto/meetings/connect-transport.dto
 import { ProduceDto } from '@repo/db/dto/meetings/produce.dto';
 import { ConsumeDto } from '@repo/db/dto/meetings/consume.dto';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { UserService } from 'src/user/user.service';
 
 @WebSocketGateway()
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-export class MeetingGateway {
+export class MeetingGateway implements OnGatewayInit {
   constructor(
     private readonly roomService: RoomService,
     private readonly transportService: TransportService,
     private readonly producerConsumerService: ProducerConsumerService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly userService: UserService,
   ) {}
+
+  afterInit(server: Server) {
+    server.use((socket: Socket, next) => {
+      const token = socket.handshake.query.token as string;
+      if (!token) {
+        return next(new Error('No token provided'));
+      }
+
+      this.jwtService
+        .verifyAsync<{ email: string }>(token, {
+          secret: this.configService.getOrThrow('NEST_JWT_SECRET'),
+        })
+        .then((payload) => {
+          return this.userService.findOneByEmail(payload.email);
+        })
+        .then((user) => {
+          if (!user.email_verified) {
+            return next(new Error('Email not verified'));
+          }
+          socket.user = { ...user, password: '••••••••••' };
+          next();
+        })
+        .catch(() => {
+          next(new Error('Invalid token'));
+        });
+    });
+  }
 
   @SubscribeMessage('join-meeting')
   async handleJoinChannel(
