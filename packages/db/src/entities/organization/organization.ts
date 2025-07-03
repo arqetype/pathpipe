@@ -25,8 +25,6 @@ export class Organization {
 
   @OneToMany(() => OrganizationMember, (member) => member.organization, {
     nullable: false,
-    cascade: true,
-    eager: true,
   })
   members: OrganizationMember[];
 
