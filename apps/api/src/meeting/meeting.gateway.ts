@@ -16,7 +16,8 @@ import { ConsumeDto } from '@repo/db/dto/meetings/consume.dto';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
+import { SocketWithUser } from '../common/decorators/ws-current-user.decorator';
 
 @WebSocketGateway()
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
@@ -31,30 +32,55 @@ export class MeetingGateway implements OnGatewayInit {
   ) {}
 
   afterInit(server: Server) {
-    server.use((socket: Socket, next) => {
-      const token = socket.handshake.query.token as string;
-      if (!token) {
-        return next(new Error('No token provided'));
+    server.on('connection', (socket: SocketWithUser) => {
+      socket.use((packet, next) => {
+        const event = packet[0];
+
+        if (event === 'authenticate') return next();
+
+        if (!socket.data.user) {
+          socket.disconnect();
+        } else {
+          next();
+        }
+      });
+    });
+  }
+
+  @SubscribeMessage('authenticate')
+  async handleAuthentication(
+    @MessageBody() data: { token: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    try {
+      const payload = await this.jwtService.verifyAsync<{ email: string }>(
+        data.token,
+        {
+          secret: this.configService.get<string>('NEST_JWT_SECRET'),
+        },
+      );
+
+      const user = await this.userService.findOneByEmail(payload.email);
+
+      if (!user) {
+        client.emit('authentication-error', { error: 'Invalid token' });
+        return;
       }
 
-      this.jwtService
-        .verifyAsync<{ email: string }>(token, {
-          secret: this.configService.getOrThrow('NEST_JWT_SECRET'),
-        })
-        .then((payload) => {
-          return this.userService.findOneByEmail(payload.email);
-        })
-        .then((user) => {
-          if (!user.email_verified) {
-            return next(new Error('Email not verified'));
-          }
-          socket.user = { ...user, password: '••••••••••' };
-          next();
-        })
-        .catch(() => {
-          next(new Error('Invalid token'));
-        });
-    });
+      if (!user.email_verified) {
+        client.emit('authentication-error', { error: 'Email not verified' });
+        return;
+      }
+
+      client.data.user = { ...user, password: '••••••••••' };
+      client.emit('authenticated');
+    } catch {
+      client.emit('authentication-error', {
+        error: 'Invalid token',
+      });
+
+      client.disconnect();
+    }
   }
 
   @SubscribeMessage('join-meeting')
