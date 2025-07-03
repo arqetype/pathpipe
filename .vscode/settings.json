@@ -24,10 +24,11 @@
   "cSpell.words": [
     "addgroup",
     "adduser",
+    "errback",
     "healthcheck",
     "isready",
     "libc",
-    "weaver",
-    "nextjs"
+    "nextjs",
+    "weaver"
   ]
 }

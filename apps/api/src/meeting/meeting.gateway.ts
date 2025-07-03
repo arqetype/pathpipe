@@ -1,11 +1,11 @@
 import {
   ConnectedSocket,
   MessageBody,
-  OnGatewayInit,
+  OnGatewayConnection,
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 import { JoinMeetingDto } from '@repo/db/dto/meetings/join-meeting.dto';
 import { RoomService } from './room/room.service';
 import { TransportService } from './transport/transport.service';
@@ -17,11 +17,16 @@ import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
-import { SocketWithUser } from '../common/decorators/ws-current-user.decorator';
+import { SocketWithUser } from 'src/common/decorators/ws-current-user.decorator';
 
-@WebSocketGateway()
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-export class MeetingGateway implements OnGatewayInit {
+@WebSocketGateway({
+  cors: {
+    origin: 'http://localhost:3000',
+    credentials: true,
+  },
+})
+@UsePipes(new ValidationPipe({ transform: true, whitelist: false }))
+export class MeetingGateway implements OnGatewayConnection {
   constructor(
     private readonly roomService: RoomService,
     private readonly transportService: TransportService,
@@ -31,20 +36,36 @@ export class MeetingGateway implements OnGatewayInit {
     private readonly userService: UserService,
   ) {}
 
-  afterInit(server: Server) {
-    server.on('connection', (socket: SocketWithUser) => {
-      socket.use((packet, next) => {
-        const event = packet[0];
+  async handleConnection(client: SocketWithUser) {
+    try {
+      const cookieHeader = client.handshake.headers.cookie;
+      if (!cookieHeader) throw new Error('No cookies found in headers');
 
-        if (event === 'authenticate') return next();
+      const cookies = Object.fromEntries(
+        cookieHeader.split(';').map((cookieStr) => {
+          const [key, ...valueParts] = cookieStr.trim().split('=');
+          return [key, decodeURIComponent(valueParts.join('='))];
+        }),
+      );
 
-        if (!socket.data.user) {
-          socket.disconnect();
-        } else {
-          next();
-        }
-      });
-    });
+      const authToken = cookies['auth-token'];
+      if (!authToken) throw new Error('No auth token found in cookies');
+
+      const payload = await this.jwtService.verifyAsync<{ email: string }>(
+        authToken,
+        {
+          secret: this.configService.get<string>('NEST_JWT_SECRET'),
+        },
+      );
+
+      const user = await this.userService.findOneByEmail(payload.email);
+
+      if (!user) throw new Error('User not found');
+
+      client.data.user = user;
+    } catch {
+      client.disconnect();
+    }
   }
 
   @SubscribeMessage('authenticate')
@@ -185,11 +206,10 @@ export class MeetingGateway implements OnGatewayInit {
   async handleConnectTransport(
     @MessageBody() connectTransportDto: ConnectTransportDto,
   ) {
-    console.log('Connect transport request received:', connectTransportDto);
-
     const { roomId, peerId, dtlsParameters, transportId } = connectTransportDto;
     const room = this.roomService.getRoom(roomId);
     const peer = room?.peers.get(peerId);
+
     if (!peer) {
       return { error: 'Peer not found' };
     }
