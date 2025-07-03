@@ -1,6 +1,9 @@
-import * as mediasoup from 'mediasoup';
+import type {
+  RtpCodecCapability,
+  WebRtcTransportOptions,
+} from 'mediasoup/node/lib/types';
 
-export const mediaCodecs: mediasoup.types.RtpCodecCapability[] = [
+export const mediaCodecs: RtpCodecCapability[] = [
   {
     kind: 'audio',
     mimeType: 'audio/opus',
@@ -17,11 +20,11 @@ export const mediaCodecs: mediasoup.types.RtpCodecCapability[] = [
   },
 ];
 
-export const webRtcTransport_options: mediasoup.types.WebRtcTransportOptions = {
+export const webRtcTransport_options: WebRtcTransportOptions = {
   listenIps: [
     {
       ip: '127.0.0.1',
-      announcedIp: '127.0.0.1',
+      announcedIp: null,
     },
   ],
   enableUdp: true,

@@ -13,6 +13,7 @@ import {
   Transport,
   TransportOptions,
 } from 'mediasoup-client/types';
+import { VideoFromMediaStream } from './video-from-media-stream';
 
 type MeetingProps = {
   meeting: GetMeetingResponseDto['room'];
@@ -49,23 +50,19 @@ export default function Meeting(props: MeetingProps) {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteMediaRef = useRef<HTMLDivElement>(null);
 
-  // Core meeting state
   const [joined, setJoined] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
 
-  // Use refs for mediasoup objects to avoid re-renders and ensure consistency
   const deviceRef = useRef<Device | null>(null);
   const sendTransportRef = useRef<Transport<AppData> | null>(null);
   const recvTransportRef = useRef<Transport<AppData> | null>(null);
   const joinedRef = useRef<boolean>(false);
 
-  // Media producers and streams
   const [audioProducer, setAudioProducer] = useState<Producer | null>(null);
   const [videoProducer, setVideoProducer] = useState<Producer | null>(null);
   const [screenProducer, setScreenProducer] = useState<Producer | null>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
-  // Elements for remote media
   const [remoteVideosSrc, setRemoteVideosSrc] = useState<MediaStream[]>([]);
   const [remoteAudioSrc, setRemoteAudioSrc] = useState<MediaStream[]>([]);
 
@@ -193,6 +190,7 @@ export default function Meeting(props: MeetingProps) {
           }
 
           for (const producerInfo of existingProducers || []) {
+            console.log('Processing existing producer:', producerInfo);
             await consume(producerInfo);
             console.log('Consumer created for producer:', producerInfo);
           }
@@ -221,20 +219,14 @@ export default function Meeting(props: MeetingProps) {
     transportOptions: TransportOptions<AppData>,
   ) => {
     if (!socket) {
-      console.error('Socket not available for send transport creation');
       return null;
     }
 
-    console.log('Creating send transport with options:', transportOptions);
     const newSendTransport = device.createSendTransport(transportOptions);
 
     newSendTransport.on('connect', ({ dtlsParameters }, callback, errback) => {
-      console.log('Send transport connect event triggered');
-      console.log('DTLS Parameters received:', dtlsParameters);
-
       // Validation des dtlsParameters
       if (!dtlsParameters) {
-        console.error('DTLS Parameters are undefined');
         errback(new Error('DTLS Parameters are undefined'));
         return;
       }
@@ -243,7 +235,6 @@ export default function Meeting(props: MeetingProps) {
         !dtlsParameters.fingerprints ||
         !Array.isArray(dtlsParameters.fingerprints)
       ) {
-        console.error('DTLS Parameters missing fingerprints:', dtlsParameters);
         errback(new Error('DTLS Parameters missing fingerprints'));
         return;
       }
@@ -258,18 +249,14 @@ export default function Meeting(props: MeetingProps) {
             peerId: socket.id,
           },
           (response: SocketResponse) => {
-            console.log('Connect transport response:', response);
             if (response.error) {
-              console.error('Connect transport error:', response.error);
               errback(new Error(response.error));
             } else {
-              console.log('Send transport connected successfully');
               callback();
             }
           },
         );
       } catch (error: unknown) {
-        console.error('Send transport connect error:', error);
         errback(error instanceof Error ? error : new Error('Unknown error'));
       }
     });
@@ -277,7 +264,6 @@ export default function Meeting(props: MeetingProps) {
     newSendTransport.on(
       'produce',
       ({ kind, rtpParameters }, callback, errback) => {
-        console.log('Send transport produce event triggered for kind:', kind);
         try {
           socket.emit(
             'produce',
@@ -289,12 +275,10 @@ export default function Meeting(props: MeetingProps) {
               peerId: socket.id,
             },
             (producerId: string) => {
-              console.log('Received producer ID from server:', producerId);
               callback({ id: producerId });
             },
           );
         } catch (error) {
-          console.error('Send transport produce error:', error);
           errback(error instanceof Error ? error : new Error('Unknown error'));
         }
       },
@@ -309,13 +293,11 @@ export default function Meeting(props: MeetingProps) {
     transportOptions: TransportOptions<AppData>,
   ) => {
     if (!socket) {
-      console.error('Socket not available for recv transport creation');
       return null;
     }
 
     const newRecvTransport = device.createRecvTransport(transportOptions);
     newRecvTransport.on('connect', ({ dtlsParameters }, callback, errback) => {
-      console.log('Recv transport connect event triggered');
       try {
         socket.emit(
           'connect-transport',
@@ -326,18 +308,14 @@ export default function Meeting(props: MeetingProps) {
             peerId: socket.id,
           },
           (response: SocketResponse) => {
-            console.log('Recv transport connect response:', response);
             if (response.error) {
-              console.error('Recv transport connect error:', response.error);
               errback(new Error(response.error));
             } else {
-              console.log('Recv transport connected successfully');
               callback();
             }
           },
         );
       } catch (error: unknown) {
-        console.error('Recv transport connect error:', error);
         errback(error instanceof Error ? error : new Error('Unknown error'));
       }
     });
@@ -373,7 +351,6 @@ export default function Meeting(props: MeetingProps) {
 
       const videoTrack = stream.getVideoTracks()[0];
 
-      // 비디오 Producer 생성
       const newVideoProducer = await sendTransport.produce({
         track: videoTrack,
       });
@@ -404,7 +381,6 @@ export default function Meeting(props: MeetingProps) {
   const startScreenShare = async () => {
     const sendTransport = sendTransportRef.current;
     if (!sendTransport) {
-      console.error('Send transport not available');
       return;
     }
 
@@ -415,7 +391,6 @@ export default function Meeting(props: MeetingProps) {
       const screenTrack = stream.getVideoTracks()[0];
 
       if (!screenTrack) {
-        alert('Failed to get screen track. Please check your permissions.');
         return;
       }
 
@@ -458,6 +433,8 @@ export default function Meeting(props: MeetingProps) {
 
   const consume = async ({
     producerId,
+    peerId,
+    kind,
   }: {
     producerId: string;
     peerId: string;
@@ -487,14 +464,12 @@ export default function Meeting(props: MeetingProps) {
       },
       async (response: ConsumeResponse) => {
         if (response.error) {
-          console.error('Error consuming:', response.error);
           return;
         }
 
         const { consumerData } = response;
 
         if (!consumerData) {
-          console.error('No consumer data received');
           return;
         }
 
@@ -507,15 +482,21 @@ export default function Meeting(props: MeetingProps) {
 
         consumer.resume();
 
-        const remoteStream = new MediaStream();
-        remoteStream.addTrack(consumer.track);
+        const remoteStream = new MediaStream([consumer.track]);
 
         console.log(
-          `Consumer created for ${consumer.kind} with ID: ${consumer.id}`,
+          'Track ready:',
+          consumer.track.kind,
+          consumer.track.readyState,
+          consumer.track.label,
+          consumer.track.enabled,
         );
 
         if (consumer.kind === 'video') {
-          setRemoteVideosSrc((prev) => [...prev, remoteStream]);
+          setRemoteVideosSrc((prev) => {
+            console.log('Previous video streams:', prev.length);
+            return [...prev, remoteStream];
+          });
         } else if (consumer.kind === 'audio') {
           setRemoteAudioSrc((prev) => [...prev, remoteStream]);
         }
@@ -584,12 +565,10 @@ export default function Meeting(props: MeetingProps) {
     });
 
     newSocket.on('connect', () => {
-      console.log('Socket connected successfully');
       setSocket(newSocket);
     });
 
     newSocket.on('disconnect', () => {
-      console.log('Disconnected from the meeting server');
       setSocket(null);
       setJoined(false);
       joinedRef.current = false;
@@ -604,14 +583,11 @@ export default function Meeting(props: MeetingProps) {
     };
   }, []);
 
-  // Separate useEffect to handle joining when socket is ready
   useEffect(() => {
     if (socket && socket.connected && !joined && !joinedRef.current) {
-      console.log(
-        'Connected to the meeting server - attempting to join meeting',
-      );
       joinMeeting();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, joined]);
 
   return (
@@ -648,16 +624,7 @@ export default function Meeting(props: MeetingProps) {
         <h2>Remote Media</h2>
         <div id="remote-media" ref={remoteMediaRef}>
           {remoteVideosSrc.map((stream, index) => (
-            <video
-              key={index}
-              autoPlay
-              playsInline
-              ref={(el) => {
-                if (el) el.srcObject = stream;
-              }}
-              width="200"
-              style={{ margin: '5px' }}
-            />
+            <VideoFromMediaStream key={index} stream={stream} width="400" />
           ))}
           {remoteAudioSrc.map((stream, index) => (
             <audio

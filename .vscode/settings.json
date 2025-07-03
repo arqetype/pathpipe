@@ -28,6 +28,7 @@
     "healthcheck",
     "isready",
     "libc",
+    "mediasoup",
     "nextjs",
     "weaver"
   ]
