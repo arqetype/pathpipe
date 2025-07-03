@@ -533,6 +533,11 @@ export default function Meeting(props: MeetingProps) {
       }
 
       setJoined(false);
+      joinedRef.current = false;
+
+      // Clean up remote streams
+      setRemoteVideosSrc([]);
+      setRemoteAudioSrc([]);
 
       // Clean up local stream
       if (localStream) {
@@ -641,12 +646,28 @@ export default function Meeting(props: MeetingProps) {
       </div>
       <div>
         <h2>Remote Media</h2>
-        <div id="remote-media">
+        <div id="remote-media" ref={remoteMediaRef}>
           {remoteVideosSrc.map((stream, index) => (
-            <video key={index} autoPlay playsInline />
+            <video
+              key={index}
+              autoPlay
+              playsInline
+              ref={(el) => {
+                if (el) el.srcObject = stream;
+              }}
+              width="200"
+              style={{ margin: '5px' }}
+            />
           ))}
           {remoteAudioSrc.map((stream, index) => (
-            <audio key={index} autoPlay />
+            <audio
+              key={index}
+              autoPlay
+              controls
+              ref={(el) => {
+                if (el) el.srcObject = stream;
+              }}
+            />
           ))}
         </div>
       </div>
