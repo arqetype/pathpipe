@@ -71,7 +71,7 @@ export class MeetingGateway implements OnGatewayConnection {
   @SubscribeMessage('authenticate')
   async handleAuthentication(
     @MessageBody() data: { token: string },
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: SocketWithUser,
   ) {
     try {
       const payload = await this.jwtService.verifyAsync<{ email: string }>(

@@ -9,6 +9,7 @@ import {
   MediaKind,
   Producer,
   RtpCapabilities,
+  RtpParameters,
   Transport,
   TransportOptions,
 } from 'mediasoup-client/types';
@@ -22,43 +23,97 @@ interface SocketResponse {
   [key: string]: unknown;
 }
 
+interface ConsumeResponse {
+  error?: string;
+  consumerData?: {
+    id: string;
+    producerId: string;
+    kind: MediaKind;
+    rtpParameters: RtpParameters;
+  };
+}
+
+interface JoinMeetingResponse {
+  error?: string;
+  sendTransportOptions?: TransportOptions<AppData>;
+  recvTransportOptions?: TransportOptions<AppData>;
+  rtpCapabilities?: RtpCapabilities;
+  existingProducers?: Array<{
+    producerId: string;
+    peerId: string;
+    kind: MediaKind;
+  }>;
+}
+
 export default function Meeting(props: MeetingProps) {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteMediaRef = useRef<HTMLDivElement>(null);
+
+  // Core meeting state
   const [joined, setJoined] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [device, setDevice] = useState<Device | null>(null);
+
+  // Use refs for mediasoup objects to avoid re-renders and ensure consistency
   const deviceRef = useRef<Device | null>(null);
+  const sendTransportRef = useRef<Transport<AppData> | null>(null);
   const recvTransportRef = useRef<Transport<AppData> | null>(null);
-  const [sendTransport, setSendTransport] = useState<Transport<AppData> | null>(
-    null,
-  );
-  const [recvTransport, setRecvTransport] = useState<Transport<AppData> | null>(
-    null,
-  );
+  const joinedRef = useRef<boolean>(false);
+
+  // Media producers and streams
   const [audioProducer, setAudioProducer] = useState<Producer | null>(null);
   const [videoProducer, setVideoProducer] = useState<Producer | null>(null);
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [screenProducer, setScreenProducer] = useState<Producer | null>(null);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
-  const joinMeeting = (currentSocket: Socket) => {
-    if (!currentSocket) return;
+  // Elements for remote media
+  const [remoteVideosSrc, setRemoteVideosSrc] = useState<MediaStream[]>([]);
+  const [remoteAudioSrc, setRemoteAudioSrc] = useState<MediaStream[]>([]);
 
-    currentSocket.emit(
+  const joinMeeting = () => {
+    if (!socket || joined || joinedRef.current) {
+      console.log('JoinMeeting early return:', {
+        hasSocket: !!socket,
+        socketConnected: socket?.connected,
+        joined,
+        joinedRef: joinedRef.current,
+      });
+      return;
+    }
+
+    if (!socket.connected) {
+      console.log('Socket not connected yet, waiting...');
+      return;
+    }
+
+    console.log('Starting join meeting process...');
+    joinedRef.current = true;
+
+    // Add timeout to detect if server doesn't respond
+    const timeoutId = setTimeout(() => {
+      console.error(
+        'Join meeting timeout - server did not respond within 10 seconds',
+      );
+      joinedRef.current = false;
+    }, 10000);
+
+    socket.emit(
       'join-meeting',
       {
         meetingId: props.meeting.id,
-        peerId: currentSocket.id,
+        peerId: socket.id,
       },
-      async (response) => {
+      async (response: JoinMeetingResponse) => {
+        clearTimeout(timeoutId);
+        console.log('Received join-meeting response:', response);
+
         if (response.error) {
           console.error('Error joining meeting:', response.error);
+          joinedRef.current = false;
           return;
         }
 
         console.log('Joined meeting successfully:', response);
 
-        // TODO type the response correctly
         const {
           sendTransportOptions,
           recvTransportOptions,
@@ -66,70 +121,97 @@ export default function Meeting(props: MeetingProps) {
           existingProducers,
         } = response;
 
-        const newDevice = await createDevice(rtpCapabilities);
-        console.log('Device created:', newDevice);
-        const newSendTransport = createSendTransport(
-          newDevice,
-          sendTransportOptions,
-          currentSocket,
-        );
-        console.log('Send transport created:', newSendTransport);
-        const newRecvTransport = createRecvTransport(
-          newDevice,
-          recvTransportOptions,
-          currentSocket,
-        );
-        console.log('Recv transport created:', newRecvTransport);
-
-        const audioTrack = await getLocalAudioStreamAndTrack();
-
-        if (!audioTrack) {
-          alert(
-            'No audio track found. Please check your microphone permissions.',
+        if (
+          !sendTransportOptions ||
+          !recvTransportOptions ||
+          !rtpCapabilities
+        ) {
+          console.error(
+            'Missing required transport options or RTP capabilities',
           );
+          joinedRef.current = false;
           return;
         }
-
-        currentSocket.on('new-producer', handleNewProducer);
-
-        console.log('Audio track obtained:', audioTrack);
 
         try {
-          console.log('Attempting to create audio producer...');
-          console.log(
-            'Send transport state:',
-            newSendTransport.connectionState,
+          const newDevice = await createDevice(rtpCapabilities);
+          console.log('Device created:', newDevice);
+
+          const newSendTransport = createSendTransport(
+            newDevice,
+            sendTransportOptions,
           );
+          console.log('Send transport created:', newSendTransport);
 
-          const audioProducerResult = await newSendTransport.produce({
-            track: audioTrack,
-          });
+          const newRecvTransport = createRecvTransport(
+            newDevice,
+            recvTransportOptions,
+          );
+          console.log('Recv transport created:', newRecvTransport);
 
-          console.log('Audio producer created:', audioProducerResult);
-          setAudioProducer(audioProducerResult);
+          if (!newSendTransport) {
+            console.error('Failed to create send transport');
+            joinedRef.current = false;
+            return;
+          }
+
+          const audioTrack = await getLocalAudioStreamAndTrack();
+
+          if (!audioTrack) {
+            alert(
+              'No audio track found. Please check your microphone permissions.',
+            );
+            joinedRef.current = false;
+            return;
+          }
+
+          socket.on('new-producer', handleNewProducer);
+
+          console.log('Audio track obtained:', audioTrack);
+
+          try {
+            console.log('Attempting to create audio producer...');
+            console.log(
+              'Send transport state:',
+              newSendTransport.connectionState,
+            );
+
+            const audioProducerResult = await newSendTransport.produce({
+              track: audioTrack,
+            });
+
+            console.log('Audio producer created:', audioProducerResult);
+            setAudioProducer(audioProducerResult);
+          } catch (error) {
+            console.error('Error creating audio producer:', error);
+            alert(
+              'Failed to create audio producer: ' +
+                (error instanceof Error ? error.message : 'Unknown error'),
+            );
+            joinedRef.current = false;
+            return;
+          }
+
+          for (const producerInfo of existingProducers || []) {
+            await consume(producerInfo);
+            console.log('Consumer created for producer:', producerInfo);
+          }
+
+          console.log('Setting joined to true');
+          setJoined(true);
         } catch (error) {
-          console.error('Error creating audio producer:', error);
-          alert(
-            'Failed to create audio producer: ' +
-              (error instanceof Error ? error.message : 'Unknown error'),
-          );
-          return;
+          console.error('Error in join meeting process:', error);
+          joinedRef.current = false;
         }
-
-        for (const producerInfo of existingProducers) {
-          await consume(producerInfo, currentSocket);
-          console.log('Consumer created for producer:', producerInfo);
-        }
-
-        setJoined(true);
       },
     );
+
+    console.log('join-meeting event emitted, waiting for response...');
   };
 
   const createDevice = async (rtpCapabilities: RtpCapabilities) => {
     const newDevice = new mediasoupClient.Device();
     await newDevice.load({ routerRtpCapabilities: rtpCapabilities });
-    setDevice(newDevice);
     deviceRef.current = newDevice;
     return newDevice;
   };
@@ -137,16 +219,18 @@ export default function Meeting(props: MeetingProps) {
   const createSendTransport = (
     device: Device,
     transportOptions: TransportOptions<AppData>,
-    currentSocket: Socket,
   ) => {
+    if (!socket) {
+      console.error('Socket not available for send transport creation');
+      return null;
+    }
+
     console.log('Creating send transport with options:', transportOptions);
     const newSendTransport = device.createSendTransport(transportOptions);
 
     newSendTransport.on('connect', ({ dtlsParameters }, callback, errback) => {
       console.log('Send transport connect event triggered');
       console.log('DTLS Parameters received:', dtlsParameters);
-      console.log('DTLS Parameters type:', typeof dtlsParameters);
-      console.log('DTLS Parameters keys:', Object.keys(dtlsParameters || {}));
 
       // Validation des dtlsParameters
       if (!dtlsParameters) {
@@ -165,13 +249,13 @@ export default function Meeting(props: MeetingProps) {
       }
 
       try {
-        currentSocket.emit(
+        socket.emit(
           'connect-transport',
           {
             transportId: newSendTransport.id,
             dtlsParameters,
             roomId: props.meeting.id,
-            peerId: currentSocket.id,
+            peerId: socket.id,
           },
           (response: SocketResponse) => {
             console.log('Connect transport response:', response);
@@ -195,14 +279,14 @@ export default function Meeting(props: MeetingProps) {
       ({ kind, rtpParameters }, callback, errback) => {
         console.log('Send transport produce event triggered for kind:', kind);
         try {
-          currentSocket.emit(
+          socket.emit(
             'produce',
             {
               transportId: newSendTransport.id,
               kind,
               rtpParameters,
               roomId: props.meeting.id,
-              peerId: currentSocket.id,
+              peerId: socket.id,
             },
             (producerId: string) => {
               console.log('Received producer ID from server:', producerId);
@@ -215,26 +299,31 @@ export default function Meeting(props: MeetingProps) {
         }
       },
     );
-    setSendTransport(newSendTransport);
+
+    sendTransportRef.current = newSendTransport;
     return newSendTransport;
   };
 
   const createRecvTransport = (
     device: Device,
     transportOptions: TransportOptions<AppData>,
-    currentSocket: Socket,
   ) => {
+    if (!socket) {
+      console.error('Socket not available for recv transport creation');
+      return null;
+    }
+
     const newRecvTransport = device.createRecvTransport(transportOptions);
     newRecvTransport.on('connect', ({ dtlsParameters }, callback, errback) => {
       console.log('Recv transport connect event triggered');
       try {
-        currentSocket.emit(
+        socket.emit(
           'connect-transport',
           {
             transportId: newRecvTransport.id,
             dtlsParameters,
             roomId: props.meeting.id,
-            peerId: currentSocket.id,
+            peerId: socket.id,
           },
           (response: SocketResponse) => {
             console.log('Recv transport connect response:', response);
@@ -252,7 +341,7 @@ export default function Meeting(props: MeetingProps) {
         errback(error instanceof Error ? error : new Error('Unknown error'));
       }
     });
-    setRecvTransport(newRecvTransport);
+
     recvTransportRef.current = newRecvTransport;
     return newRecvTransport;
   };
@@ -266,22 +355,32 @@ export default function Meeting(props: MeetingProps) {
   };
 
   const startCamera = async () => {
-    if (!sendTransport) return;
-
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-    });
-    setLocalStream(stream);
-
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = stream;
+    const sendTransport = sendTransportRef.current;
+    if (!sendTransport) {
+      console.error('Send transport not available');
+      return;
     }
 
-    const videoTrack = stream.getVideoTracks()[0];
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+      });
+      setLocalStream(stream);
 
-    // 비디오 Producer 생성
-    const newVideoProducer = await sendTransport.produce({ track: videoTrack });
-    setVideoProducer(newVideoProducer);
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+
+      const videoTrack = stream.getVideoTracks()[0];
+
+      // 비디오 Producer 생성
+      const newVideoProducer = await sendTransport.produce({
+        track: videoTrack,
+      });
+      setVideoProducer(newVideoProducer);
+    } catch (error) {
+      console.error('Error starting camera:', error);
+    }
   };
 
   const stopCamera = () => {
@@ -303,26 +402,34 @@ export default function Meeting(props: MeetingProps) {
   };
 
   const startScreenShare = async () => {
-    if (!sendTransport) return;
-
-    const stream = await navigator.mediaDevices.getDisplayMedia({
-      video: true,
-    });
-    const screenTrack = stream.getVideoTracks()[0];
-
-    if (!screenTrack) {
-      alert('Failed to get screen track. Please check your permissions.');
+    const sendTransport = sendTransportRef.current;
+    if (!sendTransport) {
+      console.error('Send transport not available');
       return;
     }
 
-    const newScreenProducer = await sendTransport.produce({
-      track: screenTrack,
-    });
-    setScreenProducer(newScreenProducer);
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+      });
+      const screenTrack = stream.getVideoTracks()[0];
 
-    screenTrack.onended = () => {
-      stopScreenShare();
-    };
+      if (!screenTrack) {
+        alert('Failed to get screen track. Please check your permissions.');
+        return;
+      }
+
+      const newScreenProducer = await sendTransport.produce({
+        track: screenTrack,
+      });
+      setScreenProducer(newScreenProducer);
+
+      screenTrack.onended = () => {
+        stopScreenShare();
+      };
+    } catch (error) {
+      console.error('Error starting screen share:', error);
+    }
   };
 
   const stopScreenShare = () => {
@@ -346,23 +453,18 @@ export default function Meeting(props: MeetingProps) {
       return;
     }
 
-    await consume({ producerId, peerId, kind }, socket);
+    await consume({ producerId, peerId, kind });
   };
 
-  const consume = async (
-    {
-      producerId,
-      peerId,
-      kind,
-    }: {
-      producerId: string;
-      peerId: string;
-      kind: MediaKind;
-    },
-    currentSocket: Socket,
-  ) => {
-    if (!currentSocket) {
-      alert('Socket not initialized');
+  const consume = async ({
+    producerId,
+  }: {
+    producerId: string;
+    peerId: string;
+    kind: MediaKind;
+  }) => {
+    if (!socket) {
+      console.error('Socket not initialized in consume');
       return;
     }
 
@@ -374,23 +476,27 @@ export default function Meeting(props: MeetingProps) {
       return;
     }
 
-    currentSocket.emit(
+    socket.emit(
       'consume',
       {
         transportId: recvTransport.id,
         producerId,
         roomId: props.meeting.id,
-        peerId: currentSocket.id,
+        peerId: socket.id,
         rtpCapabilities: device.rtpCapabilities,
       },
-      async (response) => {
-        // TODO: type the response correctly
+      async (response: ConsumeResponse) => {
         if (response.error) {
           console.error('Error consuming:', response.error);
           return;
         }
 
         const { consumerData } = response;
+
+        if (!consumerData) {
+          console.error('No consumer data received');
+          return;
+        }
 
         const consumer = await recvTransport.consume({
           id: consumerData.id,
@@ -404,25 +510,14 @@ export default function Meeting(props: MeetingProps) {
         const remoteStream = new MediaStream();
         remoteStream.addTrack(consumer.track);
 
-        if (consumer.kind === 'video') {
-          const videoElement = document.createElement('video');
-          videoElement.srcObject = remoteStream;
-          videoElement.autoplay = true;
-          videoElement.playsInline = true;
-          videoElement.width = 200;
-          remoteMediaRef.current?.appendChild(videoElement);
-        } else if (consumer.kind === 'audio') {
-          const audioElement = document.createElement('audio');
-          audioElement.srcObject = remoteStream;
-          audioElement.autoplay = true;
-          audioElement.controls = true;
-          remoteMediaRef.current?.appendChild(audioElement);
+        console.log(
+          `Consumer created for ${consumer.kind} with ID: ${consumer.id}`,
+        );
 
-          try {
-            await audioElement.play();
-          } catch (err) {
-            console.error('Audio playback failed:', err);
-          }
+        if (consumer.kind === 'video') {
+          setRemoteVideosSrc((prev) => [...prev, remoteStream]);
+        } else if (consumer.kind === 'audio') {
+          setRemoteAudioSrc((prev) => [...prev, remoteStream]);
         }
       },
     );
@@ -431,28 +526,49 @@ export default function Meeting(props: MeetingProps) {
   const leaveMeeting = () => {
     if (!socket) return;
 
-    socket.emit('leave-room', (response) => {
-      // TODO: type the response correctly
+    socket.emit('leave-room', (response: SocketResponse) => {
       if (response && response.error) {
         console.error('Error leaving room:', response.error);
         return;
       }
+
       setJoined(false);
+
+      // Clean up local stream
       if (localStream) {
         localStream.getTracks().forEach((track) => track.stop());
         setLocalStream(null);
       }
-      if (sendTransport) {
-        sendTransport.close();
-        setSendTransport(null);
+
+      // Clean up transports
+      if (sendTransportRef.current) {
+        sendTransportRef.current.close();
+        sendTransportRef.current = null;
       }
-      if (recvTransport) {
-        recvTransport.close();
-        setRecvTransport(null);
+      if (recvTransportRef.current) {
+        recvTransportRef.current.close();
+        recvTransportRef.current = null;
       }
-      if (device) {
-        setDevice(null);
+
+      // Clean up device
+      if (deviceRef.current) {
+        deviceRef.current = null;
       }
+
+      // Clean up producers
+      if (audioProducer) {
+        audioProducer.close();
+        setAudioProducer(null);
+      }
+      if (videoProducer) {
+        videoProducer.close();
+        setVideoProducer(null);
+      }
+      if (screenProducer) {
+        screenProducer.close();
+        setScreenProducer(null);
+      }
+
       socket.off('new-producer', handleNewProducer);
     });
   };
@@ -461,23 +577,37 @@ export default function Meeting(props: MeetingProps) {
     const newSocket = io(process.env.NEXT_PUBLIC_API_URL, {
       withCredentials: true,
     });
-    setSocket(newSocket);
 
     newSocket.on('connect', () => {
-      console.log('Connected to the meeting server');
-      joinMeeting(newSocket);
+      console.log('Socket connected successfully');
+      setSocket(newSocket);
     });
 
     newSocket.on('disconnect', () => {
       console.log('Disconnected from the meeting server');
+      setSocket(null);
+      setJoined(false);
+      joinedRef.current = false;
+    });
+
+    newSocket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
     });
 
     return () => {
       newSocket.disconnect();
     };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Separate useEffect to handle joining when socket is ready
+  useEffect(() => {
+    if (socket && socket.connected && !joined && !joinedRef.current) {
+      console.log(
+        'Connected to the meeting server - attempting to join meeting',
+      );
+      joinMeeting();
+    }
+  }, [socket, joined]);
 
   return (
     <div>
@@ -511,7 +641,14 @@ export default function Meeting(props: MeetingProps) {
       </div>
       <div>
         <h2>Remote Media</h2>
-        <div id="remote-media"></div>
+        <div id="remote-media">
+          {remoteVideosSrc.map((stream, index) => (
+            <video key={index} autoPlay playsInline />
+          ))}
+          {remoteAudioSrc.map((stream, index) => (
+            <audio key={index} autoPlay />
+          ))}
+        </div>
       </div>
     </div>
   );
