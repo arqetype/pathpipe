@@ -13,6 +13,8 @@ import { JwtAuthGuard } from './auth/guards/jwt.auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { OTPVerification } from '@repo/db/entities/otp-verification';
 import { ResetPasswordToken } from '@repo/db/entities/reset-password-token';
+import { MeetingModule } from './meeting/meeting.module';
+import { MediasoupModule } from './meeting/mediasoup/mediasoup.module';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { ResetPasswordToken } from '@repo/db/entities/reset-password-token';
     AuthModule,
     JwtModule,
     VerificationModule,
+    MeetingModule,
+    MediasoupModule,
   ],
   providers: [
     {
