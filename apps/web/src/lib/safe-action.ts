@@ -84,7 +84,7 @@ class ActionClientBuilder<TInput = unknown, TOutput = unknown> {
 
   action(
     handler: (context: ActionContext<TInput>) => Promise<TOutput>,
-  ): (input: unknown) => Promise<ActionResult<TOutput>> {
+  ): (input?: unknown) => Promise<ActionResult<TOutput>> {
     return async (input: unknown): Promise<ActionResult<TOutput>> => {
       let user: User | undefined;
 

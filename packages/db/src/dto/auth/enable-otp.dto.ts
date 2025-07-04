@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, Matches, Length } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  Matches,
+  Length,
+  IsIn,
+  IsBoolean,
+} from 'class-validator';
 
 export class EnableOtpDto {
   @IsString()
@@ -9,10 +16,13 @@ export class EnableOtpDto {
 }
 
 export class EnableOtpResponseDto {
-  success: boolean;
+  @IsString()
+  @IsNotEmpty()
+  @IsIn(['OTP disabled successfully', 'OTP enabled successfully'])
   message: 'OTP disabled successfully' | 'OTP enabled successfully';
 }
 
 export class EnableOtpGetResponseDto {
+  @IsBoolean()
   success: boolean;
 }

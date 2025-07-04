@@ -112,10 +112,10 @@ export class AuthController {
     if (success) {
       if (userData.need_otp) {
         await this.userService.disableOtp(userData);
-        return { success: true, message: 'OTP disabled successfully' };
+        return { message: 'OTP disabled successfully' };
       } else {
         await this.userService.enableOtp(userData);
-        return { success: true, message: 'OTP enabled successfully' };
+        return { message: 'OTP enabled successfully' };
       }
     } else {
       throw new UnauthorizedException('Invalid OTP');

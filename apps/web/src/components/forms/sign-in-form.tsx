@@ -28,7 +28,7 @@ import resendEmailAction from '@/actions/auth/resend-email';
 import { useState } from 'react';
 import { AuthVerificationAlert } from '@repo/ui/components/auth-verification-alert';
 import { AuthVerificationError } from '@repo/ui/components/auth-verification-error';
-import forgotPasswordEmail from '@/actions/auth/forgot-password-email';
+import { forgotPasswordEmailAction } from '@/actions/auth/forgot-password-email';
 
 type StatusState = {
   success?: boolean;
@@ -158,7 +158,7 @@ export function SignInForm() {
 
     startTransition(async () => {
       try {
-        const response = await forgotPasswordEmail(email);
+        const response = await forgotPasswordEmailAction({ email });
         setForgotPasswordStatus({
           success: response.success,
           message: response.success

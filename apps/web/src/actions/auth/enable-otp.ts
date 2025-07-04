@@ -1,28 +1,57 @@
 'use server';
 
 import { get, post } from '@/lib/fetch';
-import { EnableOtpDto } from '@repo/db/dto/auth/enable-otp.dto';
+import { action } from '@/lib/safe-action';
+import {
+  EnableOtpDto,
+  EnableOtpResponseDto,
+} from '@repo/db/dto/auth/enable-otp.dto';
 import { revalidatePath } from 'next/cache';
 
-export async function enableOtpAction() {
+// export async function enableOtpAction() {
+//   const { ok, data } = await get('/auth/enable-otp');
+
+//   if (!ok) {
+//     const errorData = data;
+//     if ('message' in errorData)
+//       return { success: false, error: errorData.message };
+//     else return { success: false };
+//   }
+
+//   return { success: true };
+// }
+
+export const enableOtpAction = action.needsAuth().action(async () => {
   const { ok, data } = await get('/auth/enable-otp');
 
-  if (!ok) {
-    const errorData = data;
-    if ('message' in errorData)
-      return { success: false, error: errorData.message };
-    else return { success: false };
-  }
+  if (!ok)
+    throw new Error(
+      Array.isArray(data.message) && data.message.length > 0
+        ? (data.message[0] as string)
+        : (data.message as string),
+    );
 
-  return { success: true };
-}
+  return { message: 'OTP action initiated successfully' };
+});
 
-export async function enableOtpActionConfirm(enableOtpDto: EnableOtpDto) {
-  const { ok } = await post('/auth/enable-otp', enableOtpDto);
+export const enableOtpActionConfirm = action
+  .needsAuth()
+  .inputDto(EnableOtpDto)
+  .outputDto(EnableOtpResponseDto)
+  .action(async ({ parsedInput }) => {
+    const { ok, data } = await post<EnableOtpResponseDto>(
+      '/auth/enable-otp',
+      parsedInput,
+    );
 
-  if (!ok) return { success: false };
+    if (!ok)
+      throw new Error(
+        Array.isArray(data.message) && data.message.length > 0
+          ? (data.message[0] as string)
+          : (data.message as string),
+      );
 
-  revalidatePath('/app/settings/security', 'layout');
+    revalidatePath('/app/settings/security', 'layout');
 
-  return { success: true };
-}
+    return { message: data.message };
+  });

@@ -73,6 +73,41 @@ const fetchWithAuth = cache(
   },
 );
 
+const fetchPublic = cache(
+  async <T = object>(
+    path: string,
+    options: RequestInit = {},
+  ): Promise<FetchResult<T>> => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string>),
+    };
+
+    const response: ResponseOk | ResponseError = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}${path}`,
+      {
+        ...options,
+        headers,
+        credentials: 'include',
+      },
+    );
+
+    const json = await response.json();
+
+    return response.ok
+      ? {
+          ok: true,
+          response: response as ResponseOk,
+          data: json as T,
+        }
+      : {
+          ok: false,
+          response: response as ResponseError,
+          data: json as BackendErrorDto,
+        };
+  },
+);
+
 export const get = cache(
   async <T = object>(path: string): Promise<FetchResult<T>> => {
     return fetchWithAuth<T>(path);
@@ -109,6 +144,48 @@ export const del = cache(
 export const patch = cache(
   async <T = object>(path: string, body: unknown): Promise<FetchResult<T>> => {
     return fetchWithAuth<T>(path, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  },
+);
+
+export const publicGet = cache(
+  async <T = object>(path: string): Promise<FetchResult<T>> => {
+    return fetchPublic<T>(path);
+  },
+);
+
+export const publicPost = cache(
+  async <T = object>(path: string, body: unknown): Promise<FetchResult<T>> => {
+    return fetchPublic<T>(path, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+);
+
+export const publicPut = cache(
+  async <T = object>(path: string, body: unknown): Promise<FetchResult<T>> => {
+    return fetchPublic<T>(path, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  },
+);
+
+export const publicDel = cache(
+  async <T = object>(path: string, body: unknown): Promise<FetchResult<T>> => {
+    return fetchPublic<T>(path, {
+      method: 'DELETE',
+      body: JSON.stringify(body),
+    });
+  },
+);
+
+export const publicPatch = cache(
+  async <T = object>(path: string, body: unknown): Promise<FetchResult<T>> => {
+    return fetchPublic<T>(path, {
       method: 'PATCH',
       body: JSON.stringify(body),
     });
