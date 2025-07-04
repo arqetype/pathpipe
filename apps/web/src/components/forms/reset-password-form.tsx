@@ -24,7 +24,7 @@ import {
 import { Input } from '@repo/ui/components/input';
 import { Button, buttonVariants } from '@repo/ui/components/button';
 import { useState, useTransition } from 'react';
-import resetPasswordAction from '@/actions/auth/reset-password';
+import { resetPasswordAction } from '@/actions/auth/reset-password';
 import { Alert, AlertDescription, AlertTitle } from '@repo/ui/components/alert';
 import { CheckCircleIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -54,14 +54,14 @@ export default function ResetPasswordForm({
 
   const handleSubmit = (data: ResetPasswordDto) => {
     startTransition(async () => {
-      const response = await resetPasswordAction(
-        data.newPassword,
-        data.confirmPassword,
-        data.token,
-      );
+      const response = await resetPasswordAction({
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+        token: data.token,
+      });
 
       if (response.success) {
-        setSuccess(response.message);
+        setSuccess(response.data.message);
         form.reset();
       } else {
         form.setError('newPassword', {
