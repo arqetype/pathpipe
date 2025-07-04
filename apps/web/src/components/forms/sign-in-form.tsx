@@ -24,7 +24,7 @@ import { Button } from '@repo/ui/components/button';
 import { Loader2Icon, ShieldCheckIcon, MailIcon } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import signInAction from '@/actions/auth/sign-in';
-import resendEmailAction from '@/actions/auth/resend-email';
+import { resendEmailAction } from '@/actions/auth/resend-email';
 import { useState } from 'react';
 import { AuthVerificationAlert } from '@repo/ui/components/auth-verification-alert';
 import { AuthVerificationError } from '@repo/ui/components/auth-verification-error';
@@ -127,7 +127,8 @@ export function SignInForm() {
     setResendStatus({});
     startTransition(async () => {
       try {
-        const response = await resendEmailAction(form.getValues('email'));
+        const email = form.getValues('email');
+        const response = await resendEmailAction({ email });
         setResendStatus({
           success: response.success,
           message: response.success
