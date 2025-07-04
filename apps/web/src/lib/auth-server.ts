@@ -26,3 +26,26 @@ export const getCurrentUser = cache(async () => {
     return redirect('/app/sign-in');
   }
 });
+
+export const getCurrentUserOrNull = cache(async () => {
+  const cookieStore = await cookies();
+  const authCookie = cookieStore.get('auth-token');
+
+  if (!authCookie) {
+    return null;
+  }
+
+  try {
+    const response = await get('/user/me');
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const user: User = await response.json();
+
+    return user;
+  } catch {
+    return null;
+  }
+});
