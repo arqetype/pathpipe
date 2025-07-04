@@ -14,6 +14,7 @@ import {
   TransportOptions,
 } from 'mediasoup-client/types';
 import { VideoFromMediaStream } from './video-from-media-stream';
+import { useRouter } from 'next/navigation';
 
 type MeetingProps = {
   meeting: GetMeetingResponseDto['room'];
@@ -65,33 +66,18 @@ export default function Meeting(props: MeetingProps) {
 
   const [remoteVideosSrc, setRemoteVideosSrc] = useState<MediaStream[]>([]);
   const [remoteAudioSrc, setRemoteAudioSrc] = useState<MediaStream[]>([]);
+  const router = useRouter();
 
   const joinMeeting = () => {
     if (!socket || joined || joinedRef.current) {
-      console.log('JoinMeeting early return:', {
-        hasSocket: !!socket,
-        socketConnected: socket?.connected,
-        joined,
-        joinedRef: joinedRef.current,
-      });
       return;
     }
 
     if (!socket.connected) {
-      console.log('Socket not connected yet, waiting...');
       return;
     }
 
-    console.log('Starting join meeting process...');
     joinedRef.current = true;
-
-    // Add timeout to detect if server doesn't respond
-    const timeoutId = setTimeout(() => {
-      console.error(
-        'Join meeting timeout - server did not respond within 10 seconds',
-      );
-      joinedRef.current = false;
-    }, 10000);
 
     socket.emit(
       'join-meeting',
@@ -100,16 +86,10 @@ export default function Meeting(props: MeetingProps) {
         peerId: socket.id,
       },
       async (response: JoinMeetingResponse) => {
-        clearTimeout(timeoutId);
-        console.log('Received join-meeting response:', response);
-
         if (response.error) {
-          console.error('Error joining meeting:', response.error);
           joinedRef.current = false;
           return;
         }
-
-        console.log('Joined meeting successfully:', response);
 
         const {
           sendTransportOptions,
@@ -123,28 +103,19 @@ export default function Meeting(props: MeetingProps) {
           !recvTransportOptions ||
           !rtpCapabilities
         ) {
-          console.error(
-            'Missing required transport options or RTP capabilities',
-          );
           joinedRef.current = false;
           return;
         }
 
         try {
           const newDevice = await createDevice(rtpCapabilities);
-          console.log('Device created:', newDevice);
 
           const newSendTransport = createSendTransport(
             newDevice,
             sendTransportOptions,
           );
-          console.log('Send transport created:', newSendTransport);
 
-          const newRecvTransport = createRecvTransport(
-            newDevice,
-            recvTransportOptions,
-          );
-          console.log('Recv transport created:', newRecvTransport);
+          createRecvTransport(newDevice, recvTransportOptions);
 
           if (!newSendTransport) {
             console.error('Failed to create send transport');
@@ -155,56 +126,33 @@ export default function Meeting(props: MeetingProps) {
           const audioTrack = await getLocalAudioStreamAndTrack();
 
           if (!audioTrack) {
-            alert(
-              'No audio track found. Please check your microphone permissions.',
-            );
             joinedRef.current = false;
             return;
           }
 
           socket.on('new-producer', handleNewProducer);
 
-          console.log('Audio track obtained:', audioTrack);
-
           try {
-            console.log('Attempting to create audio producer...');
-            console.log(
-              'Send transport state:',
-              newSendTransport.connectionState,
-            );
-
             const audioProducerResult = await newSendTransport.produce({
               track: audioTrack,
             });
 
-            console.log('Audio producer created:', audioProducerResult);
             setAudioProducer(audioProducerResult);
-          } catch (error) {
-            console.error('Error creating audio producer:', error);
-            alert(
-              'Failed to create audio producer: ' +
-                (error instanceof Error ? error.message : 'Unknown error'),
-            );
+          } catch {
             joinedRef.current = false;
             return;
           }
 
           for (const producerInfo of existingProducers || []) {
-            console.log('Processing existing producer:', producerInfo);
             await consume(producerInfo);
-            console.log('Consumer created for producer:', producerInfo);
           }
 
-          console.log('Setting joined to true');
           setJoined(true);
         } catch (error) {
-          console.error('Error in join meeting process:', error);
           joinedRef.current = false;
         }
       },
     );
-
-    console.log('join-meeting event emitted, waiting for response...');
   };
 
   const createDevice = async (rtpCapabilities: RtpCapabilities) => {
@@ -449,7 +397,6 @@ export default function Meeting(props: MeetingProps) {
     const recvTransport = recvTransportRef.current;
 
     if (!device || !recvTransport) {
-      console.log('Device or RecvTransport not initialized');
       return;
     }
 
@@ -484,17 +431,8 @@ export default function Meeting(props: MeetingProps) {
 
         const remoteStream = new MediaStream([consumer.track]);
 
-        console.log(
-          'Track ready:',
-          consumer.track.kind,
-          consumer.track.readyState,
-          consumer.track.label,
-          consumer.track.enabled,
-        );
-
         if (consumer.kind === 'video') {
           setRemoteVideosSrc((prev) => {
-            console.log('Previous video streams:', prev.length);
             return [...prev, remoteStream];
           });
         } else if (consumer.kind === 'audio') {
@@ -507,12 +445,7 @@ export default function Meeting(props: MeetingProps) {
   const leaveMeeting = () => {
     if (!socket) return;
 
-    socket.emit('leave-room', (response: SocketResponse) => {
-      if (response && response.error) {
-        console.error('Error leaving room:', response.error);
-        return;
-      }
-
+    socket.emit('leave-meeting', (response: SocketResponse) => {
       setJoined(false);
       joinedRef.current = false;
 
@@ -554,8 +487,8 @@ export default function Meeting(props: MeetingProps) {
         screenProducer.close();
         setScreenProducer(null);
       }
-
       socket.off('new-producer', handleNewProducer);
+      router.push('/');
     });
   };
 
@@ -601,7 +534,9 @@ export default function Meeting(props: MeetingProps) {
         </div>
       ) : (
         <div>
-          <button onClick={leaveMeeting}>Leave Room</button>
+          <button onClick={leaveMeeting} className="p-4 bg-blue-500">
+            Leave Room
+          </button>
           <button onClick={localStream ? stopCamera : startCamera}>
             {localStream ? 'Stop Camera' : 'Start Camera'}
           </button>

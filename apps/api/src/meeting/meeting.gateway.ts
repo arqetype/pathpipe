@@ -68,49 +68,11 @@ export class MeetingGateway implements OnGatewayConnection {
     }
   }
 
-  @SubscribeMessage('authenticate')
-  async handleAuthentication(
-    @MessageBody() data: { token: string },
-    @ConnectedSocket() client: SocketWithUser,
-  ) {
-    try {
-      const payload = await this.jwtService.verifyAsync<{ email: string }>(
-        data.token,
-        {
-          secret: this.configService.get<string>('NEST_JWT_SECRET'),
-        },
-      );
-
-      const user = await this.userService.findOneByEmail(payload.email);
-
-      if (!user) {
-        client.emit('authentication-error', { error: 'Invalid token' });
-        return;
-      }
-
-      if (!user.email_verified) {
-        client.emit('authentication-error', { error: 'Email not verified' });
-        return;
-      }
-
-      client.data.user = { ...user, password: '••••••••••' };
-      client.emit('authenticated');
-    } catch {
-      client.emit('authentication-error', {
-        error: 'Invalid token',
-      });
-
-      client.disconnect();
-    }
-  }
-
   @SubscribeMessage('join-meeting')
   async handleJoinChannel(
     @MessageBody() dto: JoinMeetingDto,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log('Join meeting request received:', dto);
-
     const { meetingId, peerId } = dto;
 
     try {
@@ -169,8 +131,6 @@ export class MeetingGateway implements OnGatewayConnection {
 
   @SubscribeMessage('leave-meeting')
   async handleLeaveRoom(@ConnectedSocket() client: Socket) {
-    console.log('Leave meeting request received:', client.id);
-
     const rooms = Array.from(client.rooms);
 
     for (const roomId of rooms) {
@@ -227,8 +187,6 @@ export class MeetingGateway implements OnGatewayConnection {
     @MessageBody() produceDto: ProduceDto,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log('Produce request received:', produceDto);
-
     const { roomId, peerId, kind, transportId, rtpParameters } = produceDto;
 
     try {
@@ -257,8 +215,6 @@ export class MeetingGateway implements OnGatewayConnection {
     @MessageBody() consumeDto: ConsumeDto,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log('Consume request received:', consumeDto);
-
     const { roomId, peerId, producerId, rtpCapabilities, transportId } =
       consumeDto;
 
@@ -285,15 +241,11 @@ export class MeetingGateway implements OnGatewayConnection {
 
   @SubscribeMessage('list-rooms')
   handleListRooms(@ConnectedSocket() client: Socket) {
-    console.log('List rooms request received:', client.id);
-
     const rooms = this.roomService.getAllRooms();
     const roomList = rooms.map((room) => ({
       id: room.id,
       peerCount: room.peers.size,
     }));
-
-    console.log('Available rooms:', roomList);
 
     return {
       rooms: roomList,
