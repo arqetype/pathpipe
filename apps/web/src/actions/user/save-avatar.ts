@@ -1,29 +1,28 @@
 'use server';
 
 import { post } from '@/lib/fetch';
-import { AvatarHairStyle, AvatarMood } from '@repo/db/types/avatar';
+import { action } from '@/lib/safe-action';
+import {
+  AvatarCustomizationDto,
+  AvatarCustomizationSaveResponseDto,
+} from '@repo/db/dto/settings/avatar-customization.dto';
 import { revalidatePath } from 'next/cache';
 
-export async function saveAvatarCustomizationAction(data: {
-  mood: AvatarMood;
-  hairStyle?: AvatarHairStyle;
-  hairColor: string;
-  skinColor: string;
-  backgroundColor: string;
-  facialHair: boolean;
-}) {
-  const response = await post('/user/avatar/save', data);
-  const json = await response.json();
+export const saveAvatarCustomizationAction = action
+  .needsAuth()
+  .inputDto(AvatarCustomizationDto)
+  .outputDto(AvatarCustomizationSaveResponseDto)
+  .action(async ({ parsedInput }) => {
+    const response = await post('/user/avatar/save', parsedInput);
+    const json = await response.json();
 
-  if (!response.ok) {
-    console.log(json.message);
-    return {
-      success: false,
-      message: 'Failed to save avatar customization',
-    };
-  }
+    if (!response.ok) {
+      throw new Error(
+        `Failed to save avatar customization: ${json.message || 'Unknown error'}`,
+      );
+    }
 
-  revalidatePath('/app/settings/profile', 'layout');
+    revalidatePath('/app/settings/profile', 'layout');
 
-  return json;
-}
+    return json;
+  });

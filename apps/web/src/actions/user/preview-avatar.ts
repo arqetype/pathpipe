@@ -1,25 +1,25 @@
 'use server';
 
 import { post } from '@/lib/fetch';
-import { AvatarHairStyle, AvatarMood } from '@repo/db/types/avatar';
+import { action } from '@/lib/safe-action';
+import {
+  AvatarCustomizationDto,
+  AvatarCustomizationResponseDto,
+} from '@repo/db/dto/settings/avatar-customization.dto';
 
-export async function previewAvatarCustomizationAction(data: {
-  mood: AvatarMood;
-  hairStyle?: AvatarHairStyle;
-  hairColor: string;
-  skinColor: string;
-  backgroundColor: string;
-  facialHair: boolean;
-}) {
-  const response = await post('/user/avatar/preview', data);
-  const json = await response.json();
+export const previewAvatarCustomizationAction = action
+  .needsAuth()
+  .inputDto(AvatarCustomizationDto)
+  .outputDto(AvatarCustomizationResponseDto)
+  .action(async ({ parsedInput }) => {
+    const response = await post('/user/avatar/preview', parsedInput);
+    const json = await response.json();
 
-  if (!response.ok) {
-    return {
-      success: false,
-      message: json.message || 'Failed to generate avatar preview',
-    };
-  }
+    if (!response.ok) {
+      throw new Error(
+        `Failed to preview avatar customization: ${json.message || 'Unknown error'}`,
+      );
+    }
 
-  return json;
-}
+    return json;
+  });

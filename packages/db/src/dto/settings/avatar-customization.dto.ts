@@ -1,4 +1,10 @@
-import { IsBoolean, IsIn, IsString, Matches } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsNotEmpty,
+  IsString,
+  Matches,
+} from 'class-validator';
 import {
   AvatarHairStyleKeys,
   AvatarMoodKeys,
@@ -45,11 +51,20 @@ export class AvatarCustomizationDto {
 }
 
 export class AvatarCustomizationResponseDto {
+  @IsString()
+  @IsNotEmpty()
   message: string;
+
+  @IsNotEmpty()
+  @IsString()
   image: string;
 }
 
 export class AvatarCustomizationSaveResponseDto {
+  @IsBoolean()
   success: boolean;
+
+  @IsNotEmpty()
+  @IsString()
   message: string;
 }

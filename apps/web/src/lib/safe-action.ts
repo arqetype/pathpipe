@@ -1,5 +1,5 @@
 import { validate } from 'class-validator';
-import { plainToInstance } from 'class-transformer';
+import { plainToInstance, instanceToPlain } from 'class-transformer';
 import { getCurrentUserOrNull } from './auth-server';
 import { User } from '@repo/db/entities/user';
 
@@ -12,9 +12,7 @@ async function validateData<T extends object>(
   data: unknown,
   errorPrefix: string = 'Invalid data',
 ): Promise<ValidateResponse<T>> {
-  const instance = plainToInstance(dtoClass, data, {
-    excludeExtraneousValues: true,
-  });
+  const instance = plainToInstance(dtoClass, data);
 
   if (!instance || typeof instance !== 'object') {
     return { valid: false, errors: [`${errorPrefix}: expected an object`] };
@@ -31,9 +29,10 @@ async function validateData<T extends object>(
 
 type ActionResult<T> =
   | { success: true; data: T }
-  | { success: false; validationErrors: string[] }
-  | { success: false; serverError: string }
-  | { success: false; outputValidationErrors: string[] };
+  | { success: false; error: 'input'; message: string }
+  | { success: false; error: 'server'; message: string }
+  | { success: false; error: 'output'; message: string }
+  | { success: false; error: 'auth'; message: string };
 
 type ActionContext<TInput = unknown> = {
   parsedInput: TInput;
@@ -95,7 +94,8 @@ class ActionClientBuilder<TInput = unknown, TOutput = unknown> {
         if (!currentUser) {
           return {
             success: false,
-            serverError: 'Authentication required',
+            error: 'auth',
+            message: 'Authentication required',
           };
         }
         user = currentUser;
@@ -109,10 +109,12 @@ class ActionClientBuilder<TInput = unknown, TOutput = unknown> {
           input,
           'Invalid input',
         );
+
         if (!validationResult.valid) {
           return {
             success: false,
-            validationErrors: validationResult.errors,
+            error: 'input',
+            message: validationResult.errors[0] || 'Unknown input error',
           };
         }
         parsedInput = validationResult.instance as TInput;
@@ -131,12 +133,15 @@ class ActionClientBuilder<TInput = unknown, TOutput = unknown> {
           if (!outputValidationResult.valid) {
             return {
               success: false,
-              outputValidationErrors: outputValidationResult.errors,
+              error: 'output',
+              message:
+                outputValidationResult.errors[0] || 'Unknown output error',
             };
           }
+
           return {
             success: true,
-            data: outputValidationResult.instance as TOutput,
+            data: instanceToPlain(outputValidationResult.instance) as TOutput,
           };
         }
 
@@ -144,7 +149,8 @@ class ActionClientBuilder<TInput = unknown, TOutput = unknown> {
       } catch (error) {
         return {
           success: false,
-          serverError:
+          error: 'server',
+          message:
             error instanceof Error ? error.message : 'Unknown server error',
         };
       }
