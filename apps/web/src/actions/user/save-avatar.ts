@@ -13,16 +13,18 @@ export const saveAvatarCustomizationAction = action
   .inputDto(AvatarCustomizationDto)
   .outputDto(AvatarCustomizationSaveResponseDto)
   .action(async ({ parsedInput }) => {
-    const response = await post('/user/avatar/save', parsedInput);
-    const json = await response.json();
+    const { ok, data } = await post<AvatarCustomizationSaveResponseDto>(
+      '/user/avatar/save',
+      parsedInput,
+    );
 
-    if (!response.ok) {
+    if (!ok) {
       throw new Error(
-        `Failed to save avatar customization: ${json.message || 'Unknown error'}`,
+        `Failed to save avatar customization: ${data.message || 'Unknown error'}`,
       );
     }
 
     revalidatePath('/app/settings/profile', 'layout');
 
-    return json;
+    return data;
   });

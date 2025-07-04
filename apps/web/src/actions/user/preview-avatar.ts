@@ -12,14 +12,16 @@ export const previewAvatarCustomizationAction = action
   .inputDto(AvatarCustomizationDto)
   .outputDto(AvatarCustomizationResponseDto)
   .action(async ({ parsedInput }) => {
-    const response = await post('/user/avatar/preview', parsedInput);
-    const json = await response.json();
+    const { ok, data } = await post<AvatarCustomizationResponseDto>(
+      '/user/avatar/preview',
+      parsedInput,
+    );
 
-    if (!response.ok) {
+    if (!ok) {
       throw new Error(
-        `Failed to preview avatar customization: ${json.message || 'Unknown error'}`,
+        `Failed to preview avatar customization: ${data.message || 'Unknown error'}`,
       );
     }
 
-    return json;
+    return data;
   });

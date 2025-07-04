@@ -13,15 +13,13 @@ export const getCurrentUser = cache(async () => {
   }
 
   try {
-    const response = await get('/user/me');
+    const { ok, data } = await get<User>('/user/me');
 
-    if (!response.ok) {
+    if (!ok) {
       return redirect('/app/sign-in');
     }
 
-    const user: User = await response.json();
-
-    return user;
+    return data;
   } catch {
     return redirect('/app/sign-in');
   }
@@ -36,13 +34,13 @@ export const getCurrentUserOrNull = cache(async () => {
   }
 
   try {
-    const response = await get('/user/me');
+    const { ok, data } = await get<User>('/user/me');
 
-    if (!response.ok) {
+    if (!ok) {
       return null;
     }
 
-    const user: User = await response.json();
+    const user: User = data;
 
     return user;
   } catch {
