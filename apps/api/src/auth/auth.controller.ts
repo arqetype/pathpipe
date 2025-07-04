@@ -9,20 +9,36 @@ import {
   Res,
   Req,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignInDto } from '@repo/db/dto/auth/sign-in.dto';
-import { SignUpDto } from '@repo/db/dto/auth/sign-up.dto';
-import { ResendEmailDto } from '@repo/db/dto/auth/resend-email.dto';
-import { VerifyEmailDto } from '@repo/db/dto/auth/verify-email.dto';
-import { ResetPasswordDto } from '@repo/db/dto/auth/reset-password.dto';
-import { EnableOtpDto } from '@repo/db/dto/auth/enable-otp.dto';
+import { SignInDto, SignInResponseDto } from '@repo/db/dto/auth/sign-in.dto';
+import { SignUpDto, SignUpResponseDto } from '@repo/db/dto/auth/sign-up.dto';
+import {
+  ResendEmailDto,
+  ResendEmailResponseDto,
+} from '@repo/db/dto/auth/resend-email.dto';
+import {
+  VerifyEmailDto,
+  VerifyEmailResponseDto,
+} from '@repo/db/dto/auth/verify-email.dto';
+import {
+  ResetPasswordDto,
+  ResetPasswordResponseDto,
+} from '@repo/db/dto/auth/reset-password.dto';
+import {
+  EnableOtpDto,
+  EnableOtpGetResponseDto,
+  EnableOtpResponseDto,
+} from '@repo/db/dto/auth/enable-otp.dto';
 import {
   ResetPasswordUserDto,
   ResetPasswordUserResponseDto,
 } from '@repo/db/dto/auth/reset-password-user.dto';
-import { ForgotPasswordDto } from '@repo/db/dto/auth/forgot-password.dto';
-import { VerifyPasswordDto } from '@repo/db/dto/auth/verify-password.dto';
+import {
+  ForgotPasswordDto,
+  ForgotPasswordResponseDto,
+} from '@repo/db/dto/auth/forgot-password.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { LocalAuthGuard } from './guards/local.auth.guard';
 import { Response, Request } from 'express';
@@ -43,17 +59,17 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Public()
   @Post('sign-in')
-  signIn(
+  async signIn(
     @Body() signInDto: SignInDto,
     @Res({ passthrough: true }) response: Response,
-  ) {
-    return this.authService.signIn(signInDto.email, response);
+  ): Promise<SignInResponseDto> {
+    return await this.authService.signIn(signInDto.email, response);
   }
 
   @HttpCode(HttpStatus.CREATED)
   @Public()
   @Post('sign-up')
-  async signUp(@Body() signUpDto: SignUpDto) {
+  async signUp(@Body() signUpDto: SignUpDto): Promise<SignUpResponseDto> {
     return await this.authService.signUp(
       signUpDto.name,
       signUpDto.email,
@@ -64,7 +80,9 @@ export class AuthController {
   // ENABLE OTP FLOW
   @HttpCode(HttpStatus.OK)
   @Get('enable-otp')
-  async enableOtpGet(@CurrentUser() user: User) {
+  async enableOtpGet(
+    @CurrentUser() user: User,
+  ): Promise<EnableOtpGetResponseDto> {
     if (user.is_github_user) {
       throw new UnauthorizedException('GitHub users cannot enable OTP');
     }
@@ -79,7 +97,7 @@ export class AuthController {
   async enableOtpPost(
     @CurrentUser() user: User,
     @Body() enableOtpDto: EnableOtpDto,
-  ) {
+  ): Promise<EnableOtpResponseDto> {
     if (user.is_github_user) {
       throw new UnauthorizedException('GitHub users cannot enable OTP');
     }
@@ -108,17 +126,22 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('verify-email')
-  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
+  async verifyEmail(
+    @Body() verifyEmailDto: VerifyEmailDto,
+  ): Promise<VerifyEmailResponseDto> {
     return await this.authService.verifyEmail(verifyEmailDto.token);
   }
 
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('resend-email')
-  async resendEmail(@Body() resendEmailDto: ResendEmailDto) {
+  async resendEmail(
+    @Body() resendEmailDto: ResendEmailDto,
+  ): Promise<ResendEmailResponseDto> {
     const user = await this.userService.findOneByEmail(resendEmailDto.email);
+
     if (!user) {
-      throw new Error('User not found');
+      throw new BadRequestException('User not found');
     }
 
     return await this.authService.sendVerification(user);
@@ -128,29 +151,27 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('forgot-password')
-  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+  async forgotPassword(
+    @Body() forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<ForgotPasswordResponseDto> {
     const user = await this.userService.findOneByEmail(forgotPasswordDto.email);
-    if (!user) {
-      return {
-        success: true,
-        message: 'If the email exists, a reset link has been sent.',
-      };
+
+    if (user) {
+      await this.authService.forgotPassword(user);
     }
 
-    return await this.authService.forgotPassword(user);
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Public()
-  @Get('verify-password')
-  async verifyForgotPassword(@Body() verifyPasswordDto: VerifyPasswordDto) {
-    return await this.authService.verifyForgotPassword(verifyPasswordDto.token);
+    return {
+      success: true,
+      message: 'If the email exists, a reset link has been sent.',
+    };
   }
 
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('reset-password')
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ): Promise<ResetPasswordResponseDto> {
     return await this.authService.resetPassword(
       resetPasswordDto.token,
       resetPasswordDto.newPassword,

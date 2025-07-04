@@ -6,7 +6,7 @@ import {
   type AvatarMood,
 } from '../../types/avatar';
 
-export default class AvatarCustomizationDto {
+export class AvatarCustomizationDto {
   @IsString()
   @IsIn(AvatarMoodKeys, {
     message: `Mood must be one of the following: ${AvatarMoodKeys.join(', ')}`,
@@ -42,4 +42,14 @@ export default class AvatarCustomizationDto {
 
   @IsBoolean()
   facialHair: boolean;
+}
+
+export class AvatarCustomizationResponseDto {
+  message: string;
+  image: string;
+}
+
+export class AvatarCustomizationSaveResponseDto {
+  success: boolean;
+  message: string;
 }

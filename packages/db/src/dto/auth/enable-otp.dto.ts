@@ -7,3 +7,12 @@ export class EnableOtpDto {
   @Matches(/^\d{6}$/, { message: 'OTP must be a 6-digit number' })
   otp: string;
 }
+
+export class EnableOtpResponseDto {
+  success: boolean;
+  message: 'OTP disabled successfully' | 'OTP enabled successfully';
+}
+
+export class EnableOtpGetResponseDto {
+  success: boolean;
+}

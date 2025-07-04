@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -8,7 +9,11 @@ import {
 } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '@repo/db/entities/user';
-import AvatarCustomizationDto from '@repo/db/dto/settings/avatar-customization.dto';
+import {
+  AvatarCustomizationDto,
+  AvatarCustomizationResponseDto,
+  AvatarCustomizationSaveResponseDto,
+} from '@repo/db/dto/settings/avatar-customization.dto';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -26,7 +31,7 @@ export class UserController {
   getAvatarPreview(
     @CurrentUser() user: User,
     @Body() avatarCustomizationDto: AvatarCustomizationDto,
-  ) {
+  ): AvatarCustomizationResponseDto {
     const image = this.userService.generateAvatarWithSettings(
       avatarCustomizationDto,
       user.email,
@@ -44,8 +49,13 @@ export class UserController {
   async saveAvatarCustomization(
     @CurrentUser() user: User,
     @Body() avatarCustomizationDto: AvatarCustomizationDto,
-  ) {
+  ): Promise<AvatarCustomizationSaveResponseDto> {
     const userData = await this.userService.findOneById(user.id);
+
+    if (!userData) {
+      throw new BadRequestException('User not found');
+    }
+
     await this.userService.updateUserAvatar(userData, avatarCustomizationDto);
 
     return {

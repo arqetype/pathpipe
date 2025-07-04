@@ -5,3 +5,7 @@ export class VerifyEmailDto {
   @IsUUID()
   token: UUID;
 }
+
+export class VerifyEmailResponseDto {
+  success: boolean;
+}

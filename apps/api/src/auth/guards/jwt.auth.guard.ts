@@ -1,12 +1,12 @@
 import {
-  ExecutionContext,
+  type ExecutionContext,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { UserService } from '../../user/user.service';
 import { IS_PUBLIC_KEY } from '../../common/decorators/public.decorator';
 import { ConfigService } from '@nestjs/config';
@@ -33,7 +33,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest<Request>();
 
     const token = request.cookies['auth-token'] as string | undefined;
+
     if (!token) throw new UnauthorizedException('No token cookie found');
+
     try {
       const payload = await this.jwtService.verifyAsync<{ email: string }>(
         token,
@@ -47,6 +49,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       }
 
       request.user = { ...user, password: '••••••••••' };
+
       return true;
     } catch {
       throw new UnauthorizedException('Invalid token');
