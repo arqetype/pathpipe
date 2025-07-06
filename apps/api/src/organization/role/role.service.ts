@@ -14,4 +14,18 @@ export class RoleService {
     @InjectRepository(OrganizationRole)
     private readonly rolesRepository: Repository<OrganizationRole>,
   ) {}
+
+  /**
+   * Finds an organization role by its ID.
+   *
+   * @param id - The ID of the role to find.
+   * @returns A promise that resolves to the organization role if found, or null if not found.
+   */
+  async findOneById(id: string): Promise<OrganizationRole | null> {
+    try {
+      return await this.rolesRepository.findOne({ where: { id } });
+    } catch {
+      return null;
+    }
+  }
 }

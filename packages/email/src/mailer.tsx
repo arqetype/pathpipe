@@ -4,6 +4,7 @@ import { render } from '@react-email/render';
 import { VerificationEmail } from './templates/verification-email';
 import { OTPEmail } from './templates/otp-email';
 import { ResetPasswordEmail } from './templates/reset-password-email';
+import OrganizationInvitationEmail from './templates/organization/invitation-email';
 
 export type SMTPConfig = {
   host: string;
@@ -83,6 +84,27 @@ export class Mailer {
       });
     } catch {
       throw new Error('Failed to send email');
+    }
+  }
+
+  public async sendOrganizationInvitationEmail(
+    to: string,
+    token: string,
+    organization: { name: string; profilePictureUrl: string },
+  ): Promise<void> {
+    const html = await render(
+      <OrganizationInvitationEmail token={token} organization={organization} />,
+    );
+
+    try {
+      await this.transporter.sendMail({
+        to,
+        from: this.from,
+        subject: `Weaver : Invitation to join ${organization.name}`,
+        html,
+      });
+    } catch {
+      throw new Error('Failed to send organization invitation email');
     }
   }
 }

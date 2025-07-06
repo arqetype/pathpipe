@@ -21,7 +21,7 @@ export class Organization {
   description: string;
 
   @Column({ nullable: true })
-  icon_url: string;
+  avatar_url: string;
 
   @OneToMany(() => OrganizationMember, (member) => member.organization, {
     nullable: false,

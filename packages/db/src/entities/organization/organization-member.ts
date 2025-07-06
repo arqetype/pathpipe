@@ -15,7 +15,7 @@ export class OrganizationMember {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @OneToOne(() => User)
+  @OneToOne(() => User, { nullable: true })
   @JoinColumn()
   user: User;
 

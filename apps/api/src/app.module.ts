@@ -16,6 +16,7 @@ import { Organization } from '@repo/db/entities/organization/organization';
 import { OrganizationModule } from './organization/organization.module';
 import { OrganizationMember } from '@repo/db/entities/organization/organization-member';
 import { OrganizationRole } from '@repo/db/entities/organization/organization-role';
+import { OrganizationInvitationToken } from '@repo/db/entities/organization/organization-invitation-token';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { OrganizationRole } from '@repo/db/entities/organization/organization-ro
           Organization,
           OrganizationMember,
           OrganizationRole,
+          OrganizationInvitationToken,
           EmailVerificationToken,
           OTPVerification,
           ResetPasswordToken,

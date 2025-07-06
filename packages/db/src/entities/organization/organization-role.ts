@@ -18,6 +18,9 @@ export class OrganizationRole {
   @Column({ nullable: true })
   description: string;
 
+  @Column({ default: false })
+  isAdmin: boolean;
+
   @ManyToOne(() => Organization, { nullable: false, eager: true })
   organization: Organization;
 
