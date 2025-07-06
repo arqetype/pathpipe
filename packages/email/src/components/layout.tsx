@@ -22,12 +22,17 @@ type EmailLayoutProps = {
 export function Layout({ children, previewMessage }: EmailLayoutProps) {
   return (
     <Html lang="en">
-      <Head />
+      <Head>
+        <style>
+          @import
+          url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
+        </style>
+      </Head>
       <Tailwind config={tailwindConfig}>
         <Body
           style={{
             fontFamily:
-              '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
+              '"Space Grotesk", -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
           }}
         >
           {previewMessage && <Preview>{previewMessage}</Preview>}

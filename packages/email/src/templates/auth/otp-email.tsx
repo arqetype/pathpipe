@@ -1,6 +1,6 @@
 import { Img, Row, Section, Text } from '@react-email/components';
 import React from 'react';
-import { Layout } from '../components/layout';
+import { Layout } from '../../components/layout';
 
 type OTPEmailProps = {
   otp: string;
@@ -29,7 +29,7 @@ export function OTPEmail({ otp, user }: OTPEmailProps) {
           <Text className="text-3xl font-bold">
             Hi {user.name}, here is your OTP
           </Text>
-          <Text className="text-md">
+          <Text className="text-lg">
             Use this one-time password to complete your login or verification
             process. This OTP is valid for a short period, so please use it
             promptly.
@@ -37,7 +37,7 @@ export function OTPEmail({ otp, user }: OTPEmailProps) {
           <Text className="text-2xl bg-gray-200 p-4 text-center rounded-md">
             {otp}
           </Text>
-          <Text className="text-sm text-gray-500">
+          <Text className="text-md">
             If you did not request this OTP, please ignore this email, and
             consider changing your password for security.
           </Text>

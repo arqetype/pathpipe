@@ -42,6 +42,10 @@ export function OrganizationInvitationEmail({
           >
             Accept Invitation
           </Button>
+          <Text className="text-md">
+            This invitation is valid for a limited time. If you did not request
+            this invitation, you can ignore this email.
+          </Text>
         </Row>
       </Section>
     </Layout>

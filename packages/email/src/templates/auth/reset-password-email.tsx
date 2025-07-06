@@ -1,5 +1,5 @@
 import { Button, Img, Row, Section, Text } from '@react-email/components';
-import { Layout } from '../components/layout';
+import { Layout } from '../../components/layout';
 import React from 'react';
 
 interface ResetPasswordEmailProps {

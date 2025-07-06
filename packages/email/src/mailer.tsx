@@ -1,9 +1,9 @@
 import React from 'react';
 import { createTransport, Transporter } from 'nodemailer';
 import { render } from '@react-email/render';
-import { VerificationEmail } from './templates/verification-email';
-import { OTPEmail } from './templates/otp-email';
-import { ResetPasswordEmail } from './templates/reset-password-email';
+import { VerificationEmail } from './templates/auth/verification-email';
+import { OTPEmail } from './templates/auth/otp-email';
+import { ResetPasswordEmail } from './templates/auth/reset-password-email';
 import OrganizationInvitationEmail from './templates/organization/invitation-email';
 
 export type SMTPConfig = {
