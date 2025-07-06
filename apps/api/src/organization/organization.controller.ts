@@ -35,8 +35,8 @@ export class OrganizationController {
     );
   }
 
-  @UseGuards(AdminOrganizationGuard)
   @HttpCode(HttpStatus.OK)
+  @UseGuards(AdminOrganizationGuard)
   @Post('invite')
   async inviteUser(
     @CurrentUser() user: User,

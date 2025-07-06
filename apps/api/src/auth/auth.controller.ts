@@ -173,14 +173,16 @@ export class AuthController {
   }
 
   // GITHUB AUTHENTICATION FLOW
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('github'))
   @Public()
   @Get('github')
-  @UseGuards(AuthGuard('github'))
   async githubAuth() {}
 
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('github'))
   @Public()
   @Get('github/callback')
-  @UseGuards(AuthGuard('github'))
   githubCallback(@Req() req: Request, @Res() res: Response) {
     if (req.user) {
       const token = this.authService.generateJwtToken((req.user as User).email);
