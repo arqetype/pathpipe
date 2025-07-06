@@ -7,11 +7,11 @@ import { randomUUID } from 'node:crypto';
 import { Repository } from 'typeorm';
 import { User } from '@repo/db/entities/user';
 import { createHash } from 'node:crypto';
-import { UserService } from '../user/user.service';
-import { PasswordUtils } from '../common/utils/password.utils';
+import { UserService } from '../../user/user.service';
+import { PasswordUtils } from '../../common/utils/password.utils';
 
 /**
- * Service responsible for managing verification processes in the application.
+ * Service responsible for managing authentication verification processes in the application.
  *
  * Handles email verification tokens, one-time passwords (OTP), and
  * reset password tokens for user authentication and verification workflows.

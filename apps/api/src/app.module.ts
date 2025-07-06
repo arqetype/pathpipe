@@ -7,7 +7,6 @@ import { EmailVerificationToken } from '@repo/db/entities/email-verification-tok
 import { HealthModule } from './health/health.module';
 import { MailerModule } from './mailer/mailer.module';
 import { AuthModule } from './auth/auth.module';
-import { VerificationModule } from './verification/verification.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt.auth.guard';
 import { JwtModule } from '@nestjs/jwt';
@@ -51,7 +50,6 @@ import { OrganizationRole } from '@repo/db/entities/organization/organization-ro
     AuthModule,
     JwtModule,
     OrganizationModule,
-    VerificationModule,
   ],
   providers: [
     {

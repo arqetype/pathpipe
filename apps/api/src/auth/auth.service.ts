@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { MailerService } from '../mailer/mailer.service';
-import { VerificationService } from '../verification/verification.service';
+import { VerificationService } from './verification/verification.service';
 import { User } from '@repo/db/entities/user';
 import { Response } from 'express';
 import { PasswordUtils } from '../common/utils/password.utils';
@@ -298,6 +298,7 @@ export class AuthService {
     return resetPasswordUser.user;
   }
 
+  // AUTH PROVIDERS FLOW
   /**
    * Finds or creates a user from GitHub authentication data.
    * @param githubUserData - Object containing user information from GitHub.
