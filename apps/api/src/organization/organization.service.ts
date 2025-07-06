@@ -8,6 +8,7 @@ import { OrganizationMember } from '@repo/db/entities/organization/organization-
 import { MailerService } from '../mailer/mailer.service';
 import { VerificationService } from './verification/verification.service';
 import { StringUtils } from '../common/utils/string.utils';
+import { MemberService } from './member/member.service';
 
 /**
  * Service responsible for managing organization data in the application.
@@ -19,10 +20,9 @@ export class OrganizationService {
   constructor(
     @InjectRepository(Organization)
     private readonly organizationsRepository: Repository<Organization>,
-    @InjectRepository(OrganizationMember)
-    private readonly organizationMembersRepository: Repository<OrganizationMember>,
-    private readonly mailerService: MailerService,
     private readonly verificationService: VerificationService,
+    private readonly memberService: MemberService,
+    private readonly mailerService: MailerService,
   ) {}
 
   /**
@@ -41,28 +41,6 @@ export class OrganizationService {
     } catch {
       return null;
     }
-  }
-
-  /**
-   * Finds the role of a user within a specific organization.
-   *
-   * @param organization - The organization.
-   * @param userId - The ID of the user.
-   * @returns A promise that resolves to the user's role in the organization, or null if not found.
-   */
-  async findUserRole(
-    organization: Organization,
-    user: User,
-  ): Promise<OrganizationRole | null> {
-    const member = await this.organizationMembersRepository.findOne({
-      where: {
-        organization: { id: organization.id },
-        user: { id: user.id },
-      },
-      relations: ['role'],
-    });
-
-    return member?.role || null;
   }
 
   /**
@@ -116,12 +94,8 @@ export class OrganizationService {
           role,
         );
 
-        const invitation = this.organizationMembersRepository.create({
-          organization,
-          user: null,
-          role: role,
-        });
-        await this.organizationMembersRepository.save(invitation);
+        const invitation = this.memberService.create(organization, null, role);
+        await this.memberService.save(invitation);
 
         await this.mailerService.sendOrganizationInvitationEmail(email, token, {
           name: organization.name,
@@ -155,23 +129,22 @@ export class OrganizationService {
       throw new Error('Invalid or expired invitation');
     }
 
-    const existingMember = await this.organizationMembersRepository.findOne({
-      where: {
-        organization: { id: invitation.organization.id },
-        user: { id: user.id },
-      },
-    });
+    const existingMember =
+      await this.memberService.findOneByUserAndOrganization(
+        invitation.organization,
+        user,
+      );
 
     if (existingMember) {
       return existingMember;
     }
 
-    const member = this.organizationMembersRepository.create({
-      organization: invitation.organization,
+    const member = this.memberService.create(
+      invitation.organization,
       user,
-      role: invitation.role,
-    });
+      invitation.role,
+    );
 
-    return this.organizationMembersRepository.save(member);
+    return this.memberService.save(member);
   }
 }

@@ -6,10 +6,14 @@ import {
 } from '@nestjs/common';
 import { OrganizationService } from '../organization.service';
 import { User } from '@repo/db/entities/user';
+import { MemberService } from '../member/member.service';
 
 @Injectable()
 export class AdminOrganizationGuard implements CanActivate {
-  constructor(private readonly organizationService: OrganizationService) {}
+  constructor(
+    private readonly organizationService: OrganizationService,
+    private readonly memberService: MemberService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<{
@@ -34,15 +38,11 @@ export class AdminOrganizationGuard implements CanActivate {
       );
     }
 
-    const userRole = await this.organizationService.findUserRole(
-      organization,
-      request.user,
-    );
+    const userRole = await this.memberService
+      .findOneByUserAndOrganization(organization, request.user)
+      .then((member) => member?.role);
 
-    if (
-      organization.owner.id !== request.user.id &&
-      (!userRole || !userRole.isAdmin)
-    ) {
+    if (organization.owner.id !== request.user.id && !userRole) {
       throw new ForbiddenException(
         'You are not authorized to edit this organization',
       );
