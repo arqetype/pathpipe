@@ -18,6 +18,8 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @Get('me')
   getMe(@CurrentUser() user: User) {
+    // NOTE: don't return the password in the response
+    user = { ...user, password: '••••••••••' };
     return user;
   }
 
@@ -45,8 +47,7 @@ export class UserController {
     @CurrentUser() user: User,
     @Body() avatarCustomizationDto: AvatarCustomizationDto,
   ) {
-    const userData = await this.userService.findOneById(user.id);
-    await this.userService.updateUserAvatar(userData, avatarCustomizationDto);
+    await this.userService.updateUserAvatar(user, avatarCustomizationDto);
 
     return {
       success: true,
