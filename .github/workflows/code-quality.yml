@@ -10,7 +10,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze Typescript
+    name: Analyze ${{ matrix.language }} code
     runs-on: weaver-runner
     permissions:
       security-events: write
