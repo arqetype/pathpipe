@@ -7,6 +7,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { OrganizationMember } from './organization-member';
+import { OrganizationRole } from './organization-role';
 import { User } from '../user';
 
 @Entity()
@@ -23,13 +24,18 @@ export class Organization {
   @Column({ nullable: true })
   avatar_url: string;
 
+  @ManyToOne(() => User, { eager: true, nullable: false })
+  owner: User;
+
   @OneToMany(() => OrganizationMember, (member) => member.organization, {
-    nullable: false,
+    cascade: true,
   })
   members: OrganizationMember[];
 
-  @ManyToOne(() => User, { eager: true, nullable: false })
-  owner: User;
+  @OneToMany(() => OrganizationRole, (role) => role.organization, {
+    cascade: true,
+  })
+  roles: OrganizationRole[];
 
   @CreateDateColumn()
   created_at: Date;

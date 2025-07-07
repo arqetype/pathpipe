@@ -31,11 +31,15 @@ export class MemberService {
     user: User,
     role: OrganizationRole,
   ): OrganizationMember {
-    return this.organizationMembersRepository.create({
-      organization,
-      user,
-      role,
-    });
+    try {
+      return this.organizationMembersRepository.create({
+        organization,
+        user,
+        role,
+      });
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -45,7 +49,11 @@ export class MemberService {
    * @returns A promise that resolves to the saved organization member.
    */
   async save(member: OrganizationMember): Promise<OrganizationMember> {
-    return this.organizationMembersRepository.save(member);
+    try {
+      return await this.organizationMembersRepository.save(member);
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -56,8 +64,8 @@ export class MemberService {
    * @returns A promise that resolves to the organization member if found, or null if not found.
    */
   async findOneByUserAndOrganization(
-    organization: { id: string },
-    user: { id: string },
+    organization: Organization,
+    user: User,
   ): Promise<OrganizationMember | null> {
     try {
       return await this.organizationMembersRepository.findOne({

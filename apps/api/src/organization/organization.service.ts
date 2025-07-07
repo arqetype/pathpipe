@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Organization } from '@repo/db/entities/organization/organization';
 import { User } from '@repo/db/entities/user';
@@ -9,6 +9,7 @@ import { MailerService } from '../mailer/mailer.service';
 import { VerificationService } from './verification/verification.service';
 import { StringUtils } from '../common/utils/string.utils';
 import { MemberService } from './member/member.service';
+import { RoleService } from './role/role.service';
 
 /**
  * Service responsible for managing organization data in the application.
@@ -22,6 +23,7 @@ export class OrganizationService {
     private readonly organizationsRepository: Repository<Organization>,
     private readonly verificationService: VerificationService,
     private readonly memberService: MemberService,
+    private readonly roleService: RoleService,
     private readonly mailerService: MailerService,
   ) {}
 
@@ -36,6 +38,7 @@ export class OrganizationService {
       const organization: Organization =
         await this.organizationsRepository.findOne({
           where: { id },
+          relations: ['members', 'roles'],
         });
       return organization;
     } catch {
@@ -51,17 +54,51 @@ export class OrganizationService {
    * @param description - An optional description of the organization.
    * @returns A promise that resolves to the created organization.
    */
-  create(
+  async create(
     user: User,
     name: string,
     description?: string,
   ): Promise<Organization> {
-    const organization = this.organizationsRepository.create({
-      owner: user,
-      name,
-      description,
-    });
-    return this.organizationsRepository.save(organization);
+    try {
+      const organization = this.organizationsRepository.create({
+        owner: user,
+        name,
+        description,
+      });
+
+      const savedOrganization =
+        await this.organizationsRepository.save(organization);
+
+      const defaultRoles =
+        await this.roleService.createDefaultRoles(savedOrganization);
+
+      await this.addMember(organization, user, defaultRoles[0]);
+
+      return savedOrganization;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Adds a member to an organization with a specified role.
+   *
+   * @param organization - The organization to which the user is being added.
+   * @param user - The user being added to the organization.
+   * @param role - The role assigned to the user in the organization.
+   * @returns A promise that resolves to the created organization member.
+   */
+  async addMember(
+    organization: Organization,
+    user: User,
+    role: OrganizationRole,
+  ): Promise<OrganizationMember> {
+    try {
+      const member = this.memberService.create(organization, user, role);
+      return await this.memberService.save(member);
+    } catch {
+      return null;
+    }
   }
 
   // EMAIL INVITATION FLOW
@@ -126,7 +163,7 @@ export class OrganizationService {
       await this.verificationService.verifyInvitationToken(token);
 
     if (!invitation) {
-      throw new Error('Invalid or expired invitation');
+      throw new UnauthorizedException('Invalid or expired invitation');
     }
 
     const existingMember =

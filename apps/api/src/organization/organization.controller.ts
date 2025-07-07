@@ -5,6 +5,8 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Get,
+  Param,
 } from '@nestjs/common';
 import { CreateOrganizationDto } from '@repo/db/dto/organization/create-organization.dto';
 import { InviteUsersDto } from '@repo/db/dto/organization/invite-users.dto';
@@ -23,32 +25,48 @@ export class OrganizationController {
   ) {}
 
   @HttpCode(HttpStatus.OK)
+  @UseGuards(AdminOrganizationGuard)
+  @Get(':organizationId')
+  async findOneById(
+    @CurrentUser() user: User,
+    @Param('organizationId') organizationId: string,
+  ) {
+    return this.organizationService.findOneById(organizationId);
+  }
+
+  @HttpCode(HttpStatus.CREATED)
   @Post('create')
-  create(
+  async create(
     @CurrentUser() user: User,
     @Body() createOrganizationDto: CreateOrganizationDto,
   ) {
-    return this.organizationService.create(
+    const organization = await this.organizationService.create(
       user,
       createOrganizationDto.name,
       createOrganizationDto.description,
     );
+    if (!organization) {
+      throw new Error('Organization creation failed');
+    }
+
+    return organization;
   }
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(AdminOrganizationGuard)
   @Post('invite')
-  async inviteUser(
-    @CurrentUser() user: User,
-    @Body() inviteUsersDto: InviteUsersDto,
-  ) {
+  async inviteUser(@Body() inviteUsersDto: InviteUsersDto) {
     const organization = await this.organizationService.findOneById(
       inviteUsersDto.organizationId,
     );
     const role = await this.roleService.findOneById(inviteUsersDto.roleId);
 
-    if (!organization) throw new Error('Organization not found');
-    if (!role) throw new Error('Role not found');
+    if (!organization) {
+      throw new Error('Organization not found');
+    }
+    if (!role) {
+      throw new Error('Role not found');
+    }
 
     return this.organizationService.inviteUsers(
       inviteUsersDto.userEmails,
@@ -63,9 +81,15 @@ export class OrganizationController {
     @CurrentUser() user: User,
     @Body() acceptInvitationDto: AcceptInvitationDto,
   ) {
-    return this.organizationService.acceptInvitation(
+    const member = await this.organizationService.acceptInvitation(
       user,
       acceptInvitationDto.token,
     );
+
+    if (!member) {
+      throw new Error('Failed to accept invitation');
+    }
+
+    return member;
   }
 }

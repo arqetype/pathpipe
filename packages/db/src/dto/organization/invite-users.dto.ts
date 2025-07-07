@@ -9,5 +9,5 @@ export class InviteUsersDto {
 
   @IsString()
   @IsOptional()
-  roleId?: string;
+  roleId: string;
 }

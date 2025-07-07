@@ -2,8 +2,8 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   CreateDateColumn,
+  ManyToOne,
 } from 'typeorm';
 import { Organization } from './organization';
 
@@ -19,9 +19,12 @@ export class OrganizationRole {
   description: string;
 
   @Column({ default: false })
+  isOwner: boolean;
+
+  @Column({ default: false })
   isAdmin: boolean;
 
-  @ManyToOne(() => Organization, { nullable: false, eager: true })
+  @ManyToOne(() => Organization, { nullable: false })
   organization: Organization;
 
   @CreateDateColumn()

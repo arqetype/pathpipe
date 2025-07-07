@@ -3,8 +3,6 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   CreateDateColumn,
-  OneToOne,
-  JoinColumn,
 } from 'typeorm';
 import { User } from '../user';
 import { Organization } from './organization';
@@ -15,16 +13,20 @@ export class OrganizationMember {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @OneToOne(() => User, { nullable: true })
-  @JoinColumn()
+  @ManyToOne(() => User, { nullable: true })
   user: User;
 
   @ManyToOne(() => OrganizationRole, { nullable: false, eager: true })
   role: OrganizationRole;
 
-  @ManyToOne(() => Organization, { eager: true, nullable: false })
+  @ManyToOne(() => Organization, { nullable: false })
   organization: Organization;
 
   @CreateDateColumn()
   createdAt: Date;
+
+  static uniqueUserOrganizationConstraint = {
+    name: 'UQ_user_organization',
+    columns: ['user', 'organization'],
+  };
 }

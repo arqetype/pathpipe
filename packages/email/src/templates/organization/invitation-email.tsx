@@ -31,7 +31,7 @@ export function OrganizationInvitationEmail({
       <Section>
         <Row>
           <Text className="text-3xl font-bold">
-            Hi {organization.name}, you've been invited to join an organization!
+            Hi, you've been invited to join {organization.name}!
           </Text>
           <Text className="text-lg">
             To accept the invitation, please click the button below:
