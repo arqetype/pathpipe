@@ -7,6 +7,7 @@ import {
   UseGuards,
   Get,
   Param,
+  Delete,
 } from '@nestjs/common';
 import { CreateOrganizationDto } from '@repo/db/dto/organization/create-organization.dto';
 import { InviteUsersDto } from '@repo/db/dto/organization/invite-users.dto';
@@ -32,6 +33,26 @@ export class OrganizationController {
     @Param('organizationId') organizationId: string,
   ) {
     return this.organizationService.findOneById(organizationId);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AdminOrganizationGuard)
+  @Delete(':organizationId')
+  async delete(
+    @CurrentUser() user: User,
+    @Param('organizationId') organizationId: string,
+  ) {
+    const organization =
+      await this.organizationService.findOneById(organizationId);
+    if (!organization) {
+      throw new Error('Organization not found');
+    }
+    const deleted = await this.organizationService.delete(organization);
+    if (!deleted) {
+      throw new Error('Failed to delete organization');
+    }
+
+    return { success: true, message: 'Organization deleted successfully' };
   }
 
   @HttpCode(HttpStatus.CREATED)

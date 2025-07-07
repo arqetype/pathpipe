@@ -47,6 +47,22 @@ export class OrganizationService {
   }
 
   /**
+   * Deletes an organization and its associated members.
+   *
+   * @param organization - The organization to delete.
+   * @param user - The user requesting the deletion, typically the owner.
+   * @returns A promise that resolves to true if the organization was deleted, or false if it failed.
+   */
+  async delete(organization: Organization): Promise<boolean> {
+    try {
+      await this.organizationsRepository.remove(organization);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Creates a new organization with the specified name and optional description.
    *
    * @param user - The user who is creating the organization, typically the owner.
