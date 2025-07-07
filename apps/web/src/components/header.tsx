@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@repo/ui/components/button';
-import signOutAction from '../actions/auth/sign-out';
+import { signOutAction } from '@/actions/auth/sign-out';
 import { startTransition } from 'react';
 import { User } from '@repo/db/entities/user';
 import Image from 'next/image';

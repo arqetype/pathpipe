@@ -18,7 +18,7 @@ import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { SignUpDto } from '@repo/db/dto/auth/sign-up.dto';
 import Link from 'next/link';
-import signUpAction from '@/actions/auth/sign-up';
+import { signUpAction } from '@/actions/auth/sign-up';
 import { useState } from 'react';
 import { resendEmailAction } from '@/actions/auth/resend-email';
 import { AuthVerificationAlert } from '@repo/ui/components/auth-verification-alert';
@@ -43,13 +43,13 @@ export function SignUpForm() {
 
   const handleSubmit = async (data: SignUpDto) => {
     startTransition(async () => {
-      const response = await signUpAction(
-        data.name,
-        data.email,
-        data.password,
-        data.confirmPassword,
-        data.terms,
-      );
+      const response = await signUpAction({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+        terms: data.terms,
+      });
 
       if (response.success) {
         setIsVerificationSent(true);

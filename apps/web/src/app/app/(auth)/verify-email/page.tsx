@@ -1,5 +1,5 @@
 import { UUID } from 'crypto';
-import verifyEmailAction from '@/actions/auth/verify-email';
+import { verifyEmailAction } from '@/actions/auth/verify-email';
 import {
   Card,
   CardContent,
@@ -60,7 +60,7 @@ export default async function VerifyEmailPage({
     );
   }
 
-  const response = await verifyEmailAction(token);
+  const response = await verifyEmailAction({ token });
 
   if (response.success) {
     return (
