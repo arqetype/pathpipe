@@ -10,7 +10,7 @@ permissions:
 jobs:
   setup:
     name: Setup
-    runs-on: ubuntu-latest
+    runs-on: weaver-runner
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,7 +45,7 @@ jobs:
 
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: weaver-runner
     needs: setup
     steps:
       - name: Checkout code
@@ -84,7 +84,7 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: weaver-runner
     needs: build
     steps:
       - name: Checkout code
@@ -123,7 +123,7 @@ jobs:
 
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: weaver-runner
     needs: build
     steps:
       - name: Checkout code
@@ -170,7 +170,7 @@ jobs:
 
   deploy:
     name: Deploy Application
-    runs-on: ubuntu-latest
+    runs-on: weaver-runner
     needs: [lint, test]
     steps:
       - name: Deploy Application
