@@ -22,7 +22,7 @@ export class StringUtils {
    * @returns True if the string is a valid email format, false otherwise
    */
   static isEmail(str: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(str);
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return typeof str === 'string' && emailRegex.test(str);
   }
 }
