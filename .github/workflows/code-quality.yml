@@ -1,4 +1,4 @@
-name: 'CodeQL Advanced'
+name: '⚛ Code Quality'
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   analyze:
-    name: ⚛ Analyzing your Typescript code
+    name: Analyze Typescript
     runs-on: weaver-runner
     permissions:
       security-events: write
@@ -30,6 +30,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
