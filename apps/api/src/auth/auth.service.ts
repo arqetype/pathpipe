@@ -29,7 +29,7 @@ export class AuthService {
    * @returns The user if valid, otherwise null.
    */
   async validateUser(email: string, password: string): Promise<User | null> {
-    const user = await this.userService.findOneByEmail(email);
+    const user = await this.userService.findOneWithPasswordByEmail(email);
     if (user && (await PasswordUtils.verifyPassword(password, user.password))) {
       return user;
     }

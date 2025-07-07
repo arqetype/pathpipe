@@ -70,6 +70,27 @@ export class UserService {
   }
 
   /**
+   * Finds a user by their email address, including their password.
+   *
+   * This is typically used for authentication purposes where the password is needed.
+   *
+   * @param email - The email address to search for
+   * @returns The user if found, otherwise null
+   */
+  async findOneWithPasswordByEmail(email: string): Promise<User | null> {
+    try {
+      const user = await this.usersRepository
+        .createQueryBuilder('user')
+        .addSelect('user.password')
+        .where('user.email = :email', { email })
+        .getOne();
+      return user;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Finds a user by their email address.
    *
    * @param email - The email address to search for

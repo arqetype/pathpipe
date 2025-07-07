@@ -18,8 +18,6 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @Get('me')
   getMe(@CurrentUser() user: User) {
-    // NOTE: don't return the password in the response
-    user = { ...user, password: '••••••••••' };
     return user;
   }
 

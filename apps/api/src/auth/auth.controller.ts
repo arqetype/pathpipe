@@ -163,13 +163,7 @@ export class AuthController {
       resetPasswordUser.token,
     );
 
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      avatar_url: user.avatar_url,
-      is_github_user: user.is_github_user,
-    };
+    return user;
   }
 
   // GITHUB AUTHENTICATION FLOW
