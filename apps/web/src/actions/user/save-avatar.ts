@@ -1,7 +1,7 @@
 'use server';
 
 import { post } from '@/lib/fetch';
-import { AvatarHairStyle, AvatarMood } from '@repo/db/types/avatar';
+import { AvatarHairStyle, AvatarMood } from '@repo/db/types/user/avatar';
 import { revalidatePath } from 'next/cache';
 
 export async function saveAvatarCustomizationAction(data: {

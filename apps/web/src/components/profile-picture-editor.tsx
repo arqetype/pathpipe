@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import { useForm, type Control } from 'react-hook-form';
-import { AvatarMoods, AvatarHairStyles } from '@repo/db/types/avatar';
+import { AvatarMoods, AvatarHairStyles } from '@repo/db/types/user/avatar';
 import HorizontalSelect from './horizontal-select';
 import AvatarCustomizationDto from '@repo/db/dto/settings/avatar-customization.dto';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
