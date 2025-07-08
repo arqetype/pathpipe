@@ -11,7 +11,7 @@ import {
 import { cn } from '@repo/ui/lib/utils';
 import Link from 'next/link';
 import { AlertCircleIcon } from 'lucide-react';
-import resetPasswordUserAction from '@/actions/auth/reset-password-user';
+import { resetPasswordUserAction } from '@/actions/auth/reset-password-user';
 import type { UUID } from 'node:crypto';
 
 type ResetPasswordPageProps = {
@@ -59,9 +59,9 @@ export default async function ResetPasswordPage({
     );
   }
 
-  const { user } = await resetPasswordUserAction(token);
+  const result = await resetPasswordUserAction({ token });
 
-  if (!user) {
+  if (!result.success) {
     return (
       <Card className="border shadow-md max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
         <CardHeader className="space-y-1 text-center">
@@ -97,7 +97,7 @@ export default async function ResetPasswordPage({
     );
   }
 
-  if (user.is_github_user) {
+  if (result.data.user.is_github_user) {
     return (
       <Card className="border shadow-md max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
         <CardHeader className="space-y-1 text-center">
@@ -133,5 +133,5 @@ export default async function ResetPasswordPage({
     );
   }
 
-  return <ResetPasswordForm token={token} user={user} />;
+  return <ResetPasswordForm token={token} user={result.data.user} />;
 }

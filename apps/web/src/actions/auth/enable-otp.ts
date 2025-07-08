@@ -1,30 +1,44 @@
 'use server';
 
 import { get, post } from '@/lib/fetch';
-import { EnableOtpDto } from '@repo/db/dto/auth/enable-otp.dto';
+import { action } from '@/lib/safe-action';
+import {
+  EnableOtpDto,
+  EnableOtpResponseDto,
+} from '@repo/db/dto/auth/enable-otp.dto';
 import { revalidatePath } from 'next/cache';
 
-export async function enableOtpAction() {
-  const response = await get('/auth/enable-otp');
+export const enableOtpAction = action.needsAuth().action(async () => {
+  const { ok, data } = await get('/auth/enable-otp');
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    if ('message' in errorData)
-      return { success: false, error: errorData.message as string };
-    else return { success: false };
-  }
+  if (!ok)
+    throw new Error(
+      Array.isArray(data.message) && data.message.length > 0
+        ? (data.message[0] as string)
+        : (data.message as string),
+    );
 
-  return { success: true };
-}
+  return { message: 'OTP action initiated successfully' };
+});
 
-export async function enableOtpActionConfirm(data: EnableOtpDto) {
-  const response = await post('/auth/enable-otp', data);
+export const enableOtpActionConfirm = action
+  .needsAuth()
+  .inputDto(EnableOtpDto)
+  .outputDto(EnableOtpResponseDto)
+  .action(async ({ parsedInput }) => {
+    const { ok, data } = await post<EnableOtpResponseDto>(
+      '/auth/enable-otp',
+      parsedInput,
+    );
 
-  if (!response.ok) {
-    return { success: false };
-  }
+    if (!ok)
+      throw new Error(
+        Array.isArray(data.message) && data.message.length > 0
+          ? (data.message[0] as string)
+          : (data.message as string),
+      );
 
-  revalidatePath('/app/settings/security', 'layout');
+    revalidatePath('/app/settings/security', 'layout');
 
-  return { success: true };
-}
+    return { message: data.message };
+  });

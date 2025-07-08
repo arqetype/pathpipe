@@ -39,3 +39,7 @@ export class ResetPasswordDto {
   @Validate(PasswordMatchConstraint)
   confirmPassword: string;
 }
+
+export class ResetPasswordResponseDto {
+  success: boolean;
+}

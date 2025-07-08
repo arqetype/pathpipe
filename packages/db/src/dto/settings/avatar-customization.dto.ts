@@ -1,4 +1,10 @@
-import { IsBoolean, IsIn, IsString, Matches } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsNotEmpty,
+  IsString,
+  Matches,
+} from 'class-validator';
 import {
   AvatarHairStyleKeys,
   AvatarMoodKeys,
@@ -6,7 +12,7 @@ import {
   type AvatarMood,
 } from '../../types/user/avatar';
 
-export default class AvatarCustomizationDto {
+export class AvatarCustomizationDto {
   @IsString()
   @IsIn(AvatarMoodKeys, {
     message: `Mood must be one of the following: ${AvatarMoodKeys.join(', ')}`,
@@ -42,4 +48,23 @@ export default class AvatarCustomizationDto {
 
   @IsBoolean()
   facialHair: boolean;
+}
+
+export class AvatarCustomizationResponseDto {
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+
+  @IsNotEmpty()
+  @IsString()
+  image: string;
+}
+
+export class AvatarCustomizationSaveResponseDto {
+  @IsBoolean()
+  success: boolean;
+
+  @IsNotEmpty()
+  @IsString()
+  message: string;
 }

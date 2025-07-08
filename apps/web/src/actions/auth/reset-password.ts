@@ -1,47 +1,52 @@
 'use server';
 
-type ResetPasswordResponse = {
-  success: boolean;
-  message: string;
-};
+import { publicPost } from '@/lib/fetch';
+import { action } from '@/lib/safe-action';
+import { ResetPasswordResponseDto } from '@repo/db/dto/auth/reset-password.dto';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
-export default async function resetPasswordAction(
-  newPassword: string,
-  confirmPassword: string,
-  token: string,
-): Promise<ResetPasswordResponse> {
-  try {
-    const apiUrl = new URL(
+class ResetPasswordActionDto {
+  @IsString()
+  @IsNotEmpty()
+  newPassword: string;
+
+  @IsString()
+  @IsNotEmpty()
+  confirmPassword: string;
+
+  @IsString()
+  @IsUUID()
+  token: string;
+}
+
+class ResetPasswordResponse {
+  @IsNotEmpty()
+  @IsString()
+  message: string;
+}
+
+export const resetPasswordAction = action
+  .inputDto(ResetPasswordActionDto)
+  .outputDto(ResetPasswordResponse)
+  .action(async ({ parsedInput }) => {
+    const { ok, data } = await publicPost<ResetPasswordResponseDto>(
       '/auth/reset-password',
-      process.env.NEXT_PUBLIC_API_URL,
+      {
+        newPassword: parsedInput.newPassword,
+        confirmPassword: parsedInput.confirmPassword,
+        token: parsedInput.token,
+      },
     );
 
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ newPassword, confirmPassword, token }),
-    });
-
-    const parsed = await response.json();
-
-    console.log(parsed);
-
-    if (!response.ok) {
-      return {
-        success: false,
-        message:
-          parsed.message || 'An error occurred while resetting the password',
-      };
+    if (!ok) {
+      throw new Error(
+        Array.isArray(data.message) && data.message.length > 0
+          ? (data.message[0] as string)
+          : (data.message as string),
+      );
     }
 
-    return { success: true, message: 'Password reset successful' };
-  } catch (error: unknown) {
     return {
-      success: false,
-      message:
-        error instanceof Error ? error.message : 'An unexpected error occurred',
+      message: 'Password reset successful',
     };
-  }
-}
+  });
