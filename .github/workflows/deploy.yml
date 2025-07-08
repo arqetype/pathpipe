@@ -3,6 +3,11 @@ on:
   push:
     branches: [prod]
 
+# Cancel previous deployment runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -13,6 +18,7 @@ jobs:
     with:
       ref: ${{ github.sha }}
       node-version: '22'
+      concurrency-group: build-lint-test-deploy-${{ github.ref }}
 
   deploy:
     name: Deploy

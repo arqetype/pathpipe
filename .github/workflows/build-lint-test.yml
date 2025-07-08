@@ -13,6 +13,15 @@ on:
         required: false
         type: string
         default: '22'
+      concurrency-group:
+        description: 'Concurrency group for this workflow'
+        required: false
+        type: string
+
+# Handle concurrency when called as a reusable workflow
+concurrency:
+  group: ${{ inputs.concurrency-group || github.run_id }}
+  cancel-in-progress: ${{ inputs.concurrency-group != '' }}
 
 permissions:
   contents: read

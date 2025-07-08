@@ -2,6 +2,11 @@ name: '🔀 Pull Request Jobs'
 on:
   pull_request:
 
+# Cancel previous workflow runs for the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -12,3 +17,4 @@ jobs:
     with:
       ref: ${{ github.event.pull_request.head.sha }}
       node-version: '22'
+      concurrency-group: build-lint-test-pr-${{ github.event.pull_request.number }}
