@@ -26,7 +26,9 @@ export class AdminOrganizationGuard implements CanActivate {
       request.body.organizationId || request.params.organizationId;
 
     if (!organizationId) {
-      throw new ForbiddenException('Organization ID is required');
+      throw new ForbiddenException(
+        'You are not authorized to edit this organization',
+      );
     }
 
     const organization =
