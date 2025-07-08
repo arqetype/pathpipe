@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, type Profile } from 'passport-github2';
 import { AuthService } from '../auth.service';
+import { User } from '@repo/db/entities/user';
 
 @Injectable()
 export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
@@ -18,8 +19,11 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: Profile) {
-    // Get primary email from GitHub profile
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: Profile,
+  ): Promise<User> {
     const emails = profile.emails;
     const primaryEmail = emails && emails.length > 0 ? emails[0].value : null;
 
@@ -27,7 +31,6 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
       throw new Error('No email found from GitHub profile');
     }
 
-    // Create user if not exists or return existing user
     return this.authService.findOrCreateGithubUser({
       email: primaryEmail,
       name: profile.displayName || `${profile.username}`,

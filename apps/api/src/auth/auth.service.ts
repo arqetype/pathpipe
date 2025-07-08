@@ -32,7 +32,6 @@ export class AuthService {
     email: string,
     response: Response,
   ): Promise<{ success: boolean }> {
-    // Make sure the user exists as a regular user and not a GitHub user
     if (await this.userService.isGithubUser(email)) {
       throw new UnauthorizedException(
         'GitHub users cannot sign in with email and password',

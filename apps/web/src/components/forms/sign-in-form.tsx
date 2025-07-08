@@ -23,12 +23,12 @@ import Link from 'next/link';
 import { Button } from '@repo/ui/components/button';
 import { Loader2Icon, ShieldCheckIcon, MailIcon } from 'lucide-react';
 import { redirect } from 'next/navigation';
-import signInAction from '@/actions/auth/sign-in';
-import resendEmailAction from '@/actions/auth/resend-email';
+import { signInAction } from '@/actions/auth/sign-in';
+import { resendEmailAction } from '@/actions/auth/resend-email';
 import { useState } from 'react';
 import { AuthVerificationAlert } from '@repo/ui/components/auth-verification-alert';
 import { AuthVerificationError } from '@repo/ui/components/auth-verification-error';
-import forgotPasswordEmail from '@/actions/auth/forgot-password-email';
+import { forgotPasswordEmailAction } from '@/actions/auth/forgot-password-email';
 
 type StatusState = {
   success?: boolean;
@@ -60,27 +60,44 @@ export function SignInForm() {
   };
 
   const handleSignIn = async (data: SignInDto) => {
-    const response = await signInAction(data.email, data.password);
+    const response = await signInAction({
+      email: data.email,
+      password: data.password,
+    });
 
-    if (response.success && !response.code) {
-      redirect('/app/');
-    } else if (response.code === 'otp_required') {
+    if (response.success && !response.data.code) return redirect('/app/');
+
+    if (response.success && response.data.code === 'otp_required') {
       setShowOtp(true);
-    } else if (
-      response.code === 'email_not_verified' ||
-      response.code === 'email_verification_cooldown'
+      return;
+    }
+
+    if (response.success && response.data.code === 'email_not_verified') {
+      setShowEmailVerification(true);
+      return;
+    }
+
+    if (
+      response.success &&
+      response.data.code === 'email_verification_cooldown'
     ) {
       setShowEmailVerification(true);
-      if (response.code === 'email_verification_cooldown') {
-        setResendStatus({
-          success: false,
-          message: 'Please wait before requesting another verification email.',
-        });
-      }
-    } else {
+      setResendStatus({
+        success: false,
+        message: 'Please wait before requesting another verification email.',
+      });
+      return;
+    }
+
+    if (!response.success) {
       form.setError('email', {
         type: 'manual',
         message: response.message,
+      });
+    } else {
+      form.setError('email', {
+        type: 'manual',
+        message: 'An unexpected error occurred. Please try again later.',
       });
     }
   };
@@ -94,10 +111,15 @@ export function SignInForm() {
       return;
     }
 
-    const response = await signInAction(data.email, data.password, data.otp);
+    const response = await signInAction({
+      email: data.email,
+      password: data.password,
+      otp: data.otp,
+    });
 
-    if (response.success) redirect('/app/');
-    else {
+    if (response.success) {
+      return redirect('/app/');
+    } else {
       form.setError('otp', {
         type: 'manual',
         message: response.message,
@@ -127,7 +149,8 @@ export function SignInForm() {
     setResendStatus({});
     startTransition(async () => {
       try {
-        const response = await resendEmailAction(form.getValues('email'));
+        const email = form.getValues('email');
+        const response = await resendEmailAction({ email });
         setResendStatus({
           success: response.success,
           message: response.success
@@ -158,7 +181,7 @@ export function SignInForm() {
 
     startTransition(async () => {
       try {
-        const response = await forgotPasswordEmail(email);
+        const response = await forgotPasswordEmailAction({ email });
         setForgotPasswordStatus({
           success: response.success,
           message: response.success
@@ -180,33 +203,39 @@ export function SignInForm() {
   const handleResendOtp = () => {
     setOtpStatus({});
     startTransition(async () => {
-      try {
-        const response = await signInAction(
-          form.getValues('email'),
-          form.getValues('password'),
-        );
+      const response = await signInAction({
+        email: form.getValues('email'),
+        password: form.getValues('password'),
+      });
 
-        if (response.code === 'otp_required') {
-          setOtpStatus({
-            success: true,
-            message: 'A new verification code has been sent.',
-          });
-        } else if (response.code === 'otp_cooldown') {
-          setOtpStatus({
-            success: false,
-            message:
-              response.message || 'Please wait before requesting another code.',
-          });
-        } else {
-          setOtpStatus({
-            success: false,
-            message: response.message || 'Failed to resend verification code.',
-          });
-        }
-      } catch {
+      if (response.success && response.data.code === 'otp_required') {
+        setOtpStatus({
+          success: true,
+          message: 'A new verification code has been sent.',
+        });
+      } else if (response.success && response.data.code === 'otp_cooldown') {
         setOtpStatus({
           success: false,
-          message: 'An error occurred. Please try again.',
+          message:
+            response.data.message ||
+            'Please wait before requesting another code.',
+        });
+      } else if (response.success && !response.data.code) {
+        setOtpStatus({
+          success: false,
+          message:
+            response.data.message || 'Failed to resend verification code.',
+        });
+      } else if (!response.success) {
+        setOtpStatus({
+          success: false,
+          message:
+            response.message || 'An error occurred while resending the code.',
+        });
+      } else {
+        setOtpStatus({
+          success: false,
+          message: 'An unexpected error occurred. Please try again.',
         });
       }
     });

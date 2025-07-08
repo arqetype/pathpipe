@@ -1,44 +1,34 @@
 'use server';
 
-type ForgotPasswordEmailResponse = {
-  success: boolean;
+import { publicPost } from '@/lib/fetch';
+import { action } from '@/lib/safe-action';
+import { IsEmail, IsString } from 'class-validator';
+
+class ForgotPasswordEmailActionDto {
+  @IsString()
+  @IsEmail()
+  email: string;
+}
+
+class ForgotPasswordEmailActionResponseDto {
+  @IsString()
   message: string;
-};
+}
 
-export default async function forgotPasswordEmail(
-  email: string,
-): Promise<ForgotPasswordEmailResponse> {
-  try {
-    const apiUrl = new URL(
-      '/auth/forgot-password',
-      process.env.NEXT_PUBLIC_API_URL,
-    );
-
-    const response = await fetch(apiUrl.toString(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email }),
+export const forgotPasswordEmailAction = action
+  .inputDto(ForgotPasswordEmailActionDto)
+  .outputDto(ForgotPasswordEmailActionResponseDto)
+  .action(async ({ parsedInput }) => {
+    const { ok } = await publicPost('/auth/forgot-password', {
+      email: parsedInput.email,
     });
 
-    if (!response.ok) {
-      return {
-        success: false,
-        message: 'An error occurred while sending the email',
-      };
+    if (!ok) {
+      throw new Error('Failed to send forgot password email');
     }
 
     return {
-      success: true,
       message:
         'If you have an account, you will receive a password reset email shortly.',
     };
-  } catch (error) {
-    return {
-      success: false,
-      message:
-        error instanceof Error ? error.message : 'An unexpected error occurred',
-    };
-  }
-}
+  });

@@ -40,9 +40,11 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
         'otp_required',
       );
     }
+
     if (user.need_otp && otp) {
       const isValidOTP = await this.authService.verifyOTP(user, otp);
-      if (!isValidOTP) {
+
+      if (!isValidOTP.success) {
         throw new UnauthorizedException('Invalid OTP', 'invalid_otp');
       }
     }

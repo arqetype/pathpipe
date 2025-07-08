@@ -1,49 +1,32 @@
 'use server';
 
+import { publicPost } from '@/lib/fetch';
+import { action } from '@/lib/safe-action';
 import { UUID } from 'crypto';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
-type VerifyEmailResponse = {
-  success: boolean;
+class VerifyEmailActionDto {
+  @IsUUID()
+  token: UUID;
+}
+
+class VerifyEmailResponse {
+  @IsString()
+  @IsNotEmpty()
   message: string;
-};
+}
 
-export default async function verifyEmailAction(
-  token: UUID,
-): Promise<VerifyEmailResponse> {
-  try {
-    const apiUrl = new URL(
-      '/auth/verify-email',
-      process.env.NEXT_PUBLIC_API_URL,
-    );
+export const verifyEmailAction = action
+  .inputDto(VerifyEmailActionDto)
+  .outputDto(VerifyEmailResponse)
+  .action(async ({ parsedInput }) => {
+    const { ok } = await publicPost('/auth/verify-email', parsedInput);
 
-    const response = await fetch(apiUrl.toString(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ token }),
-    });
-
-    const parsed = await response.json();
-
-    if (!response.ok) {
-      return {
-        success: false,
-        message:
-          response.status === 401
-            ? 'message' in parsed
-              ? parsed.message
-              : 'Invalid token'
-            : parsed.message || 'An error occurred while verifying email',
-      };
+    if (!ok) {
+      throw new Error('An error occurred while verifying email');
     }
 
-    return { success: true, message: 'Email verification successful' };
-  } catch (error) {
     return {
-      success: false,
-      message:
-        error instanceof Error ? error.message : 'An unexpected error occurred',
+      message: 'Email verification successful',
     };
-  }
-}
+  });

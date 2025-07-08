@@ -60,3 +60,7 @@ export class SignUpDto {
   @Validate(TermsAcceptedConstraint)
   terms: boolean;
 }
+
+export class SignUpResponseDto {
+  success: boolean;
+}

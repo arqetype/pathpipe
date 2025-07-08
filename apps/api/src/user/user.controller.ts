@@ -8,7 +8,11 @@ import {
 } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '@repo/db/entities/user';
-import AvatarCustomizationDto from '@repo/db/dto/settings/avatar-customization.dto';
+import {
+  AvatarCustomizationDto,
+  AvatarCustomizationResponseDto,
+  AvatarCustomizationSaveResponseDto,
+} from '@repo/db/dto/settings/avatar-customization.dto';
 import { UserService } from './user.service';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@repo/db/types/user/roles';
@@ -35,7 +39,7 @@ export class UserController {
   getAvatarPreview(
     @CurrentUser() user: User,
     @Body() avatarCustomizationDto: AvatarCustomizationDto,
-  ) {
+  ): AvatarCustomizationResponseDto {
     const image = this.userService.generateAvatarWithSettings(
       avatarCustomizationDto,
       user.email,
@@ -53,7 +57,7 @@ export class UserController {
   async saveAvatarCustomization(
     @CurrentUser() user: User,
     @Body() avatarCustomizationDto: AvatarCustomizationDto,
-  ) {
+  ): Promise<AvatarCustomizationSaveResponseDto> {
     await this.userService.updateUserAvatar(user, avatarCustomizationDto);
 
     return {

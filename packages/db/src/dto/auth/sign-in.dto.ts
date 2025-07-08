@@ -12,3 +12,7 @@ export class SignInDto {
   @Matches(/^\d{6}$/, { message: 'OTP must be exactly 6 digits' })
   otp?: string;
 }
+
+export class SignInResponseDto {
+  success: boolean;
+}

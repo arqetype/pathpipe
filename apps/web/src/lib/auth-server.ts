@@ -13,16 +13,37 @@ export const getCurrentUser = cache(async () => {
   }
 
   try {
-    const response = await get('/user/me');
+    const { ok, data } = await get<User>('/user/me');
 
-    if (!response.ok) {
+    if (!ok) {
       return redirect('/app/sign-in');
     }
 
-    const user: User = await response.json();
+    return data;
+  } catch {
+    return redirect('/app/sign-in');
+  }
+});
+
+export const getCurrentUserOrNull = cache(async () => {
+  const cookieStore = await cookies();
+  const authCookie = cookieStore.get('auth-token');
+
+  if (!authCookie) {
+    return null;
+  }
+
+  try {
+    const { ok, data } = await get<User>('/user/me');
+
+    if (!ok) {
+      return null;
+    }
+
+    const user: User = data;
 
     return user;
   } catch {
-    return redirect('/app/sign-in');
+    return null;
   }
 });

@@ -52,25 +52,15 @@ export default function EnableOtp({ user }: EnableOtpProps) {
     setSwitchChecked(newState);
     setIsInitiating(true);
 
-    try {
-      const response = await enableOtpAction();
+    const response = await enableOtpAction();
 
-      if (!response.success) {
-        toast.error(
-          response.error || 'Failed to initiate OTP action. Please try again.',
-        );
-        setSwitchChecked(user.need_otp);
-        return;
-      }
-
-      dialogRef.current?.open();
-    } catch (error) {
-      console.error('Error initiating OTP action:', error);
-      toast.error('An unexpected error occurred. Please try again.');
+    if (!response.success) {
+      toast.error(response.message);
       setSwitchChecked(user.need_otp);
-    } finally {
-      setIsInitiating(false);
+    } else {
+      dialogRef.current?.open();
     }
+    setIsInitiating(false);
   };
 
   const handleClose = () => {
@@ -87,39 +77,26 @@ export default function EnableOtp({ user }: EnableOtpProps) {
     },
   });
 
-  const onSubmit = async (data: EnableOtpDto) => {
-    if (isConfirming) return; // Prevent multiple submissions
+  const onSubmit = async (enableOtpDto: EnableOtpDto) => {
+    if (isConfirming) return;
 
     setIsConfirming(true);
 
-    try {
-      const { success } = await enableOtpActionConfirm(data);
+    const result = await enableOtpActionConfirm(enableOtpDto);
 
-      if (success) {
-        const newOtpState = !user.need_otp;
-        setSwitchChecked(newOtpState);
-        dialogRef.current?.close();
-        form.reset();
-
-        // Show success message
-        toast.success(
-          `OTP has been ${newOtpState ? 'enabled' : 'disabled'} successfully.`,
-        );
-      } else {
-        form.setError('otp', {
-          type: 'manual',
-          message: 'Invalid verification code. Please try again.',
-        });
-      }
-    } catch (error) {
-      console.error('Error confirming OTP action:', error);
+    if (result.success) {
+      setSwitchChecked(!user.need_otp);
+      dialogRef.current?.close();
+      form.reset();
+      toast.success(result.data.message);
+    } else {
       form.setError('otp', {
         type: 'manual',
-        message: 'An unexpected error occurred. Please try again.',
+        message: result.message,
       });
-    } finally {
-      setIsConfirming(false);
     }
+
+    setIsConfirming(false);
   };
 
   return (

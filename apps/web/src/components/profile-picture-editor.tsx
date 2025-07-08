@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useForm, type Control } from 'react-hook-form';
 import { AvatarMoods, AvatarHairStyles } from '@repo/db/types/user/avatar';
 import HorizontalSelect from './horizontal-select';
-import AvatarCustomizationDto from '@repo/db/dto/settings/avatar-customization.dto';
+import { AvatarCustomizationDto } from '@repo/db/dto/settings/avatar-customization.dto';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import {
   Form,
@@ -86,7 +86,7 @@ export default function ProfilePictureEditor() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const handleSubmit = useCallback(async (data: AvatarCustomizationDto) => {
-    const json = await saveAvatarCustomizationAction({
+    const result = await saveAvatarCustomizationAction({
       mood: data.mood,
       hairStyle: data.hairStyle,
       hairColor: data.hairColor,
@@ -95,32 +95,25 @@ export default function ProfilePictureEditor() {
       facialHair: data.facialHair,
     });
 
-    if (json.success) {
-      toast.success(json.message || 'Avatar customization saved successfully.');
+    if (result.success) {
+      toast.success(result.data.message);
     } else {
       toast.error(
-        json.message ||
+        result.message ||
           'Failed to save avatar customization. Please try again.',
       );
     }
   }, []);
 
   const handlePreview = useCallback(async (data: AvatarCustomizationDto) => {
-    const json = await previewAvatarCustomizationAction({
-      mood: data.mood,
-      hairStyle: data.hairStyle,
-      hairColor: data.hairColor,
-      skinColor: data.skinColor,
-      backgroundColor: data.backgroundColor,
-      facialHair: data.facialHair,
-    });
+    const result = await previewAvatarCustomizationAction(data);
 
-    if ('image' in json && json.image && typeof json.image === 'string') {
-      setAvatarPreview(json.image);
+    if (result.success) {
+      setAvatarPreview(result.data.image);
     } else {
       toast.error(
-        json.message ||
-          'Failed to generate avatar preview. Please try again later.',
+        result.message ||
+          'Failed to generate avatar preview. Please try again.',
       );
     }
   }, []);
