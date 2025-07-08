@@ -10,7 +10,7 @@ import {
   AvatarMoodKeys,
   type AvatarHairStyle,
   type AvatarMood,
-} from '../../types/avatar';
+} from '../../types/user/avatar';
 
 export class AvatarCustomizationDto {
   @IsString()

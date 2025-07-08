@@ -50,13 +50,7 @@ export class UserController {
     @CurrentUser() user: User,
     @Body() avatarCustomizationDto: AvatarCustomizationDto,
   ): Promise<AvatarCustomizationSaveResponseDto> {
-    const userData = await this.userService.findOneById(user.id);
-
-    if (!userData) {
-      throw new BadRequestException('User not found');
-    }
-
-    await this.userService.updateUserAvatar(userData, avatarCustomizationDto);
+    await this.userService.updateUserAvatar(user, avatarCustomizationDto);
 
     return {
       success: true,

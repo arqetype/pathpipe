@@ -87,9 +87,7 @@ export class AuthController {
       throw new UnauthorizedException('GitHub users cannot enable OTP');
     }
 
-    const userData = await this.userService.findOneById(user.id);
-
-    return await this.authService.sendOTP(userData);
+    return await this.authService.sendOTP(user);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -102,19 +100,17 @@ export class AuthController {
       throw new UnauthorizedException('GitHub users cannot enable OTP');
     }
 
-    const userData = await this.userService.findOneById(user.id);
-
     const { success } = await this.authService.verifyOTP(
-      userData,
+      user,
       enableOtpDto.otp,
     );
 
     if (success) {
-      if (userData.need_otp) {
-        await this.userService.disableOtp(userData);
+      if (user.need_otp) {
+        await this.userService.disableOtp(user);
         return { message: 'OTP disabled successfully' };
       } else {
-        await this.userService.enableOtp(userData);
+        await this.userService.enableOtp(user);
         return { message: 'OTP enabled successfully' };
       }
     } else {
@@ -188,24 +184,20 @@ export class AuthController {
       resetPasswordUser.token,
     );
 
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      avatar_url: user.avatar_url,
-      is_github_user: user.is_github_user,
-    };
+    return user;
   }
 
   // GITHUB AUTHENTICATION FLOW
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('github'))
   @Public()
   @Get('github')
-  @UseGuards(AuthGuard('github'))
   async githubAuth() {}
 
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('github'))
   @Public()
   @Get('github/callback')
-  @UseGuards(AuthGuard('github'))
   githubCallback(@Req() req: Request, @Res() res: Response) {
     if (req.user) {
       const token = this.authService.generateJwtToken((req.user as User).email);
