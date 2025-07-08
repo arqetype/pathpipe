@@ -52,7 +52,7 @@
     "@repo/prettier-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@swc/cli": "^0.7.7",
-    "@swc/core": "^1.12.9",
+    "@swc/core": "^1.12.11",
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.3",
