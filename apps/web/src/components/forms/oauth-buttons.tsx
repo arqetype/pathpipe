@@ -23,7 +23,7 @@ export function OAuthButtons() {
         disabled={true}
       >
         <GoogleIcon />
-        <span className="ml-2">Connect with Google</span>
+        <span className="ml-2">Use Google</span>
       </Button>
       <Button
         variant="outline"
@@ -39,7 +39,7 @@ export function OAuthButtons() {
         ) : (
           <>
             <GitHubIcon />
-            <span className="ml-2">Connect with GitHub</span>
+            <span className="ml-2">Use GitHub</span>
           </>
         )}
       </Button>
