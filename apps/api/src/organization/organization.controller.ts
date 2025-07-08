@@ -8,6 +8,8 @@ import {
   Get,
   Param,
   Delete,
+  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateOrganizationDto } from '@repo/db/dto/organization/create-organization.dto';
 import { InviteUsersDto } from '@repo/db/dto/organization/invite-users.dto';
@@ -45,11 +47,11 @@ export class OrganizationController {
     const organization =
       await this.organizationService.findOneById(organizationId);
     if (!organization) {
-      throw new Error('Organization not found');
+      throw new NotFoundException('Organization not found');
     }
     const deleted = await this.organizationService.delete(organization);
     if (!deleted) {
-      throw new Error('Failed to delete organization');
+      throw new UnauthorizedException('Failed to delete organization');
     }
 
     return { success: true, message: 'Organization deleted successfully' };
@@ -67,7 +69,7 @@ export class OrganizationController {
       createOrganizationDto.description,
     );
     if (!organization) {
-      throw new Error('Organization creation failed');
+      throw new UnauthorizedException('Organization creation failed');
     }
 
     return organization;
@@ -83,10 +85,10 @@ export class OrganizationController {
     const role = await this.roleService.findOneById(inviteUsersDto.roleId);
 
     if (!organization) {
-      throw new Error('Organization not found');
+      throw new NotFoundException('Organization not found');
     }
     if (!role) {
-      throw new Error('Role not found');
+      throw new NotFoundException('Role not found');
     }
 
     return this.organizationService.inviteUsers(
@@ -108,7 +110,7 @@ export class OrganizationController {
     );
 
     if (!member) {
-      throw new Error('Failed to accept invitation');
+      throw new UnauthorizedException('Failed to accept invitation');
     }
 
     return member;

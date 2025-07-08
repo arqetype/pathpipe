@@ -46,7 +46,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         throw new UnauthorizedException('Email not verified');
       }
 
-      request.user = { ...user };
+      request.user = user;
       return true;
     } catch {
       throw new UnauthorizedException('Invalid token');
