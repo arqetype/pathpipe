@@ -11,11 +11,6 @@ import { StringUtils } from '../common/utils/string.utils';
 import { MemberService } from './member/member.service';
 import { RoleService } from './role/role.service';
 
-/**
- * Service responsible for managing organization data in the application.
- *
- * Provides methods for organization creation, retrieval, and updates to organization properties
- */
 @Injectable()
 export class OrganizationService {
   constructor(
@@ -27,12 +22,6 @@ export class OrganizationService {
     private readonly mailerService: MailerService,
   ) {}
 
-  /**
-   * Finds an organization by its ID.
-   *
-   * @param id - The ID of the organization to find.
-   * @returns A promise that resolves to the organization if found, or null if not found.
-   */
   async findOneById(id: string): Promise<Organization | null> {
     try {
       const organization: Organization =
@@ -46,13 +35,18 @@ export class OrganizationService {
     }
   }
 
-  /**
-   * Deletes an organization and its associated members.
-   *
-   * @param organization - The organization to delete.
-   * @param user - The user requesting the deletion, typically the owner.
-   * @returns A promise that resolves to true if the organization was deleted, or false if it failed.
-   */
+  async findAll(): Promise<Organization[]> {
+    try {
+      const organizations: Organization[] =
+        await this.organizationsRepository.find({
+          relations: ['members', 'roles'],
+        });
+      return organizations;
+    } catch {
+      return [];
+    }
+  }
+
   async delete(organization: Organization): Promise<boolean> {
     try {
       await this.organizationsRepository.remove(organization);
@@ -62,14 +56,6 @@ export class OrganizationService {
     }
   }
 
-  /**
-   * Creates a new organization with the specified name and optional description.
-   *
-   * @param user - The user who is creating the organization, typically the owner.
-   * @param name - The name of the organization.
-   * @param description - An optional description of the organization.
-   * @returns A promise that resolves to the created organization.
-   */
   async create(
     user: User,
     name: string,
@@ -96,14 +82,6 @@ export class OrganizationService {
     }
   }
 
-  /**
-   * Adds a member to an organization with a specified role.
-   *
-   * @param organization - The organization to which the user is being added.
-   * @param user - The user being added to the organization.
-   * @param role - The role assigned to the user in the organization.
-   * @returns A promise that resolves to the created organization member.
-   */
   async addMember(
     organization: Organization,
     user: User,
@@ -118,14 +96,6 @@ export class OrganizationService {
   }
 
   // EMAIL INVITATION FLOW
-  /**
-   * Invites users to an organization by sending them an email invitation.
-   *
-   * @param userEmails - An array of email addresses to invite.
-   * @param organization - The organization to which users are being invited.
-   * @param role - The role assigned to the invited users in the organization.
-   * @returns A promise that resolves to an object containing lists of successfully invited and failed emails.
-   */
   async inviteUsers(
     userEmails: string[],
     organization: Organization,
@@ -164,13 +134,6 @@ export class OrganizationService {
     return { invitedEmails, failedEmails };
   }
 
-  /**
-   * Accepts an invitation to join an organization.
-   *
-   * @param user - The user accepting the invitation.
-   * @param token - The invitation token.
-   * @returns A promise that resolves to the updated organization member or null if the invitation is invalid.
-   */
   async acceptInvitation(
     user: User,
     token: string,

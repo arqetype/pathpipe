@@ -19,6 +19,8 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '@repo/db/entities/user';
 import { RoleService } from './role/role.service';
 import { AdminOrganizationGuard } from './guards/admin-organization.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '@repo/db/types/user/roles';
 
 @Controller('organization')
 export class OrganizationController {
@@ -27,9 +29,16 @@ export class OrganizationController {
     private readonly roleService: RoleService,
   ) {}
 
+  @Roles(UserRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @Get()
+  getAll() {
+    return this.organizationService.findAll();
+  }
+
   @HttpCode(HttpStatus.OK)
   @Get(':organizationId')
-  async findOneById(
+  async getById(
     @CurrentUser() user: User,
     @Param('organizationId') organizationId: string,
   ) {

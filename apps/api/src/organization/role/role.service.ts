@@ -5,11 +5,6 @@ import { OrganizationRole } from '@repo/db/entities/organization/organization-ro
 import { DEFAULT_ROLES } from '@repo/db/types/organization/default-roles';
 import { Repository } from 'typeorm';
 
-/**
- * Service responsible for managing organization role data in the application.
- *
- * Provides methods for assigning, retrieving, and updating organization member roles.
- */
 @Injectable()
 export class RoleService {
   constructor(
@@ -17,12 +12,6 @@ export class RoleService {
     private readonly rolesRepository: Repository<OrganizationRole>,
   ) {}
 
-  /**
-   * Finds an organization role by its ID.
-   *
-   * @param id - The ID of the role to find.
-   * @returns A promise that resolves to the organization role if found, or null if not found.
-   */
   async findOneById(id: string): Promise<OrganizationRole | null> {
     try {
       return await this.rolesRepository.findOne({
@@ -34,12 +23,6 @@ export class RoleService {
     }
   }
 
-  /**
-   * Creates default roles for a new organization.
-   *
-   * @param organization - The organization for which to create default roles.
-   * @returns A promise that resolves when the roles have been created.
-   */
   async createDefaultRoles(
     organization: Organization,
   ): Promise<OrganizationRole[]> {

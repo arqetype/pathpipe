@@ -61,7 +61,7 @@ export class AuthController {
     );
   }
 
-  // ENABLE OTP FLOW
+  // ---- ENABLE OTP FLOW ----------------------
   @HttpCode(HttpStatus.OK)
   @Get('enable-otp')
   async enableOtpGet(@CurrentUser() user: User) {

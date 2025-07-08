@@ -10,10 +10,19 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '@repo/db/entities/user';
 import AvatarCustomizationDto from '@repo/db/dto/settings/avatar-customization.dto';
 import { UserService } from './user.service';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '@repo/db/types/user/roles';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Roles(UserRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @Get()
+  getAll() {
+    return this.userService.findAll();
+  }
 
   @HttpCode(HttpStatus.OK)
   @Get('me')

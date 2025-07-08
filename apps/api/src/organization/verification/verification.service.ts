@@ -7,12 +7,6 @@ import { OrganizationInvitationToken } from '@repo/db/entities/organization/orga
 import { Organization } from '@repo/db/entities/organization/organization';
 import { OrganizationRole } from '@repo/db/entities/organization/organization-role';
 
-/**
- * Service responsible for managing authentication verification processes in the application.
- *
- * Handles email verification tokens, one-time passwords (OTP), and
- * reset password tokens for user authentication and verification workflows.
- */
 @Injectable()
 export class VerificationService {
   constructor(
@@ -21,17 +15,6 @@ export class VerificationService {
   ) {}
 
   // EMAIL VERIFICATION METHODS
-  /**
-   * Creates a new invitation token for an organization.
-   *
-   * Deletes any existing invitation tokens for the user before creating a new one.
-   * The token expires after 24 hours.
-   *
-   * @param userEmail - The email of the user to invite
-   * @param organization - The organization to invite the user to
-   * @param role - The role of the user in the organization
-   * @returns The plaintext invitation token (before hashing)
-   */
   async createInvitationToken(
     userEmail: string,
     organization: Organization,
@@ -56,14 +39,6 @@ export class VerificationService {
     return token;
   }
 
-  /**
-   * Verifies an invitation token and returns the associated user.
-   *
-   * The token is removed after verification, whether successful or not.
-   *
-   * @param token - The invitation token to verify
-   * @returns The user if the token is valid, null otherwise
-   */
   async verifyInvitationToken(
     token: string,
   ): Promise<OrganizationInvitationToken> {

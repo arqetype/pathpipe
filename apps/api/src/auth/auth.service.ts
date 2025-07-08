@@ -7,12 +7,6 @@ import { User } from '@repo/db/entities/user';
 import { Response } from 'express';
 import { PasswordUtils } from '../common/utils/password.utils';
 
-/**
- * Service responsible for handling all authentication-related operations.
- *
- * This service manages user authentication, registration, email verification,
- * OTP verification, and password reset functionality.
- */
 @Injectable()
 export class AuthService {
   constructor(
@@ -22,12 +16,6 @@ export class AuthService {
     private verificationService: VerificationService,
   ) {}
 
-  /**
-   * Validates a user by checking their email and password.
-   * @param email - The user's email.
-   * @param password - The user's password.
-   * @returns The user if valid, otherwise null.
-   */
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.userService.findOneWithPasswordByEmail(email);
     if (user && (await PasswordUtils.verifyPassword(password, user.password))) {
@@ -36,21 +24,10 @@ export class AuthService {
     return null;
   }
 
-  /**
-   * Generates a JWT token for the given email.
-   * @param email - The user's email.
-   * @returns The JWT token as a string.
-   */
   generateJwtToken(email: string): string {
     return this.jwtService.sign({ email });
   }
 
-  /**
-   * Signs in a user by generating a JWT token and setting it in the response cookie.
-   * @param email - The user's email.
-   * @param response - The HTTP response object.
-   * @returns An object indicating success.
-   */
   async signIn(
     email: string,
     response: Response,
@@ -77,14 +54,6 @@ export class AuthService {
     };
   }
 
-  /**
-   * Signs up a new user by creating them in the database and sending a verification email.
-   * @param name - The user's name.
-   * @param email - The user's email.
-   * @param password - The user's password.
-   * @returns An object indicating success.
-   * @throws {UnauthorizedException} If email already exists.
-   */
   async signUp(
     name: string,
     email: string,
@@ -102,12 +71,6 @@ export class AuthService {
   }
 
   // EMAIL VERIFICATION FLOW
-  /**
-   * Verifies a user's email using a token.
-   * @param token - The verification token.
-   * @returns An object indicating success.
-   * @throws {UnauthorizedException} If token is invalid or expired.
-   */
   async verifyEmail(token: string): Promise<{ success: boolean }> {
     const user = await this.verificationService.verifyEmail(token);
     if (!user) {
@@ -118,12 +81,6 @@ export class AuthService {
     return { success: true };
   }
 
-  /**
-   * Resends a verification email to the user.
-   * @param user - The user object.
-   * @returns An object indicating success.
-   * @throws {UnauthorizedException} If user not found, already verified, or too many requests.
-   */
   async sendVerification(user: User): Promise<{ success: boolean }> {
     if (!user || user.email_verified) {
       throw new UnauthorizedException(
@@ -161,13 +118,6 @@ export class AuthService {
   }
 
   // OTP FLOW
-  /**
-   * Verifies a one-time password (OTP) for the user.
-   * @param user - The user object.
-   * @param otp - The OTP to verify.
-   * @returns An object indicating success.
-   * @throws {UnauthorizedException} If OTP is invalid or expired.
-   */
   async verifyOTP(user: User, otp: string): Promise<{ success: boolean }> {
     const result = await this.verificationService.verifyOTP(user, otp);
 
@@ -178,12 +128,6 @@ export class AuthService {
     return { success: true };
   }
 
-  /**
-   * Sends a one-time password (OTP) to the user's email.
-   * @param user - The user object.
-   * @returns An object indicating success.
-   * @throws {UnauthorizedException} If user not found or too many requests.
-   */
   async sendOTP(user: User): Promise<{ success: boolean }> {
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -217,12 +161,6 @@ export class AuthService {
   }
 
   // RESET PASSWORD FLOW
-  /**
-   * Initiates the forgot password flow by sending a reset password email.
-   * @param user - The user object.
-   * @returns An object indicating success.
-   * @throws {UnauthorizedException} If user not found.
-   */
   async forgotPassword(user: User): Promise<{ success: boolean }> {
     const token = await this.verificationService.createResetPasswordToken(user);
 
@@ -234,12 +172,6 @@ export class AuthService {
     return { success: true };
   }
 
-  /**
-   * Verifies the forgot password token.
-   * @param token - The reset password token.
-   * @returns An object indicating success.
-   * @throws {UnauthorizedException} If token is invalid or expired.
-   */
   async verifyForgotPassword(token: string): Promise<{ success: boolean }> {
     const user =
       await this.verificationService.findOneByResetPasswordToken(token);
@@ -252,13 +184,6 @@ export class AuthService {
     return { success: true };
   }
 
-  /**
-   * Resets the user's password using the provided token and new password.
-   * @param token - The reset password token.
-   * @param newPassword - The new password to set.
-   * @returns An object indicating success.
-   * @throws {UnauthorizedException} If token is invalid or expired.
-   */
   async resetPassword(
     token: string,
     newPassword: string,
@@ -280,12 +205,6 @@ export class AuthService {
     return { success: true };
   }
 
-  /**
-   * Retrieves the user associated with a reset password token.
-   * @param token - The reset password token.
-   * @returns The user entity if found, otherwise throws an error.
-   * @throws {UnauthorizedException} If token is invalid or expired.
-   */
   async getResetPasswordUser(token: string): Promise<User | null> {
     const resetPasswordUser =
       await this.verificationService.findOneByResetPasswordToken(token);
@@ -299,11 +218,6 @@ export class AuthService {
   }
 
   // AUTH PROVIDERS FLOW
-  /**
-   * Finds or creates a user from GitHub authentication data.
-   * @param githubUserData - Object containing user information from GitHub.
-   * @returns The user entity.
-   */
   async findOrCreateGithubUser(githubUserData: {
     email: string;
     githubId: string;
