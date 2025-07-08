@@ -73,7 +73,7 @@ export class OrganizationController {
   }
 
   @HttpCode(HttpStatus.CREATED)
-  @Post('create')
+  @Post()
   async create(
     @CurrentUser() user: User,
     @Body() createOrganizationDto: CreateOrganizationDto,
