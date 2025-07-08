@@ -45,8 +45,7 @@ export class UserController {
     @CurrentUser() user: User,
     @Body() avatarCustomizationDto: AvatarCustomizationDto,
   ) {
-    const userData = await this.userService.findOneById(user.id);
-    await this.userService.updateUserAvatar(userData, avatarCustomizationDto);
+    await this.userService.updateUserAvatar(user, avatarCustomizationDto);
 
     return {
       success: true,

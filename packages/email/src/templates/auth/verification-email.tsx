@@ -1,6 +1,6 @@
 import { Button, Img, Row, Section, Text } from '@react-email/components';
 import React from 'react';
-import { Layout } from '../components/layout';
+import { Layout } from '../../components/layout';
 
 interface VerificationEmailProps {
   token: string;

@@ -71,4 +71,20 @@ export class MailerService {
   ) {
     await this.mailer.sendResetPasswordEmail(to, token, user);
   }
+
+  /**
+   * Sends an organization invitation email to the specified email address.
+   *
+   * @param to - The recipient's email address
+   * @param token - The invitation token to include in the email
+   * @param organization - The organization details including name and profile picture URL
+   * @returns A promise that resolves when the email is sent
+   */
+  async sendOrganizationInvitationEmail(
+    to: string,
+    token: string,
+    organization: { name: string; profilePictureUrl: string },
+  ) {
+    await this.mailer.sendOrganizationInvitationEmail(to, token, organization);
+  }
 }

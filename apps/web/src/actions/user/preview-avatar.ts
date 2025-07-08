@@ -1,7 +1,7 @@
 'use server';
 
 import { post } from '@/lib/fetch';
-import { AvatarHairStyle, AvatarMood } from '@repo/db/types/avatar';
+import { AvatarHairStyle, AvatarMood } from '@repo/db/types/user/avatar';
 
 export async function previewAvatarCustomizationAction(data: {
   mood: AvatarMood;

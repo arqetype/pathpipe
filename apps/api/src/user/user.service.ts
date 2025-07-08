@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@repo/db/entities/user';
 import { Repository } from 'typeorm';
 import { PasswordUtils } from '../common/utils/password.utils';
-import { AvatarHairStyle, AvatarMood } from '@repo/db/types/avatar';
+import { AvatarHairStyle, AvatarMood } from '@repo/db/types/user/avatar';
 
 /**
  * Service responsible for managing user data in the application.
@@ -67,6 +67,27 @@ export class UserService {
   async isGithubUser(email: string): Promise<boolean> {
     const user = await this.usersRepository.findOne({ where: { email } });
     return user ? user.is_github_user : false;
+  }
+
+  /**
+   * Finds a user by their email address, including their password.
+   *
+   * This is typically used for authentication purposes where the password is needed.
+   *
+   * @param email - The email address to search for
+   * @returns The user if found, otherwise null
+   */
+  async findOneWithPasswordByEmail(email: string): Promise<User | null> {
+    try {
+      const user = await this.usersRepository
+        .createQueryBuilder('user')
+        .addSelect('user.password')
+        .where('user.email = :email', { email })
+        .getOne();
+      return user;
+    } catch {
+      return null;
+    }
   }
 
   /**
