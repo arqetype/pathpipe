@@ -7,12 +7,6 @@ import { Repository } from 'typeorm';
 import { PasswordUtils } from '../common/utils/password.utils';
 import { AvatarHairStyle, AvatarMood } from '@repo/db/types/user/avatar';
 
-/**
- * Service responsible for managing user data in the application.
- *
- * Provides methods for user creation, retrieval, and updates to user properties
- * such as password and email verification status.
- */
 @Injectable()
 export class UserService {
   constructor(
@@ -20,14 +14,6 @@ export class UserService {
     private readonly usersRepository: Repository<User>,
   ) {}
 
-  /**
-   * Creates a new user in the database.
-   *
-   * @param email - The user's email address
-   * @param password - The user's plain text password (will be hashed)
-   * @param name - The user's display name
-   * @returns The newly created user entity
-   */
   async create(email: string, password: string, name: string): Promise<User> {
     const hashedPassword = await PasswordUtils.hashPassword(password);
     const user = this.usersRepository.create({
@@ -39,44 +25,19 @@ export class UserService {
     return this.usersRepository.save(user);
   }
 
-  /**
-   * Updates a user's password.
-   *
-   * @param userId - The ID of the user whose password to update
-   * @param newPassword - The new password (should already be hashed)
-   * @throws {Error} If user not found or if new password is the same as the old one
-   */
   async updatePassword(userId: string, newPassword: string): Promise<void> {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
     if (!user) throw new Error('User not found');
-
-    // Note: Since we're comparing hashed passwords, we can't check for similarity
-    // The bcrypt hash will be different even for the same plain text password
-    // due to the salt. This is actually more secure.
 
     user.password = newPassword;
     await this.usersRepository.save(user);
   }
 
-  /**
-   * Checks if a user is a GitHub user based on their email.
-   *
-   * @param email - The email address to check
-   * @returns True if the user is a GitHub user, false otherwise
-   */
   async isGithubUser(email: string): Promise<boolean> {
     const user = await this.usersRepository.findOne({ where: { email } });
     return user ? user.is_github_user : false;
   }
 
-  /**
-   * Finds a user by their email address, including their password.
-   *
-   * This is typically used for authentication purposes where the password is needed.
-   *
-   * @param email - The email address to search for
-   * @returns The user if found, otherwise null
-   */
   async findOneWithPasswordByEmail(email: string): Promise<User | null> {
     try {
       const user = await this.usersRepository
@@ -90,12 +51,6 @@ export class UserService {
     }
   }
 
-  /**
-   * Finds a user by their email address.
-   *
-   * @param email - The email address to search for
-   * @returns The user if found, otherwise null
-   */
   async findOneByEmail(email: string): Promise<User | null> {
     try {
       const user: User = await this.usersRepository.findOne({
@@ -118,12 +73,15 @@ export class UserService {
     }
   }
 
-  /**
-   * Marks a user's email as verified.
-   *
-   * @param email - The email address to mark as verified
-   * @throws {Error} If user not found
-   */
+  async findAll(): Promise<User[]> {
+    try {
+      const users: User[] = await this.usersRepository.find();
+      return users;
+    } catch {
+      return [];
+    }
+  }
+
   async markEmailAsVerified(email: string): Promise<void> {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) throw new Error('User not found');
@@ -132,16 +90,6 @@ export class UserService {
     await this.usersRepository.save(user);
   }
 
-  /**
-   * Creates a new GitHub user in the database.
-   *
-   * @param email - The user's email address from GitHub
-   * @param password - A randomly generated password (will be hashed)
-   * @param name - The user's display name from GitHub
-   * @param githubId - The user's GitHub ID
-   * @param avatarUrl - The user's avatar URL from GitHub
-   * @returns The newly created user entity
-   */
   async createGithubUser(
     email: string,
     password: string,
@@ -163,24 +111,10 @@ export class UserService {
     return this.usersRepository.save(user);
   }
 
-  /**
-   * Updates an existing user entity.
-   *
-   * @param user - The user entity with updated properties
-   * @returns The updated user entity
-   */
   async update(user: User): Promise<User> {
     return this.usersRepository.save(user);
   }
 
-  /**
-   * Generates a profile picture for a user based on a seed string.
-   *
-   * Uses the DiceBear library to create a unique avatar.
-   *
-   * @param seed - A string used to generate a consistent avatar
-   * @returns A data URI representing the generated avatar image
-   */
   generateProfilePicture(seed: string): string {
     const avatar = createAvatar(dylan, {
       seed,
@@ -192,13 +126,6 @@ export class UserService {
     return avatar.toDataUri();
   }
 
-  /**
-   * Generates an avatar with specific settings.
-   *
-   * @param settings - The settings for the avatar, including mood, hair style, colors, and facial hair
-   * @param seed - A string used to generate a consistent avatar
-   * @returns A data URI representing the generated avatar image
-   */
   generateAvatarWithSettings(
     settings: {
       mood: AvatarMood;
@@ -233,23 +160,11 @@ export class UserService {
     return avatarData;
   }
 
-  /**
-   * Disables OTP for a user, marking them as not needing OTP for authentication.
-   *
-   * @param user - The user entity to update
-   * @returns The updated user entity with OTP disabled
-   */
   async disableOtp(user: User): Promise<User> {
     user.need_otp = false;
     return this.usersRepository.save(user);
   }
 
-  /**
-   * Enables OTP for a user, marking them as needing OTP for authentication.
-   *
-   * @param user - The user entity to update
-   * @returns The updated user entity with OTP enabled
-   */
   async enableOtp(user: User): Promise<User> {
     user.need_otp = true;
     return this.usersRepository.save(user);

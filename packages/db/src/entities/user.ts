@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
 } from 'typeorm';
+import { UserRole } from '../types/user/roles';
 
 @Entity()
 export class User {
@@ -18,6 +19,13 @@ export class User {
 
   @Column({ nullable: true })
   name: string;
+
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.STANDARD,
+  })
+  role: UserRole;
 
   @Column({ nullable: true })
   avatar_url: string;

@@ -17,8 +17,10 @@ import { AcceptInvitationDto } from '@repo/db/dto/organization/accept-invitation
 import { OrganizationService } from './organization.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '@repo/db/entities/user';
-import { AdminOrganizationGuard } from './guards/admin-organization.guard';
 import { RoleService } from './role/role.service';
+import { AdminOrganizationGuard } from './guards/admin-organization.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '@repo/db/types/user/roles';
 
 @Controller('organization')
 export class OrganizationController {
@@ -27,10 +29,16 @@ export class OrganizationController {
     private readonly roleService: RoleService,
   ) {}
 
+  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AdminOrganizationGuard)
+  @Get()
+  getAll() {
+    return this.organizationService.findAll();
+  }
+
+  @HttpCode(HttpStatus.OK)
   @Get(':organizationId')
-  async findOneById(
+  async getById(
     @CurrentUser() user: User,
     @Param('organizationId') organizationId: string,
   ) {
@@ -49,6 +57,13 @@ export class OrganizationController {
     if (!organization) {
       throw new NotFoundException('Organization not found');
     }
+
+    if (organization.owner?.id !== user.id) {
+      throw new UnauthorizedException(
+        'You are not authorized to delete this organization',
+      );
+    }
+
     const deleted = await this.organizationService.delete(organization);
     if (!deleted) {
       throw new UnauthorizedException('Failed to delete organization');

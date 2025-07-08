@@ -6,11 +6,6 @@ import { OrganizationRole } from '@repo/db/entities/organization/organization-ro
 import { User } from '@repo/db/entities/user';
 import { Repository } from 'typeorm';
 
-/**
- * Service responsible for managing organization member data in the application.
- *
- * Provides methods for adding, retrieving, and updating organization members.
- */
 @Injectable()
 export class MemberService {
   constructor(
@@ -18,14 +13,6 @@ export class MemberService {
     private readonly organizationMembersRepository: Repository<OrganizationMember>,
   ) {}
 
-  /**
-   * Creates a new organization member instance.
-   *
-   * @param organization - The organization to which the member belongs.
-   * @param user - The user who is a member of the organization.
-   * @param role - The role of the user in the organization.
-   * @returns A new instance of OrganizationMember.
-   */
   create(
     organization: Organization,
     user: User,
@@ -42,12 +29,6 @@ export class MemberService {
     }
   }
 
-  /**
-   * Saves an organization member instance.
-   *
-   * @param member - The organization member to save.
-   * @returns A promise that resolves to the saved organization member.
-   */
   async save(member: OrganizationMember): Promise<OrganizationMember> {
     try {
       return await this.organizationMembersRepository.save(member);
@@ -56,13 +37,6 @@ export class MemberService {
     }
   }
 
-  /**
-   * Finds an organization member by user and organization.
-   *
-   * @param organization - The organization to find the member in.
-   * @param user - The user to find in the organization. If not provided, it will search for members without a user.
-   * @returns A promise that resolves to the organization member if found, or null if not found.
-   */
   async findOneByUserAndOrganization(
     organization: Organization,
     user: User,
