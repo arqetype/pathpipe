@@ -18,7 +18,6 @@ on:
         required: false
         type: string
 
-# Handle concurrency when called as a reusable workflow
 concurrency:
   group: ${{ inputs.concurrency-group || github.run_id }}
   cancel-in-progress: ${{ inputs.concurrency-group != '' }}
@@ -27,12 +26,9 @@ permissions:
   contents: read
 
 jobs:
-  setup:
-    name: Setup & Build
+  build-lint-test:
+    name: Build, Lint & Test
     runs-on: weaver-runner
-    outputs:
-      cache-key: ${{ steps.cache-keys.outputs.cache-key }}
-      build-cache-key: ${{ steps.cache-keys.outputs.build-cache-key }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -49,111 +45,14 @@ jobs:
           node-version: ${{ inputs.node-version }}
           cache: 'pnpm'
 
-      - name: Generate cache keys
-        id: cache-keys
-        run: |
-          echo "cache-key=${{ runner.os }}-turbo-${{ hashFiles('**/pnpm-lock.yaml') }}" >> $GITHUB_OUTPUT
-          echo "build-cache-key=${{ runner.os }}-build-output-${{ hashFiles('**/pnpm-lock.yaml') }}" >> $GITHUB_OUTPUT
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Cache Turbo
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: ${{ steps.cache-keys.outputs.cache-key }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
 
       - name: Build project
         run: pnpm build
 
-      - name: Cache build outputs
-        uses: actions/cache@v4
-        with:
-          path: |
-            **/dist
-            **/.next
-            node_modules
-          key: ${{ steps.cache-keys.outputs.build-cache-key }}
-
-  lint:
-    name: Lint
-    runs-on: weaver-runner
-    needs: setup
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node-version }}
-          cache: 'pnpm'
-
-      - name: Restore build outputs and dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            **/dist
-            **/.next
-            node_modules
-          key: ${{ needs.setup.outputs.build-cache-key }}
-          fail-on-cache-miss: true
-
-      - name: Restore Turbo cache
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: ${{ needs.setup.outputs.cache-key }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
-
       - name: Run lint
         run: pnpm lint
-
-  test:
-    name: Test
-    runs-on: weaver-runner
-    needs: setup
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node-version }}
-          cache: 'pnpm'
-
-      - name: Restore build outputs and dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            **/dist
-            **/.next
-            node_modules
-          key: ${{ needs.setup.outputs.build-cache-key }}
-          fail-on-cache-miss: true
-
-      - name: Restore Turbo cache
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: ${{ needs.setup.outputs.cache-key }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
 
       - name: Run tests
         run: pnpm test
