@@ -11,6 +11,16 @@ import {
   UnauthorizedException,
   BadRequestException,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBody,
+  ApiUnauthorizedResponse,
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiExcludeEndpoint,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { SignInDto, SignInResponseDto } from '@repo/db/dto/auth/sign-in.dto';
 import { SignUpDto, SignUpResponseDto } from '@repo/db/dto/auth/sign-up.dto';
@@ -47,6 +57,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UserService } from '../user/user.service';
 import { AuthGuard } from '@nestjs/passport';
 
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -59,6 +70,25 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Public()
   @Post('sign-in')
+  @ApiOperation({
+    summary: 'Sign in user',
+    description:
+      'Authenticate user with email and password, set authentication cookie',
+  })
+  @ApiBody({
+    type: SignInDto,
+    description: 'User credentials for authentication',
+  })
+  @ApiOkResponse({
+    description: 'Successfully authenticated, cookie set',
+    type: SignInResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Invalid credentials provided',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid request format',
+  })
   async signIn(
     @Body() signInDto: SignInDto,
     @Res({ passthrough: true }) response: Response,
@@ -69,6 +99,21 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @Public()
   @Post('sign-up')
+  @ApiOperation({
+    summary: 'Register new user',
+    description: 'Create a new user account and send email verification',
+  })
+  @ApiBody({
+    type: SignUpDto,
+    description: 'User registration details',
+  })
+  @ApiCreatedResponse({
+    description: 'User account created successfully, verification email sent',
+    type: SignUpResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid registration data or email already exists',
+  })
   async signUp(@Body() signUpDto: SignUpDto): Promise<SignUpResponseDto> {
     return await this.authService.signUp(
       signUpDto.name,
@@ -80,6 +125,18 @@ export class AuthController {
   // ---- ENABLE OTP FLOW ----------------------
   @HttpCode(HttpStatus.OK)
   @Get('enable-otp')
+  @ApiOperation({
+    summary: 'Get OTP setup information',
+    description:
+      'Generate OTP setup information for enabling/disabling two-factor authentication',
+  })
+  @ApiOkResponse({
+    description: 'OTP setup information generated successfully',
+    type: EnableOtpGetResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Authentication required or GitHub users cannot enable OTP',
+  })
   async enableOtpGet(
     @CurrentUser() user: User,
   ): Promise<EnableOtpGetResponseDto> {
@@ -92,6 +149,23 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('enable-otp')
+  @ApiOperation({
+    summary: 'Enable or disable OTP',
+    description:
+      'Toggle two-factor authentication on/off using OTP verification',
+  })
+  @ApiBody({
+    type: EnableOtpDto,
+    description: 'OTP verification code',
+  })
+  @ApiOkResponse({
+    description: 'OTP status changed successfully',
+    type: EnableOtpResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description:
+      'Invalid OTP, authentication required, or GitHub users cannot enable OTP',
+  })
   async enableOtpPost(
     @CurrentUser() user: User,
     @Body() enableOtpDto: EnableOtpDto,
@@ -122,6 +196,21 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('verify-email')
+  @ApiOperation({
+    summary: 'Verify email address',
+    description: 'Verify user email address using verification token',
+  })
+  @ApiBody({
+    type: VerifyEmailDto,
+    description: 'Email verification token',
+  })
+  @ApiOkResponse({
+    description: 'Email verified successfully',
+    type: VerifyEmailResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid or expired verification token',
+  })
   async verifyEmail(
     @Body() verifyEmailDto: VerifyEmailDto,
   ): Promise<VerifyEmailResponseDto> {
@@ -131,6 +220,21 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('resend-email')
+  @ApiOperation({
+    summary: 'Resend verification email',
+    description: 'Send a new email verification link to the user',
+  })
+  @ApiBody({
+    type: ResendEmailDto,
+    description: 'User email address',
+  })
+  @ApiOkResponse({
+    description: 'Verification email sent successfully',
+    type: ResendEmailResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'User not found with provided email',
+  })
   async resendEmail(
     @Body() resendEmailDto: ResendEmailDto,
   ): Promise<ResendEmailResponseDto> {
@@ -147,6 +251,18 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('forgot-password')
+  @ApiOperation({
+    summary: 'Request password reset',
+    description: 'Send password reset link to user email if account exists',
+  })
+  @ApiBody({
+    type: ForgotPasswordDto,
+    description: 'User email address for password reset',
+  })
+  @ApiOkResponse({
+    description: 'Reset link sent if email exists (security response)',
+    type: ForgotPasswordResponseDto,
+  })
   async forgotPassword(
     @Body() forgotPasswordDto: ForgotPasswordDto,
   ): Promise<ForgotPasswordResponseDto> {
@@ -165,6 +281,21 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('reset-password')
+  @ApiOperation({
+    summary: 'Reset password',
+    description: 'Reset user password using reset token and new password',
+  })
+  @ApiBody({
+    type: ResetPasswordDto,
+    description: 'Password reset token and new password',
+  })
+  @ApiOkResponse({
+    description: 'Password reset successfully',
+    type: ResetPasswordResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid or expired reset token',
+  })
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
   ): Promise<ResetPasswordResponseDto> {
@@ -177,6 +308,28 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Public()
   @Post('reset-password/user')
+  @ApiOperation({
+    summary: 'Get reset password user info',
+    description: 'Get user information associated with password reset token',
+  })
+  @ApiBody({
+    type: ResetPasswordUserDto,
+    description: 'Password reset token',
+  })
+  @ApiOkResponse({
+    description: 'User information retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        email: { type: 'string' },
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid or expired reset token',
+  })
   async getResetPasswordUser(
     @Body() resetPasswordUser: ResetPasswordUserDto,
   ): Promise<ResetPasswordUserResponseDto> {
@@ -192,12 +345,29 @@ export class AuthController {
   @UseGuards(AuthGuard('github'))
   @Public()
   @Get('github')
+  @ApiOperation({
+    summary: 'GitHub OAuth login',
+    description: 'Redirect to GitHub for OAuth authentication',
+  })
+  @ApiOkResponse({
+    description: 'Redirects to GitHub OAuth authorization page',
+  })
+  @ApiExcludeEndpoint()
   async githubAuth() {}
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('github'))
   @Public()
   @Get('github/callback')
+  @ApiOperation({
+    summary: 'GitHub OAuth callback',
+    description:
+      'Handle GitHub OAuth callback and redirect with authentication token',
+  })
+  @ApiOkResponse({
+    description: 'Redirects to frontend with authentication token or error',
+  })
+  @ApiExcludeEndpoint()
   githubCallback(@Req() req: Request, @Res() res: Response) {
     if (req.user) {
       const token = this.authService.generateJwtToken((req.user as User).email);
