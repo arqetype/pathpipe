@@ -1,11 +1,26 @@
 'use client';
 
 import { Button } from '@repo/ui/components/button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import GoogleIcon from '@/components/icons/google';
 import GitHubIcon from '@/components/icons/github';
+import { toast } from 'sonner';
+import { useSearchParams } from 'next/navigation';
+import { TriangleAlertIcon } from 'lucide-react';
 
 export function OAuthButtons() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
+
+  useEffect(() => {
+    if (error === 'google_auth_failed') {
+      toast.error('Google authentication failed. Please try again.');
+    }
+    if (error === 'github_auth_failed') {
+      toast.error('GitHub authentication failed. Please try again.');
+    }
+  }, [error]);
+
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
   const handleGitHubSignIn = () => {
@@ -21,43 +36,54 @@ export function OAuthButtons() {
   };
 
   return (
-    <div className="flex gap-2">
-      <Button
-        variant="outline"
-        className="flex-1"
-        type="button"
-        disabled={isLoading === 'google'}
-        onClick={handleGoogleSignIn}
-      >
-        {isLoading === 'google' ? (
-          <div className="flex items-center justify-center">
-            <span>Signing in...</span>
-          </div>
-        ) : (
-          <>
-            <GoogleIcon />
-            <span className="ml-2">Connect with Google</span>
-          </>
-        )}
-      </Button>
-      <Button
-        variant="outline"
-        className="flex-1"
-        type="button"
-        disabled={isLoading === 'github'}
-        onClick={handleGitHubSignIn}
-      >
-        {isLoading === 'github' ? (
-          <div className="flex items-center justify-center">
-            <span>Signing in...</span>
-          </div>
-        ) : (
-          <>
-            <GitHubIcon />
-            <span className="ml-2">Connect with GitHub</span>
-          </>
-        )}
-      </Button>
+    <div className="w-full flex flex-col">
+      {error && (
+        <div className="mb-4 text-red-600 text-center flex items-center justify-center text-xs sm:text-sm">
+          <TriangleAlertIcon className="inline mr-1" size={16} />
+          {error === 'google_auth_failed' &&
+            'Google authentication failed. Please try again.'}
+          {error === 'github_auth_failed' &&
+            'GitHub authentication failed. Please try again.'}
+        </div>
+      )}
+      <div className="flex gap-2 sm:flex-row flex-col">
+        <Button
+          variant="outline"
+          className="flex-1"
+          type="button"
+          disabled={isLoading === 'google'}
+          onClick={handleGoogleSignIn}
+        >
+          {isLoading === 'google' ? (
+            <div className="flex items-center justify-center">
+              <span>Signing in...</span>
+            </div>
+          ) : (
+            <>
+              <GoogleIcon />
+              <span className="ml-1">Connect with Google</span>
+            </>
+          )}
+        </Button>
+        <Button
+          variant="outline"
+          className="flex-1"
+          type="button"
+          disabled={isLoading === 'github'}
+          onClick={handleGitHubSignIn}
+        >
+          {isLoading === 'github' ? (
+            <div className="flex items-center justify-center">
+              <span>Signing in...</span>
+            </div>
+          ) : (
+            <>
+              <GitHubIcon />
+              <span className="ml-1">Connect with GitHub</span>
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   );
 }
