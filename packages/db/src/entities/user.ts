@@ -31,6 +31,12 @@ export class User {
   avatar_url: string;
 
   @Column({ nullable: true })
+  google_id: string;
+
+  @Column({ default: false })
+  is_google_user: boolean;
+
+  @Column({ nullable: true })
   github_id: string;
 
   @Column({ default: false })
