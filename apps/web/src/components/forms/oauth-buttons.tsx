@@ -14,16 +14,31 @@ export function OAuthButtons() {
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/github`;
   };
 
+  const handleGoogleSignIn = () => {
+    setIsLoading('google');
+    // Redirect to the Google auth endpoint
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+  };
+
   return (
     <div className="flex gap-2">
       <Button
         variant="outline"
         className="flex-1"
         type="button"
-        disabled={true}
+        disabled={isLoading === 'google'}
+        onClick={handleGoogleSignIn}
       >
-        <GoogleIcon />
-        <span className="ml-2">Connect with Google</span>
+        {isLoading === 'google' ? (
+          <div className="flex items-center justify-center">
+            <span>Signing in...</span>
+          </div>
+        ) : (
+          <>
+            <GoogleIcon />
+            <span className="ml-2">Connect with Google</span>
+          </>
+        )}
       </Button>
       <Button
         variant="outline"

@@ -71,6 +71,9 @@ importers:
       passport-github2:
         specifier: ^0.1.12
         version: 0.1.12
+      passport-google-oauth20:
+        specifier: ^2.0.0
+        version: 2.0.0
       passport-jwt:
         specifier: ^4.0.1
         version: 4.0.1
@@ -141,6 +144,9 @@ importers:
       '@types/passport-github2':
         specifier: ^1.2.9
         version: 1.2.9
+      '@types/passport-google-oauth20':
+        specifier: ^2.0.16
+        version: 2.0.16
       '@types/passport-jwt':
         specifier: ^4.0.1
         version: 4.0.1
@@ -2755,6 +2761,9 @@ packages:
 
   '@types/passport-github2@1.2.9':
     resolution: {integrity: sha512-/nMfiPK2E6GKttwBzwj0Wjaot8eHrM57hnWxu52o6becr5/kXlH/4yE2v2rh234WGvSgEEzIII02Nc5oC5xEHA==}
+
+  '@types/passport-google-oauth20@2.0.16':
+    resolution: {integrity: sha512-ayXK2CJ7uVieqhYOc6k/pIr5pcQxOLB6kBev+QUGS7oEZeTgIs1odDobXRqgfBPvXzl0wXCQHftV5220czZCPA==}
 
   '@types/passport-jwt@4.0.1':
     resolution: {integrity: sha512-Y0Ykz6nWP4jpxgEUYq8NoVZeCQPo1ZndJLfapI249g1jHChvRfZRO/LS3tqu26YgAS/laI1qx98sYGz0IalRXQ==}
@@ -5659,6 +5668,10 @@ packages:
   passport-github2@0.1.12:
     resolution: {integrity: sha512-3nPUCc7ttF/3HSP/k9sAXjz3SkGv5Nki84I05kSQPo01Jqq1NzJACgMblCK0fGcv9pKCG/KXU3AJRDGLqHLoIw==}
     engines: {node: '>= 0.8.0'}
+
+  passport-google-oauth20@2.0.0:
+    resolution: {integrity: sha512-KSk6IJ15RoxuGq7D1UKK/8qKhNfzbLeLrG3gkLZ7p4A6DBCcv7xpyQwuXtWdpyR0+E0mwkpjY1VfPOhxQrKzdQ==}
+    engines: {node: '>= 0.4.0'}
 
   passport-jwt@4.0.1:
     resolution: {integrity: sha512-UCKMDYhNuGOBE9/9Ycuoyh7vP6jpeTp/+sfMJl7nLff/t6dps+iaeE0hhNkKN8/HZHcJ7lCdOyDxHdDoxoSvdQ==}
@@ -9370,6 +9383,12 @@ snapshots:
       '@types/passport': 1.0.17
       '@types/passport-oauth2': 1.4.17
 
+  '@types/passport-google-oauth20@2.0.16':
+    dependencies:
+      '@types/express': 5.0.3
+      '@types/passport': 1.0.17
+      '@types/passport-oauth2': 1.4.17
+
   '@types/passport-jwt@4.0.1':
     dependencies:
       '@types/jsonwebtoken': 9.0.7
@@ -12818,6 +12837,10 @@ snapshots:
       upper-case-first: 1.1.2
 
   passport-github2@0.1.12:
+    dependencies:
+      passport-oauth2: 1.8.0
+
+  passport-google-oauth20@2.0.0:
     dependencies:
       passport-oauth2: 1.8.0
 

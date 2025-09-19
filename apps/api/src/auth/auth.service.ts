@@ -37,6 +37,11 @@ export class AuthService {
         'GitHub users cannot sign in with email and password',
       );
     }
+    if (await this.userService.isGoogleUser(email)) {
+      throw new UnauthorizedException(
+        'Google users cannot sign in with email and password',
+      );
+    }
 
     const token = this.generateJwtToken(email);
 
@@ -245,6 +250,39 @@ export class AuthService {
       githubUserData.name || 'GitHub User',
       githubUserData.githubId,
       githubUserData.avatarUrl,
+    );
+
+    return user;
+  }
+
+  async findOrCreateGoogleUser(googleUserData: {
+    email: string;
+    googleId: string;
+    name?: string;
+    avatarUrl?: string;
+  }): Promise<User> {
+    // Check if user already exists with this email
+    let user = await this.userService.findOneByEmail(googleUserData.email);
+
+    if (user) {
+      // If the user exists but doesn't have Google ID set
+      if (!user.google_id) {
+        user.google_id = googleUserData.googleId;
+        user.is_google_user = true;
+        if (googleUserData.avatarUrl && !user.avatar_url) {
+          user.avatar_url = googleUserData.avatarUrl;
+        }
+        await this.userService.update(user);
+      }
+      return user;
+    }
+
+    user = await this.userService.createGoogleUser(
+      googleUserData.email,
+      '', // Password is not used for Google users, so we pass an empty string
+      googleUserData.name || 'Google User',
+      googleUserData.googleId,
+      googleUserData.avatarUrl,
     );
 
     return user;
