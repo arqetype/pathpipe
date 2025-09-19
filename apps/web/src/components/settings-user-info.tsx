@@ -17,6 +17,7 @@ export default async function SettingsUserInfo() {
     : 'UU';
 
   const isGithubUser = currentUser.is_github_user;
+  const isGoogleUser = currentUser.is_google_user;
   const hasOtpEnabled = currentUser.need_otp;
 
   return (
@@ -35,12 +36,21 @@ export default async function SettingsUserInfo() {
         </span>
       </h2>
       <div className="mt-2 flex gap-2">
-        <Badge variant="outline">
-          {isGithubUser ? 'Logged in with GitHub' : 'Logged in with Email'}
-        </Badge>
-        {!isGithubUser && hasOtpEnabled ? (
+        {isGoogleUser && isGithubUser && (
+          <Badge variant="outline">Logged in with Google & GitHub</Badge>
+        )}
+        {isGoogleUser && !isGithubUser && (
+          <Badge variant="outline">Logged in with Google</Badge>
+        )}
+        {!isGoogleUser && isGithubUser && (
+          <Badge variant="outline">Logged in with GitHub</Badge>
+        )}
+        {!isGoogleUser && !isGithubUser && (
+          <Badge variant="outline">Logged in with Email</Badge>
+        )}
+        {!isGithubUser && !isGoogleUser && hasOtpEnabled ? (
           <Badge variant="default">2FA Enabled</Badge>
-        ) : !isGithubUser && !hasOtpEnabled ? (
+        ) : !isGithubUser && !isGoogleUser && !hasOtpEnabled ? (
           <Badge variant="destructive">2FA Disabled</Badge>
         ) : null}
       </div>

@@ -45,7 +45,8 @@ import { Response, Request } from 'express';
 import { User } from '@repo/db/entities/user';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UserService } from '../user/user.service';
-import { AuthGuard } from '@nestjs/passport';
+import { GoogleCallbackGuard } from './guards/google-callback.guard';
+import { GithubCallbackGuard } from './guards/github-callback.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -189,16 +190,22 @@ export class AuthController {
 
   // GITHUB AUTHENTICATION FLOW
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('github'))
+  @UseGuards(GithubCallbackGuard)
   @Public()
   @Get('github')
   async githubAuth() {}
 
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('github'))
+  @UseGuards(GithubCallbackGuard)
   @Public()
   @Get('github/callback')
   githubCallback(@Req() req: Request, @Res() res: Response) {
+    if (req.query && req.query.error) {
+      return res.redirect(
+        `${process.env.NEST_FRONT_URL}/app/sign-in?error=github_auth_failed`,
+      );
+    }
+
     if (req.user) {
       const token = this.authService.generateJwtToken((req.user as User).email);
 
@@ -209,6 +216,36 @@ export class AuthController {
 
     return res.redirect(
       `${process.env.NEST_FRONT_URL}/app/sign-in?error=github_auth_failed`,
+    );
+  }
+
+  // GOOGLE AUTHENTICATION FLOW
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(GoogleCallbackGuard)
+  @Public()
+  @Get('google')
+  async googleAuth() {}
+
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(GoogleCallbackGuard)
+  @Public()
+  @Get('google/callback')
+  googleCallback(@Req() req: Request, @Res() res: Response) {
+    if (req.query && req.query.error) {
+      return res.redirect(
+        `${process.env.NEST_FRONT_URL}/app/sign-in?error=google_auth_failed`,
+      );
+    }
+
+    if (req.user) {
+      const token = this.authService.generateJwtToken((req.user as User).email);
+
+      return res.redirect(
+        `${process.env.NEST_FRONT_URL}/app/google/callback?token=${token}`,
+      );
+    }
+    return res.redirect(
+      `${process.env.NEST_FRONT_URL}/app/sign-in?error=google_auth_failed`,
     );
   }
 }
