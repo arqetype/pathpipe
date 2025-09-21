@@ -5,10 +5,13 @@ import { Button, buttonVariants } from '@repo/ui/components/button';
 import { ArrowLeftIcon } from 'lucide-react';
 import Link from 'next/link';
 import ThemeSwitcher from './theme-switcher';
+import { startTransition } from 'react';
 
 export default function SettingsHeader() {
   const handleSignOut = async () => {
-    await signOutAction();
+    startTransition(async () => {
+      await signOutAction();
+    });
   };
 
   return (
@@ -19,11 +22,9 @@ export default function SettingsHeader() {
       </Link>
       <div className="flex items-center gap-4">
         <ThemeSwitcher />
-        <form>
-          <Button onClick={handleSignOut} variant={'outline'}>
-            Sign Out
-          </Button>
-        </form>
+        <Button onClick={handleSignOut} variant={'outline'}>
+          Sign Out
+        </Button>
       </div>
     </header>
   );
