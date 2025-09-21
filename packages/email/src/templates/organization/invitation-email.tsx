@@ -38,7 +38,7 @@ export function OrganizationInvitationEmail({
           </Text>
           <Button
             href={invitationUrl}
-            className="bg-primary text-primary-foreground w-full py-3 text-center rounded-md focus:outline-none"
+            className="bg-primary text-primary-foreground w-full py-3 text-center rounded-md"
           >
             Accept Invitation
           </Button>

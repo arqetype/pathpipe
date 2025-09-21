@@ -36,7 +36,7 @@ export function ResetPasswordEmail({ token, user }: ResetPasswordEmailProps) {
           </Text>
           <Button
             href={resetUrl}
-            className="bg-primary text-primary-foreground w-full py-3 text-center rounded-md focus:outline-none"
+            className="bg-primary text-primary-foreground w-full py-3 text-center rounded-md"
           >
             Reset Password
           </Button>
