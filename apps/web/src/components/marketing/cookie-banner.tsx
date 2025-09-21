@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CookieConsent } from '@repo/ui/components/cookie-consent';
-import { useCookieConsent } from '@/components/providers/cookie-consent-provider';
+import { useCookieConsent } from '@/components/shared/providers/cookie-consent-provider';
 
 export default function CookieBanner() {
   const { setHasCookieConsent } = useCookieConsent();

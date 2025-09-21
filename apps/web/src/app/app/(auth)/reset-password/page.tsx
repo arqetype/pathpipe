@@ -1,4 +1,4 @@
-import ResetPasswordForm from '@/components/forms/reset-password-form';
+import ResetPasswordForm from '@/components/app/forms/reset-password-form';
 import { buttonVariants } from '@repo/ui/components/button';
 import {
   Card,

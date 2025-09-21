@@ -1,4 +1,4 @@
-import ProfilePictureEditor from '@/components/profile-picture-editor';
+import ProfilePictureEditor from '@/components/app/settings/profile-picture-editor';
 
 export default function ProfileSettingsPage() {
   return (

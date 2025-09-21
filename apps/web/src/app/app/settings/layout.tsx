@@ -1,6 +1,6 @@
-import SettingsHeader from '@/components/settings-header';
-import SettingsUserInfo from '@/components/settings-user-info';
-import { TabNavigation } from '@/components/tab-navigation';
+import SettingsHeader from '@/components/app/settings/settings-header';
+import SettingsUserInfo from '@/components/app/settings/settings-user-info';
+import { TabNavigation } from '@/components/shared/tab-navigation';
 import { getCurrentUser } from '@/lib/auth-server';
 import { Suspense, type ReactNode } from 'react';
 

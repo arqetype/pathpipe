@@ -7,7 +7,7 @@ import {
 } from '@repo/ui/components/card';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { OAuthButtons } from '@/components/forms/oauth-buttons';
+import { OAuthButtons } from '@/components/app/forms/oauth-buttons';
 
 type AuthenticationFormLayoutProps = Readonly<{
   children: ReactNode;

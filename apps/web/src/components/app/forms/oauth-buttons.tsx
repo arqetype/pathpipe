@@ -2,8 +2,8 @@
 
 import { Button } from '@repo/ui/components/button';
 import { useEffect, useState } from 'react';
-import GoogleIcon from '@/components/icons/google';
-import GitHubIcon from '@/components/icons/github';
+import GoogleIcon from '@/components/shared/icons/google';
+import GitHubIcon from '@/components/shared/icons/github';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
 import { TriangleAlertIcon } from 'lucide-react';

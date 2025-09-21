@@ -4,7 +4,7 @@ import { signOutAction } from '@/actions/auth/sign-out';
 import { Button, buttonVariants } from '@repo/ui/components/button';
 import { ArrowLeftIcon } from 'lucide-react';
 import Link from 'next/link';
-import ThemeSwitcher from './theme-switcher';
+import ThemeSwitcher from '../../shared/theme-switcher';
 import { startTransition } from 'react';
 
 export default function SettingsHeader() {

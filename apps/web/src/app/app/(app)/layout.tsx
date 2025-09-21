@@ -1,4 +1,4 @@
-import Header from '@/components/header';
+import Header from '@/components/app/header';
 import { getCurrentUser } from '@/lib/auth-server';
 import type { ReactNode } from 'react';
 
