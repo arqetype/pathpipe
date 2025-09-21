@@ -4,7 +4,6 @@ import Link from 'next/link';
 export default function Home() {
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-muted/50">
-      <Button>Start Building Now</Button>
       <Link href={'/app/sign-in'} className="ml-4">
         <Button variant="outline">Sign In</Button>
       </Link>

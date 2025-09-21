@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { cookies } from 'next/headers';
-import CookieBanner from '../../components/marketing/cookie-banner';
+import CookieBanner from '@/components/marketing/cookie-banner';
 import { ThemeProvider } from '@/components/shared/providers/theme-provider';
 // import { PostHogProvider } from '@/components/providers/posthog-provider';
 import { CookieConsentProvider } from '@/components/shared/providers/cookie-consent-provider';
