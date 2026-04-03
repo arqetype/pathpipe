@@ -28,6 +28,7 @@ permissions:
 jobs:
   build-lint-test:
     name: Build, Lint & Test
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
