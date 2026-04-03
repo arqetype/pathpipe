@@ -66,7 +66,6 @@ export function useThrottle<T>(value: T, options: UseThrottleOptions = {}): T {
       leading &&
       (lastExecutedRef.current === 0 || timeSinceLastExecution >= delay)
     ) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect
       setThrottledValue(value);
       lastExecutedRef.current = now;
       return;

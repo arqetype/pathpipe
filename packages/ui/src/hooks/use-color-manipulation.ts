@@ -24,7 +24,6 @@ export function useColorManipulation<T extends AnyColor>(
     if (!colorModel.equal(color, cacheRef.current.color)) {
       const newHsva = colorModel.toHsva(color);
       cacheRef.current = { hsva: newHsva, color };
-      // eslint-disable-next-line react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect
       setHsva(newHsva);
     }
   }, [color, colorModel]);
