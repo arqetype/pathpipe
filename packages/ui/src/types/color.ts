@@ -50,8 +50,9 @@ type ColorPickerHTMLAttributes = Omit<
   'color' | 'onChange' | 'onChangeCapture'
 >;
 
-export interface ColorPickerBaseProps<T extends AnyColor>
-  extends ColorPickerHTMLAttributes {
+export interface ColorPickerBaseProps<
+  T extends AnyColor,
+> extends ColorPickerHTMLAttributes {
   color: T;
   onChange: (newColor: T) => void;
 }

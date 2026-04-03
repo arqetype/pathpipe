@@ -11,10 +11,15 @@ export interface DialogRef {
   close: () => void;
 }
 
-const Dialog = React.forwardRef<
-  DialogRef,
-  React.ComponentProps<typeof DialogPrimitive.Root>
->(({ open, onOpenChange, defaultOpen, ...props }, ref) => {
+const Dialog = ({
+  open,
+  onOpenChange,
+  defaultOpen,
+  ref,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Root> & {
+  ref?: React.Ref<DialogRef>;
+}) => {
   const [internalOpen, setInternalOpen] = React.useState(defaultOpen ?? false);
 
   // Use controlled state if provided, otherwise use internal state
@@ -48,7 +53,7 @@ const Dialog = React.forwardRef<
       {...props}
     />
   );
-});
+};
 
 Dialog.displayName = 'Dialog';
 

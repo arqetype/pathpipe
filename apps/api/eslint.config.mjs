@@ -1,8 +1,15 @@
 import { nestJSConfig } from '@repo/eslint-config/nest-js';
 
-/** @type {import("eslint").Linter.Config} */
+/** @type {import("eslint").Linter.Config[]} */
 export default [
   ...nestJSConfig,
+  {
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
   {
     ignores: ['eslint.config.mjs', 'jest.config.mjs', 'prettier.config.mjs'],
   },

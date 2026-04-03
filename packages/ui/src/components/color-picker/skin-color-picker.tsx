@@ -43,8 +43,10 @@ const SKIN_TONES = [
   '#160B06',
 ] as const;
 
-interface SkinColorPickerProps
-  extends Omit<ColorPickerBaseProps<string>, 'color'> {
+interface SkinColorPickerProps extends Omit<
+  ColorPickerBaseProps<string>,
+  'color'
+> {
   /** Current selected skin color */
   color?: string;
   /** Custom class name */
