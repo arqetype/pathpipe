@@ -38,19 +38,29 @@ export function CookieConsent({
   };
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    let initialTimeoutId: ReturnType<typeof setTimeout>;
+
     try {
-      setIsOpen(true);
-      if (document.cookie.includes('cookieConsent=')) {
-        if (!mode) {
-          setIsOpen(false);
-          setTimeout(() => {
-            setHide(true);
-          }, 700);
+      initialTimeoutId = setTimeout(() => {
+        setIsOpen(true);
+        if (document.cookie.includes('cookieConsent=')) {
+          if (!mode) {
+            setIsOpen(false);
+            timeoutId = setTimeout(() => {
+              setHide(true);
+            }, 700);
+          }
         }
-      }
+      }, 0);
     } catch (error) {
       console.error('Error checking cookie consent:', error);
     }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (initialTimeoutId) clearTimeout(initialTimeoutId);
+    };
   }, [mode]);
 
   return variant === 'default' ? (

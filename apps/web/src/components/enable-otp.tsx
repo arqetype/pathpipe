@@ -45,6 +45,12 @@ export default function EnableOtp({ user }: EnableOtpProps) {
   const [isConfirming, setIsConfirming] = useState(false);
   const dialogRef = useRef<AlertDialogRef>(null);
 
+  const form = useForm<EnableOtpDto>({
+    defaultValues: {
+      otp: '',
+    },
+  });
+
   const handleToggle = async () => {
     if (isInitiating) return;
 
@@ -70,12 +76,6 @@ export default function EnableOtp({ user }: EnableOtpProps) {
     form.reset();
     setSwitchChecked(user.need_otp);
   };
-
-  const form = useForm<EnableOtpDto>({
-    defaultValues: {
-      otp: '',
-    },
-  });
 
   const onSubmit = async (enableOtpDto: EnableOtpDto) => {
     if (isConfirming) return;
@@ -128,7 +128,12 @@ export default function EnableOtp({ user }: EnableOtpProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit(onSubmit)();
+            }}
+          >
             <div>
               <FormField
                 key="otp"

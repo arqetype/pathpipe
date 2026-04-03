@@ -11,10 +11,15 @@ export interface AlertDialogRef {
   close: () => void;
 }
 
-const AlertDialog = React.forwardRef<
-  AlertDialogRef,
-  React.ComponentProps<typeof AlertDialogPrimitive.Root>
->(({ open, onOpenChange, defaultOpen, ...props }, ref) => {
+const AlertDialog = ({
+  open,
+  onOpenChange,
+  defaultOpen,
+  ref,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Root> & {
+  ref?: React.Ref<AlertDialogRef>;
+}) => {
   const [internalOpen, setInternalOpen] = React.useState(defaultOpen ?? false);
 
   // Use controlled state if provided, otherwise use internal state
@@ -48,7 +53,7 @@ const AlertDialog = React.forwardRef<
       {...props}
     />
   );
-});
+};
 
 AlertDialog.displayName = 'AlertDialog';
 

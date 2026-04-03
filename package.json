@@ -13,9 +13,9 @@
     "docker:down": "docker-compose -f docker-compose.dev.yml down"
   },
   "devDependencies": {
-    "prettier": "^3.6.2",
-    "turbo": "^2.5.6",
-    "typescript": "5.8.3"
+    "prettier": "^3.8.1",
+    "turbo": "^2.9.3",
+    "typescript": "6.0.2"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {

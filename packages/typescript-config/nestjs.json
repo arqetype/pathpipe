@@ -9,14 +9,13 @@
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": false,
     "incremental": true,
-    "module": "commonjs",
-    "moduleResolution": "Node10",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "noFallthroughCasesInSwitch": false,
     "noImplicitAny": false,
     "removeComments": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strictNullChecks": false,
-    "strictBindCallApply": false
   }
 }

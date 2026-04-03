@@ -9,7 +9,9 @@ export const config = {
   ...webConfig,
 };
 
-export default async () => {
+const jestConfigExport = async () => {
   const nextJestConfig = await createJestConfig(config)();
   return nextJestConfig;
 };
+
+export default jestConfigExport;

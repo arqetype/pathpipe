@@ -74,34 +74,34 @@ interface Props {
 }
 
 const InteractiveBase = ({ onMove, onKey, ...rest }: Props) => {
-  const container = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const onMoveCallback = useEventCallback<Interaction>(onMove);
   const onKeyCallback = useEventCallback<Interaction>(onKey);
-  const touchId = useRef<null | number>(null);
-  const hasTouch = useRef(false);
+  const touchIdRef = useRef<null | number>(null);
+  const hasTouchRef = useRef(false);
 
   const [handleMoveStart, handleKeyDown, toggleDocumentEvents] = useMemo(() => {
     const handleMoveStart = ({
       nativeEvent,
     }: React.MouseEvent | React.TouchEvent) => {
-      const el = container.current;
+      const el = containerRef.current;
       if (!el) return;
 
       // Prevent text selection
       preventDefaultMove(nativeEvent);
 
-      if (isInvalid(nativeEvent, hasTouch.current) || !el) return;
+      if (isInvalid(nativeEvent, hasTouchRef.current) || !el) return;
 
       if (isTouch(nativeEvent)) {
-        hasTouch.current = true;
+        hasTouchRef.current = true;
         const changedTouches = nativeEvent.changedTouches || [];
         if (changedTouches.length && changedTouches[0]) {
-          touchId.current = changedTouches[0].identifier;
+          touchIdRef.current = changedTouches[0].identifier;
         }
       }
 
       el.focus();
-      onMoveCallback(getRelativePosition(el, nativeEvent, touchId.current));
+      onMoveCallback(getRelativePosition(el, nativeEvent, touchIdRef.current));
       toggleDocumentEvents(true);
     };
 
@@ -118,9 +118,9 @@ const InteractiveBase = ({ onMove, onKey, ...rest }: Props) => {
         ? event.touches.length > 0
         : event.buttons > 0;
 
-      if (isDown && container.current) {
+      if (isDown && containerRef.current) {
         onMoveCallback(
-          getRelativePosition(container.current, event, touchId.current),
+          getRelativePosition(containerRef.current, event, touchIdRef.current),
         );
       } else {
         toggleDocumentEvents(false);
@@ -146,8 +146,8 @@ const InteractiveBase = ({ onMove, onKey, ...rest }: Props) => {
     };
 
     function toggleDocumentEvents(state?: boolean) {
-      const touch = hasTouch.current;
-      const el = container.current;
+      const touch = hasTouchRef.current;
+      const el = containerRef.current;
       const parentWindow = getParentWindow(el);
 
       // Add or remove additional pointer event listeners
@@ -169,7 +169,7 @@ const InteractiveBase = ({ onMove, onKey, ...rest }: Props) => {
       {...rest}
       onTouchStart={handleMoveStart}
       onMouseDown={handleMoveStart}
-      ref={container}
+      ref={containerRef}
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="slider"

@@ -45,7 +45,7 @@ export function useThrottle<T>(value: T, options: UseThrottleOptions = {}): T {
 
   const [throttledValue, setThrottledValue] = useState<T>(value);
   const lastExecutedRef = useRef<number>(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastValueRef = useRef<T>(value);
 
   useEffect(() => {
