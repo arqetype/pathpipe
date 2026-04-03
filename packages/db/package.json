@@ -24,15 +24,15 @@
   },
   "dependencies": {
     "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.2",
-    "typeorm": "^0.3.25"
+    "class-validator": "^0.14.4",
+    "typeorm": "^0.3.28"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/prettier-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^24.0.12",
-    "typescript": "^5.8.3"
+    "@types/node": "^24.12.2",
+    "typescript": "^5.9.3"
   },
   "exports": {
     ".": {

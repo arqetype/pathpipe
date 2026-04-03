@@ -24,7 +24,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('NEST_JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get<string>('NEST_JWT_EXPIRATION_TIME'),
+          expiresIn: configService.get<number>('NEST_JWT_EXPIRATION_TIME'),
         },
       }),
       inject: [ConfigService],

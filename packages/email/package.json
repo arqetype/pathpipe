@@ -9,18 +9,18 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "@types/nodemailer": "^6.4.17",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "concurrently": "^9.2.0",
+    "@types/nodemailer": "^6.4.23",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "concurrently": "^9.2.1",
     "maildev": "^2.2.1",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@react-email/components": "^0.2.0",
-    "@react-email/render": "^1.1.3",
-    "nodemailer": "^7.0.5",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "@react-email/render": "^1.4.0",
+    "nodemailer": "^7.0.13",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   }
 }

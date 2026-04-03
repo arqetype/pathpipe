@@ -22,13 +22,13 @@ type EmailLayoutProps = {
 export function Layout({ children, previewMessage }: EmailLayoutProps) {
   return (
     <Html lang="en">
-      <Head>
-        <style>
-          @import
-          url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
-        </style>
-      </Head>
       <Tailwind config={tailwindConfig}>
+        <Head>
+          <style>
+            @import
+            url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
+          </style>
+        </Head>
         <Body
           style={{
             fontFamily:
