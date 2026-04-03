@@ -41,7 +41,7 @@ import {
 } from '@repo/db/dto/auth/forgot-password.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { LocalAuthGuard } from './guards/local.auth.guard';
-import { Response, Request } from 'express';
+import type { Response, Request } from 'express';
 import { User } from '@repo/db/entities/user';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UserService } from '../user/user.service';

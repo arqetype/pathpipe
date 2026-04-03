@@ -4,22 +4,24 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "dev": "concurrently \"pnpm build --watch\" \"maildev --outgoing-secure --outgoing-user 'dev@weareweaver.org' --outgoing-pass 'specialdevpassword'\" \"pnpm dlx react-email dev --dir=src/templates --port=1081\"",
+    "dev": "concurrently \"pnpm build --watch\" \"maildev --web 3010 --outgoing-secure --outgoing-user 'dev@weareweaver.org' --outgoing-pass 'specialdevpassword'\" \"email dev --dir=src/templates --port=3011\"",
     "build": "tsc -b -v"
   },
   "devDependencies": {
+    "@react-email/preview-server": "5.2.10",
     "@repo/typescript-config": "workspace:*",
-    "@types/nodemailer": "^6.4.23",
+    "@types/nodemailer": "^7.0.11",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "concurrently": "^9.2.1",
     "maildev": "^2.2.1",
-    "typescript": "^5.9.3"
+    "react-email": "5.2.10",
+    "typescript": "^6.0.2"
   },
   "dependencies": {
-    "@react-email/components": "^0.2.0",
-    "@react-email/render": "^1.4.0",
-    "nodemailer": "^7.0.13",
+    "@react-email/components": "^1.0.11",
+    "@react-email/render": "^2.0.5",
+    "nodemailer": "^8.0.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   }
