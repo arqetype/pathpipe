@@ -43,12 +43,4 @@ export class MailerService {
   ) {
     await this.mailer.sendResetPasswordEmail(to, token, user);
   }
-
-  async sendOrganizationInvitationEmail(
-    to: string,
-    token: string,
-    organization: { name: string; profilePictureUrl: string },
-  ) {
-    await this.mailer.sendOrganizationInvitationEmail(to, token, organization);
-  }
 }

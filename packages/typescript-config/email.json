@@ -2,7 +2,6 @@
   "extends": "./nestjs.json",
   "compilerOptions": {
     "target": "ES2020",
-    "module": "CommonJS",
     "declaration": true,
     "jsx": "react",
     "esModuleInterop": true,

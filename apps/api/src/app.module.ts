@@ -12,11 +12,6 @@ import { JwtAuthGuard } from './auth/guards/jwt.auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { OTPVerification } from '@repo/db/entities/otp-verification';
 import { ResetPasswordToken } from '@repo/db/entities/reset-password-token';
-import { Organization } from '@repo/db/entities/organization/organization';
-import { OrganizationModule } from './organization/organization.module';
-import { OrganizationMember } from '@repo/db/entities/organization/organization-member';
-import { OrganizationRole } from '@repo/db/entities/organization/organization-role';
-import { OrganizationInvitationToken } from '@repo/db/entities/organization/organization-invitation-token';
 
 @Module({
   imports: [
@@ -35,10 +30,6 @@ import { OrganizationInvitationToken } from '@repo/db/entities/organization/orga
         database: configService.getOrThrow('NEST_DATABASE_NAME'),
         entities: [
           User,
-          Organization,
-          OrganizationMember,
-          OrganizationRole,
-          OrganizationInvitationToken,
           EmailVerificationToken,
           OTPVerification,
           ResetPasswordToken,
@@ -51,7 +42,6 @@ import { OrganizationInvitationToken } from '@repo/db/entities/organization/orga
     MailerModule,
     AuthModule,
     JwtModule,
-    OrganizationModule,
   ],
   providers: [
     {
