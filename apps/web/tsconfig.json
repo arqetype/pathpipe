@@ -4,15 +4,15 @@
     "paths": {
       "@/*": ["./src/*"],
       "@repo/ui/*": ["../../packages/ui/src/*"],
-      "@repo/db/*": ["../../packages/db/src/*"],
+      "@repo/db/*": ["../../packages/db/src/*"]
     },
     "plugins": [
       {
-        "name": "next",
-      },
+        "name": "next"
+      }
     ],
     "strictPropertyInitialization": false,
-    "experimentalDecorators": true,
+    "experimentalDecorators": true
   },
   "include": [
     "**/*.ts",
@@ -21,7 +21,7 @@
     "next.config.ts",
     ".next/types/**/*.ts",
     "src/components/tab-navigation.tsx",
-    "../../packages/ui/src/components/horizontal-select.tsx",
+    "../../packages/ui/src/components/horizontal-select.tsx"
   ],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules"]
 }
