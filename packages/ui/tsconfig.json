@@ -5,10 +5,6 @@
       "@repo/ui/*": ["./src/*"],
     },
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "../../apps/web/src/components/cookie-banner/cookie-consent.tsx",
-  ],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", "dist"],
 }
