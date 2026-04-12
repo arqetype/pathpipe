@@ -20,7 +20,7 @@
     "next-env.d.ts",
     "next.config.ts",
     ".next/types/**/*.ts",
-    "../../packages/ui/src/components/tab-navigation.tsx",
+    "src/components/tab-navigation.tsx",
     "../../packages/ui/src/components/horizontal-select.tsx",
   ],
   "exclude": ["node_modules"],
