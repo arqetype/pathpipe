@@ -1,5 +1,12 @@
-import Header from '@/components/header';
 import { getCurrentUser } from '@/lib/auth-server';
+import { AppSidebar } from '@/components/app-sidebar';
+import { AppBreadcrumb } from '@/components/app-breadcrumb';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@repo/ui/components/sidebar';
+import { Separator } from '@repo/ui/components/separator';
 import type { ReactNode } from 'react';
 
 type ApplicationLayoutProps = {
@@ -12,9 +19,16 @@ export default async function ApplicationLayout({
   const currentUser = await getCurrentUser();
 
   return (
-    <div className="bg-muted/50 min-h-screen">
-      <Header {...currentUser} />
-      {children}
-    </div>
+    <SidebarProvider>
+      <AppSidebar user={currentUser} />
+      <SidebarInset>
+        <header className="flex h-12 shrink-0 items-center gap-3 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="h-4" />
+          <AppBreadcrumb />
+        </header>
+        <div className="flex flex-1 flex-col min-h-0">{children}</div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

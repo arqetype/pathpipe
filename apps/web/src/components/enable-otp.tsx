@@ -101,15 +101,16 @@ export default function EnableOtp({ user }: EnableOtpProps) {
 
   return (
     <AlertDialog ref={dialogRef}>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-row gap-3 items-center justify-between">
         <div className="space-y-1">
-          <Label>Enable One-Time Password (OTP)</Label>
+          <Label htmlFor="otp">Enable One-Time Password (OTP)</Label>
           <p className="text-sm text-muted-foreground">
             Use OTP for additional security during sign-in. This feature is not
             available for GitHub users.
           </p>
         </div>
         <Switch
+          id="otp"
           disabled={user.is_github_user || isInitiating}
           onCheckedChange={handleToggle}
           checked={switchChecked}

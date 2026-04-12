@@ -172,7 +172,7 @@ export default function ProfilePictureEditor() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1">
-          <div className="flex gap-4 py-4">
+          <div className="flex flex-col gap-4 py-4 sm:flex-row">
             <div className="flex flex-col gap-2">
               <div className="relative size-56 mx-auto rounded overflow-hidden border-2 border-muted-foreground/20 ">
                 {avatarPreview && (
