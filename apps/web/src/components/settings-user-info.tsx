@@ -22,20 +22,22 @@ export default async function SettingsUserInfo() {
 
   return (
     <div className="flex items-center flex-col text-center pt-2">
-      <Avatar className="w-3/5 aspect-square h-full">
-        <AvatarImage
-          src={currentUser.avatar_url}
-          alt={`Profile picture of ${currentUser.name}`}
-        />
-        <AvatarFallback className="font-4xl">{fallbackText}</AvatarFallback>
-      </Avatar>
+      <div className="w-full flex justify-center">
+        <Avatar className="rounded-xl" size="4xl">
+          <AvatarImage
+            src={currentUser.avatar_url}
+            alt={`Profile picture of ${currentUser.name}`}
+          />
+          <AvatarFallback className="font-4xl">{fallbackText}</AvatarFallback>
+        </Avatar>
+      </div>
       <h2 className="mt-4 text-2xl font-semibold">
         {currentUser.name}
         <span className="block text-sm text-muted-foreground">
           {currentUser.email}
         </span>
       </h2>
-      <div className="mt-2 flex gap-2">
+      <div className="mt-2 flex gap-2 flex-wrap justify-center">
         {isGoogleUser && isGithubUser && (
           <Badge variant="outline">Logged in with Google & GitHub</Badge>
         )}

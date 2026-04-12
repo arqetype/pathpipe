@@ -5,6 +5,10 @@
       "@repo/ui/*": ["./src/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "../../apps/web/src/components/tab-navigation.tsx"
+  ],
   "exclude": ["node_modules", "dist"]
 }

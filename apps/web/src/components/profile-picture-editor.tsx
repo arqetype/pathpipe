@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useForm, type Control } from 'react-hook-form';
 import { AvatarMoods, AvatarHairStyles } from '@repo/db/types/user/avatar';
-import HorizontalSelect from './horizontal-select';
+import HorizontalSelect from '../../../../packages/ui/src/components/horizontal-select';
 import { AvatarCustomizationDto } from '@repo/db/dto/settings/avatar-customization.dto';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import {
@@ -172,7 +172,7 @@ export default function ProfilePictureEditor() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1">
-          <div className="flex gap-4 py-4">
+          <div className="flex flex-col gap-4 py-4 sm:flex-row">
             <div className="flex flex-col gap-2">
               <div className="relative size-56 mx-auto rounded overflow-hidden border-2 border-muted-foreground/20 ">
                 {avatarPreview && (

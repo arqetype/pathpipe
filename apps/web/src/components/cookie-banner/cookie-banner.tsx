@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CookieConsent } from '@repo/ui/components/cookie-consent';
+import { CookieConsent } from '@/components/cookie-banner/cookie-consent';
 import { useCookieConsent } from '@/components/providers/cookie-consent-provider';
 
 export default function CookieBanner() {
