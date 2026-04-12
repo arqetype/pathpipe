@@ -8,25 +8,27 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApplicationService } from './application.service';
+import { type ApplicationsQuery } from '@repo/db/query/application';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '@repo/db/entities/user';
 import { UserRole } from '@repo/db/types/user/roles';
 import { Application } from '@repo/db/entities/application';
 import { ApplicationStatus } from '@repo/db/types/application/status';
 
-@Controller('application')
+@Controller('applications')
 export class ApplicationController {
   constructor(private readonly applicationService: ApplicationService) {}
 
   @HttpCode(HttpStatus.OK)
   @Get()
-  getAll(@CurrentUser() user: User) {
+  getAll(@CurrentUser() user: User, @Query() query: ApplicationsQuery) {
     if (user.role === UserRole.ADMIN) {
-      return this.applicationService.findAll();
+      return this.applicationService.findMany(query);
     }
-    return this.applicationService.findByUser(user.id);
+    return this.applicationService.findMany(query, user.id);
   }
 
   @HttpCode(HttpStatus.OK)
