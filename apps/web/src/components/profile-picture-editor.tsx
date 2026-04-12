@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useForm, type Control } from 'react-hook-form';
 import { AvatarMoods, AvatarHairStyles } from '@repo/db/types/user/avatar';
-import HorizontalSelect from './horizontal-select';
+import HorizontalSelect from '../../../../packages/ui/src/components/horizontal-select';
 import { AvatarCustomizationDto } from '@repo/db/dto/settings/avatar-customization.dto';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import {

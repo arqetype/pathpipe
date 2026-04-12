@@ -1,7 +1,7 @@
 import SettingsHeader from '@/components/settings-header';
 import SettingsUserInfo from '@/components/settings-user-info';
-import { TabNavigation } from '@/components/tab-navigation';
 import { getCurrentUser } from '@/lib/auth-server';
+import { TabNavigation } from '@repo/ui/components/tab-navigation';
 import { Suspense, type ReactNode } from 'react';
 
 type SettingsLayoutProps = {

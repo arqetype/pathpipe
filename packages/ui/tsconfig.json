@@ -2,9 +2,13 @@
   "extends": "@repo/typescript-config/react-library.json",
   "compilerOptions": {
     "paths": {
-      "@repo/ui/*": ["./src/*"]
-    }
+      "@repo/ui/*": ["./src/*"],
+    },
   },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "../../apps/web/src/components/cookie-banner/cookie-consent.tsx",
+  ],
+  "exclude": ["node_modules", "dist"],
 }
