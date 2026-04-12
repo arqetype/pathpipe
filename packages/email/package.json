@@ -1,11 +1,9 @@
 {
   "name": "@repo/email",
   "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "scripts": {
-    "dev": "concurrently \"pnpm build --watch\" \"maildev --web 3010 --outgoing-secure --outgoing-user 'dev@weareweaver.org' --outgoing-pass 'specialdevpassword'\" \"email dev --dir=src/templates --port=3011\"",
-    "build": "tsc -b -v"
+    "dev": "tsc -b --clean && concurrently \"tsc --watch\" \"maildev --web 3010 --outgoing-secure --outgoing-user 'dev@weareweaver.org' --outgoing-pass 'specialdevpassword'\" \"email dev --dir=src/templates --port=3011\"",
+    "build": "tsc -b --clean && tsc"
   },
   "devDependencies": {
     "@react-email/preview-server": "5.2.10",
@@ -24,5 +22,11 @@
     "nodemailer": "^8.0.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
   }
 }

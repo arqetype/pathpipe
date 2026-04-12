@@ -1,24 +1,9 @@
 {
   "name": "@repo/db",
   "version": "1.0.0",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "./dist/**"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "src/*"
-      ]
-    }
-  },
   "scripts": {
-    "dev": "pnpm build --watch",
-    "build": "tsc -b -v",
+    "dev": "tsc -b --clean && tsc --watch",
+    "build": "tsc -b --clean && tsc",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write . --ignore-unknown"
   },
@@ -35,13 +20,9 @@
     "typescript": "^6.0.2"
   },
   "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
-    },
     "./*": {
-      "import": "./dist/*.js",
-      "require": "./dist/*.js"
+      "types": "./src/*.ts",
+      "default": "./dist/*.js"
     }
   }
 }
