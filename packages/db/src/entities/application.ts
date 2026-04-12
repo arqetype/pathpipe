@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -14,7 +15,11 @@ import { User } from './user';
 export class Application {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column()
   company: string;
+
+  @Column()
   position: string;
 
   @Column({ nullable: true })
@@ -50,6 +55,9 @@ export class Application {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @DeleteDateColumn()
+  deleted_at: Date;
 
   @ManyToOne(() => User)
   @JoinColumn()
