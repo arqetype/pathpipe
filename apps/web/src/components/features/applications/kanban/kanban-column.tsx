@@ -1,7 +1,7 @@
 'use client';
 
 import { CollisionPriority } from '@dnd-kit/abstract';
-import { useSortable } from '@dnd-kit/react/sortable';
+import { useDroppable } from '@dnd-kit/react';
 import type { ReactNode } from 'react';
 import { cn } from '@repo/ui/lib/utils';
 
@@ -12,7 +12,6 @@ type ColumnConfig = {
 
 type KanbanColumnProps = {
   id: string;
-  index: number;
   config: ColumnConfig;
   count: number;
   children: ReactNode;
@@ -20,14 +19,12 @@ type KanbanColumnProps = {
 
 export function KanbanColumn({
   id,
-  index,
   config,
   count,
   children,
 }: KanbanColumnProps) {
-  const { ref, isDropTarget } = useSortable({
+  const { ref, isDropTarget } = useDroppable({
     id,
-    index,
     type: 'column',
     collisionPriority: CollisionPriority.Low,
     accept: ['item', 'column'],

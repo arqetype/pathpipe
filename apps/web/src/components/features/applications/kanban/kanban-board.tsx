@@ -11,8 +11,6 @@ import { updateApplicationStatusAction } from '@/actions/application/update-stat
 import { STATUS_CONFIG } from '../status-config';
 import { toast } from 'sonner';
 
-export { STATUS_CONFIG as COLUMNS };
-
 type KanbanBoardProps = {
   applications: Application[];
   hiddenColumns?: Set<ApplicationStatus>;
@@ -39,7 +37,6 @@ export function KanbanBoard({
     [initial],
   );
 
-  // Re-sync from server on every data change (search/sort/create/status update)
   useEffect(() => {
     setColumnItems(
       STATUS_CONFIG.reduce(
@@ -110,11 +107,10 @@ export function KanbanBoard({
     >
       <div className="flex gap-4 h-full overflow-x-auto px-4 py-4">
         {STATUS_CONFIG.filter((col) => !hiddenColumns.has(col.status)).map(
-          (col, colIndex) => (
+          (col) => (
             <KanbanColumn
               key={col.status}
               id={col.status}
-              index={colIndex}
               config={col}
               count={columnItems[col.status]?.length ?? 0}
             >
