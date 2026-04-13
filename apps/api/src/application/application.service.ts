@@ -49,10 +49,10 @@ export class ApplicationService {
     }
 
     qb.addSelect(
-      `CASE application.priority WHEN 'HIGH' THEN 1 WHEN 'MEDIUM' THEN 2 WHEN 'LOW' THEN 3 ELSE 4 END`,
-      'priority_rank',
+      `CASE application.tier WHEN 'S_TIER' THEN 1 WHEN 'A_TIER' THEN 2 WHEN 'B_TIER' THEN 3 ELSE 4 END`,
+      'tier_rank',
     )
-      .orderBy('priority_rank', 'ASC')
+      .orderBy('tier_rank', 'ASC')
       .addOrderBy(
         `application.${sortBy}`,
         sortOrder.toUpperCase() as 'ASC' | 'DESC',

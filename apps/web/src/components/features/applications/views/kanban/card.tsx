@@ -7,28 +7,9 @@ import { Banknote, CalendarDays } from 'lucide-react';
 import { cn } from '@repo/ui/lib/utils';
 import { formatDate, formatSalary } from '@/utils/applications-utils';
 import { CompanyLogo } from '@/components/shared/company-logo';
-import { ApplicationPriority } from '@repo/db/types/application/priority';
 import { Badge } from '@repo/ui/components/badge';
-
-const PRIORITY_BADGE: Partial<
-  Record<ApplicationPriority, { label: string; className: string }>
-> = {
-  [ApplicationPriority.HIGH]: {
-    label: 'High',
-    className:
-      'bg-red-100 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-900',
-  },
-  [ApplicationPriority.MEDIUM]: {
-    label: 'Medium',
-    className:
-      'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-400 dark:border-orange-900',
-  },
-  [ApplicationPriority.LOW]: {
-    label: 'Low',
-    className:
-      'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-900',
-  },
-};
+import { TIER_CONFIG } from '../../constants/tier';
+import { ApplicationTier } from '@repo/db/types/application/tier';
 
 type KanbanCardProps = {
   application: Application;
@@ -68,17 +49,18 @@ export function KanbanCard({
             <p className="font-semibold text-sm leading-tight line-clamp-1">
               {application.position}
             </p>
-            {PRIORITY_BADGE[application.priority] && (
-              <Badge
-                variant="outline"
-                className={cn(
-                  'text-[10px] px-1 py-0',
-                  PRIORITY_BADGE[application.priority]!.className,
-                )}
-              >
-                {PRIORITY_BADGE[application.priority]!.label}
-              </Badge>
-            )}
+            {TIER_CONFIG[application.tier] &&
+              application.tier !== ApplicationTier.NONE && (
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'text-[10px] px-1 py-0',
+                    TIER_CONFIG[application.tier]!.className,
+                  )}
+                >
+                  {TIER_CONFIG[application.tier]!.label}
+                </Badge>
+              )}
           </div>
           <div className="flex items-center gap-1 text-muted-foreground">
             <CompanyLogo name={application.company} key={application.company} />

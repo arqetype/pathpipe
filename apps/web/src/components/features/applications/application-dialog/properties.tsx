@@ -1,5 +1,5 @@
 import type { Application } from '@repo/db/entities/application';
-import { ApplicationPriority } from '@repo/db/types/application/priority';
+import { ApplicationTier } from '@repo/db/types/application/tier';
 import { ApplicationStatus } from '@repo/db/types/application/status';
 import {
   Activity,
@@ -21,11 +21,9 @@ import {
   SelectTrigger,
 } from '@repo/ui/components/select';
 import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
-import {
-  APPLICATION_PRIORITY_OPTIONS,
-  PRIORITY_CONFIG,
-} from '../constants/priority';
+import { TIER_CONFIG } from '../constants/tier';
 import { formatSalary } from '@/utils/applications-utils';
+import { TierSelectOptions } from '../shared/tier-select-options';
 
 type ApplicationDialogPropertiesProps = {
   app: Application;
@@ -81,19 +79,19 @@ export function ApplicationDialogProperties({
         </Select>
       </Property>
 
-      <Property icon={<Flag className="size-4" />} label="Priority">
+      <Property icon={<Flag className="size-4" />} label="Tier">
         <Select
-          value={app.priority}
-          onValueChange={(v) => onSave({ priority: v as ApplicationPriority })}
+          value={app.tier}
+          onValueChange={(v) => onSave({ tier: v as ApplicationTier })}
         >
           <SelectTrigger
             variant="ghost"
             className="w-full px-2 -ml-2 [&>svg]:hidden"
           >
             {(() => {
-              const v = app.priority;
-              const cfg = PRIORITY_CONFIG[v];
-              return v === ApplicationPriority.NONE ? (
+              const v = app.tier;
+              const cfg = TIER_CONFIG[v];
+              return v === ApplicationTier.NONE ? (
                 <span className="text-muted-foreground">None</span>
               ) : (
                 <span
@@ -108,25 +106,7 @@ export function ApplicationDialogProperties({
             })()}
           </SelectTrigger>
           <SelectContent>
-            {APPLICATION_PRIORITY_OPTIONS.map((opt) => {
-              const cfg = PRIORITY_CONFIG[opt.value as ApplicationPriority];
-              return (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.value === ApplicationPriority.NONE ? (
-                    <span className="text-muted-foreground">None</span>
-                  ) : (
-                    <span
-                      className={cn(
-                        'text-xs px-1.5 py-0.5 rounded border font-medium',
-                        cfg.className,
-                      )}
-                    >
-                      {cfg.label}
-                    </span>
-                  )}
-                </SelectItem>
-              );
-            })}
+            <TierSelectOptions />
           </SelectContent>
         </Select>
       </Property>

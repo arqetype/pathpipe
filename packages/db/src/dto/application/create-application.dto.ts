@@ -7,7 +7,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { ApplicationStatus } from '../../types/application/status';
-import { ApplicationPriority } from '../../types/application/priority';
+import { ApplicationTier } from '../../types/application/tier';
 
 export class CreateApplicationDto {
   @IsString()
@@ -23,8 +23,8 @@ export class CreateApplicationDto {
   status?: ApplicationStatus;
 
   @IsOptional()
-  @IsEnum(ApplicationPriority)
-  priority?: ApplicationPriority;
+  @IsEnum(ApplicationTier)
+  tier?: ApplicationTier;
 
   @IsOptional()
   @IsString()

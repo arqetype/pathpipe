@@ -21,14 +21,14 @@ import {
   SelectValue,
 } from '@repo/ui/components/select';
 import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
-import { APPLICATION_PRIORITY_OPTIONS } from '../constants/priority';
 import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { useForm } from 'react-hook-form';
 import { createApplicationAction } from '@/actions/application/create';
 import { toast } from 'sonner';
 import { ApplicationStatus } from '@repo/db/types/application/status';
-import { ApplicationPriority } from '@repo/db/types/application/priority';
+import { ApplicationTier } from '@repo/db/types/application/tier';
+import { TierSelectOptions } from '../shared/tier-select-options';
 
 export function CreateApplicationForm() {
   const [isPending, startTransition] = useTransition();
@@ -40,7 +40,7 @@ export function CreateApplicationForm() {
       company: '',
       position: '',
       status: ApplicationStatus.WISHLIST,
-      priority: ApplicationPriority.NONE,
+      tier: ApplicationTier.NONE,
       url: '',
       salaryMin: undefined,
       salaryMax: undefined,
@@ -124,10 +124,10 @@ export function CreateApplicationForm() {
         />
         <FormField
           control={form.control}
-          name="priority"
+          name="tier"
           render={({ field }) => (
             <FormItem className="flex-1">
-              <FormLabel>Priority</FormLabel>
+              <FormLabel>Tier</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -135,11 +135,7 @@ export function CreateApplicationForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {APPLICATION_PRIORITY_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
+                  <TierSelectOptions />
                 </SelectContent>
               </Select>
               <FormMessage />
