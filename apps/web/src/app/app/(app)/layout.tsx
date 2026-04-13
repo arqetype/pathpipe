@@ -1,6 +1,6 @@
 import { getCurrentUser } from '@/lib/auth-server';
-import { AppSidebar } from '@/components/app-sidebar';
-import { AppBreadcrumb } from '@/components/app-breadcrumb';
+import { AppSidebar } from '@/components/navigation/sidebar';
+import { AppBreadcrumb } from '@/components/navigation/breadcrumbs/app-breadcrumb';
 import {
   SidebarInset,
   SidebarProvider,
@@ -8,6 +8,7 @@ import {
 } from '@repo/ui/components/sidebar';
 import { Separator } from '@repo/ui/components/separator';
 import type { ReactNode } from 'react';
+import { BreadcrumbProvider } from '@/components/navigation/breadcrumbs/breadcrumb-context';
 
 type ApplicationLayoutProps = {
   children: ReactNode;
@@ -20,15 +21,21 @@ export default async function ApplicationLayout({
 
   return (
     <SidebarProvider>
-      <AppSidebar user={currentUser} />
-      <SidebarInset className="overflow-hidden">
-        <header className="flex h-12 shrink-0 items-center gap-3 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="h-4" />
-          <AppBreadcrumb />
-        </header>
-        <div className="flex flex-1 flex-col min-h-0">{children}</div>
-      </SidebarInset>
+      <BreadcrumbProvider
+        defaultLabels={{
+          settings: 'Settings',
+        }}
+      >
+        <AppSidebar user={currentUser} />
+        <SidebarInset className="overflow-hidden">
+          <header className="flex h-12 shrink-0 items-center gap-3 border-b px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="h-4" />
+            <AppBreadcrumb />
+          </header>
+          <div className="flex flex-1 flex-col min-h-0">{children}</div>
+        </SidebarInset>
+      </BreadcrumbProvider>
     </SidebarProvider>
   );
 }

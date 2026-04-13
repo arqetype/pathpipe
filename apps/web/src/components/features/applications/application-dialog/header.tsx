@@ -1,5 +1,5 @@
 import type { Application } from '@repo/db/entities/application';
-import { CompanyLogo } from '@/components/icons/company-logo';
+import { CompanyLogo } from '@/components/shared/company-logo';
 import EditableText from '@repo/ui/components/editable-inputs/editable-text';
 
 type ApplicationDialogHeaderProps = {

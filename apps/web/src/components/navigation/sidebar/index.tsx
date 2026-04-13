@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { startTransition } from 'react';
 
-import { NavUser } from '@/components/nav-user';
+import { NavUser } from '@/components/navigation/sidebar/nav-user';
 import {
   Sidebar,
   SidebarContent,
@@ -21,7 +21,9 @@ import {
 import { signOutAction } from '@/actions/auth/sign-out';
 import type { User } from '@repo/db/entities/user';
 
-const navItems = [{ title: 'Applications', href: '/app', icon: Briefcase }];
+const navItems = [
+  { title: 'Applications', href: '/app/applications', icon: Briefcase },
+];
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   user: User;

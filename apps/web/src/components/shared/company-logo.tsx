@@ -14,7 +14,6 @@ type CompanyLogoProps = {
   className?: string;
 };
 
-// Module-level cache: name → brandId (null means "not found")
 const brandIdCache = new Map<string, string | null>();
 
 export function CompanyLogo({

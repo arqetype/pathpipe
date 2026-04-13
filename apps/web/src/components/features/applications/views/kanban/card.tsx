@@ -6,7 +6,7 @@ import type { Application } from '@repo/db/entities/application';
 import { Banknote, CalendarDays } from 'lucide-react';
 import { cn } from '@repo/ui/lib/utils';
 import { formatDate, formatSalary } from '@/utils/applications-utils';
-import { CompanyLogo } from '@/components/icons/company-logo';
+import { CompanyLogo } from '@/components/shared/company-logo';
 import { ApplicationPriority } from '@repo/db/types/application/priority';
 import { Badge } from '@repo/ui/components/badge';
 
