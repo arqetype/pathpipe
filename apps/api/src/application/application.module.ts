@@ -10,4 +10,4 @@ import { Application } from '@repo/db/entities/application';
   exports: [ApplicationService],
   controllers: [ApplicationController],
 })
-export class UserModule {}
+export class ApplicationModule {}

@@ -21,7 +21,7 @@ export default async function ApplicationLayout({
   return (
     <SidebarProvider>
       <AppSidebar user={currentUser} />
-      <SidebarInset>
+      <SidebarInset className="overflow-hidden">
         <header className="flex h-12 shrink-0 items-center gap-3 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="h-4" />

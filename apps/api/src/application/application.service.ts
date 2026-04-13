@@ -8,6 +8,7 @@ import {
   PaginatedApplications,
 } from '@repo/db/query/application';
 import { User } from '@repo/db/entities/user';
+import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
 
 @Injectable()
 export class ApplicationService {
@@ -75,16 +76,13 @@ export class ApplicationService {
     return application;
   }
 
-  async create(user: User, application: Application): Promise<Application> {
-    try {
-      const newApplication = this.applicationsRepository.create({
-        ...application,
-        user,
-      });
-      return await this.applicationsRepository.save(newApplication);
-    } catch {
-      return null;
-    }
+  async create(user: User, dto: CreateApplicationDto): Promise<Application> {
+    const newApplication = this.applicationsRepository.create({
+      ...dto,
+      appliedAt: dto.appliedAt ? new Date(dto.appliedAt) : undefined,
+      user,
+    });
+    return this.applicationsRepository.save(newApplication);
   }
 
   async update(id: string, data: Partial<Application>): Promise<Application> {
