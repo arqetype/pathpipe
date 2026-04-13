@@ -24,7 +24,7 @@ import {
   DropdownMenuSeparator,
 } from '@repo/ui/components/dropdown-menu';
 import type { ApplicationSortBy } from '@repo/db/query/application';
-import { STATUS_CONFIG } from './status-config';
+import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
 
 const SORT_OPTIONS: { value: ApplicationSortBy; label: string }[] = [
   { value: 'created_at', label: 'Date added' },
@@ -183,7 +183,7 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
               Filter by status
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {STATUS_CONFIG.map((s) => (
+            {APPLICATION_STATUS_OPTIONS.map((s) => (
               <DropdownMenuCheckboxItem
                 key={s.status}
                 checked={!hiddenStatuses.has(s.status)}

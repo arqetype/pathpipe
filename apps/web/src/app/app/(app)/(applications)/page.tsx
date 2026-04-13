@@ -1,6 +1,6 @@
 import { get } from '@/lib/fetch';
-import { KanbanBoard } from '@/components/features/applications/kanban/kanban-board';
-import { ViewToolbar } from '@/components/features/applications/view-toolbar';
+import { KanbanBoard } from '@/components/features/applications/views/kanban';
+import { ViewToolbar } from '@/components/features/applications/views/toolbar';
 import { CreateApplicationDialog } from '@/components/features/applications/create-application-dialog';
 import type {
   PaginatedApplications,

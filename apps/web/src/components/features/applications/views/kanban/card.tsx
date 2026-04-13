@@ -33,9 +33,14 @@ const PRIORITY_BADGE: Partial<
 type KanbanCardProps = {
   application: Application;
   overlay?: boolean;
+  onClick?: () => void;
 };
 
-export function KanbanCard({ application, overlay = false }: KanbanCardProps) {
+export function KanbanCard({
+  application,
+  overlay = false,
+  onClick,
+}: KanbanCardProps) {
   const { ref, isDragSource } = useDraggable({
     id: application.id,
     type: 'item',
@@ -49,6 +54,7 @@ export function KanbanCard({ application, overlay = false }: KanbanCardProps) {
   return (
     <Card
       ref={ref as React.Ref<HTMLDivElement>}
+      onClick={overlay ? undefined : onClick}
       className={cn(
         'gap-3 py-3 cursor-grab active:cursor-grabbing select-none transition-shadow',
         !overlay && 'hover:shadow-md',
@@ -75,7 +81,7 @@ export function KanbanCard({ application, overlay = false }: KanbanCardProps) {
             )}
           </div>
           <div className="flex items-center gap-1 text-muted-foreground">
-            <CompanyLogo name={application.company} />
+            <CompanyLogo name={application.company} key={application.company} />
             <p className="text-xs line-clamp-1">{application.company}</p>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { ApplicationStatus } from '@repo/db/types/application/status';
 
-export const STATUS_CONFIG: {
+export const APPLICATION_STATUS_OPTIONS: {
   status: ApplicationStatus;
   label: string;
   dotClass: string;
