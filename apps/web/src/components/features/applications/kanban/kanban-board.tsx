@@ -8,48 +8,22 @@ import { ApplicationStatus } from '@repo/db/types/application/status';
 import { KanbanColumn } from './kanban-column';
 import { KanbanCard } from './kanban-card';
 import { updateApplicationStatusAction } from '@/actions/application/update-status';
+import { STATUS_CONFIG } from '../status-config';
 import { toast } from 'sonner';
 
-const COLUMNS: {
-  status: ApplicationStatus;
-  label: string;
-  dotClass: string;
-}[] = [
-  {
-    status: ApplicationStatus.WISHLIST,
-    label: 'Wishlist',
-    dotClass: 'bg-violet-400',
-  },
-  {
-    status: ApplicationStatus.APPLIED,
-    label: 'Applied',
-    dotClass: 'bg-blue-400',
-  },
-  {
-    status: ApplicationStatus.INTERVIEW,
-    label: 'Interview',
-    dotClass: 'bg-amber-400',
-  },
-  { status: ApplicationStatus.OFFER, label: 'Offer', dotClass: 'bg-green-400' },
-  {
-    status: ApplicationStatus.REJECTED,
-    label: 'Rejected',
-    dotClass: 'bg-red-400',
-  },
-  {
-    status: ApplicationStatus.GHOSTED,
-    label: 'Ghosted',
-    dotClass: 'bg-slate-400',
-  },
-];
+export { STATUS_CONFIG as COLUMNS };
 
 type KanbanBoardProps = {
   applications: Application[];
+  hiddenColumns?: Set<ApplicationStatus>;
 };
 
-export function KanbanBoard({ applications: initial }: KanbanBoardProps) {
+export function KanbanBoard({
+  applications: initial,
+  hiddenColumns = new Set(),
+}: KanbanBoardProps) {
   const [columnItems, setColumnItems] = useState<Record<string, string[]>>(() =>
-    COLUMNS.reduce(
+    STATUS_CONFIG.reduce(
       (acc, col) => {
         acc[col.status] = initial
           .filter((a) => a.status === col.status)
@@ -65,22 +39,19 @@ export function KanbanBoard({ applications: initial }: KanbanBoardProps) {
     [initial],
   );
 
-  // Sync new applications added from the server after revalidation
+  // Re-sync from server on every data change (search/sort/create/status update)
   useEffect(() => {
-    setColumnItems((prev) => {
-      const allCurrentIds = new Set(Object.values(prev).flat());
-      const newApps = initial.filter((a) => !allCurrentIds.has(a.id));
-      if (newApps.length === 0) return prev;
-
-      const next = { ...prev };
-      for (const app of newApps) {
-        if (!next[app.status]) next[app.status] = [];
-        next[app.status] = app.id
-          ? [app.id, ...(next[app.status] || [])]
-          : [...(next[app.status] || [])];
-      }
-      return next;
-    });
+    setColumnItems(
+      STATUS_CONFIG.reduce(
+        (acc, col) => {
+          acc[col.status] = initial
+            .filter((a) => a.status === col.status)
+            .map((a) => a.id);
+          return acc;
+        },
+        {} as Record<string, string[]>,
+      ),
+    );
   }, [initial]);
 
   const snapshot = useRef<Record<string, string[]> | null>(null);
@@ -138,28 +109,30 @@ export function KanbanBoard({ applications: initial }: KanbanBoardProps) {
       }}
     >
       <div className="flex gap-4 h-full overflow-x-auto px-4 py-4">
-        {COLUMNS.map((col, colIndex) => (
-          <KanbanColumn
-            key={col.status}
-            id={col.status}
-            index={colIndex}
-            config={col}
-            count={columnItems[col.status]?.length || 0}
-          >
-            {columnItems[col.status]?.map((id, index) => {
-              const app = applicationsById.get(id);
-              if (!app) return null;
-              return (
-                <KanbanCard
-                  key={id}
-                  application={app}
-                  index={index}
-                  column={col.status}
-                />
-              );
-            })}
-          </KanbanColumn>
-        ))}
+        {STATUS_CONFIG.filter((col) => !hiddenColumns.has(col.status)).map(
+          (col, colIndex) => (
+            <KanbanColumn
+              key={col.status}
+              id={col.status}
+              index={colIndex}
+              config={col}
+              count={columnItems[col.status]?.length ?? 0}
+            >
+              {(columnItems[col.status] ?? []).map((id, index) => {
+                const app = applicationsById.get(id);
+                if (!app) return null;
+                return (
+                  <KanbanCard
+                    key={id}
+                    application={app}
+                    index={index}
+                    column={col.status}
+                  />
+                );
+              })}
+            </KanbanColumn>
+          ),
+        )}
       </div>
 
       <DragOverlay>
