@@ -3,16 +3,26 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Building2 } from 'lucide-react';
+import { useTheme } from 'next-themes';
+
+type LogoType = 'icon' | 'logo' | 'symbol';
 
 type CompanyLogoProps = {
   name: string;
+  type?: LogoType;
   size?: number;
   className?: string;
 };
 
-export function CompanyLogo({ name, size = 12, className }: CompanyLogoProps) {
-  const [iconUrl, setIconUrl] = useState<string | null>(null);
+export function CompanyLogo({
+  name,
+  type = 'icon',
+  size = 12,
+  className,
+}: CompanyLogoProps) {
+  const [brandId, setBrandId] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     if (!name) return;
@@ -23,10 +33,8 @@ export function CompanyLogo({ name, size = 12, className }: CompanyLogoProps) {
       .then((res) => (res.ok ? res.json() : null))
       .then((results) => {
         if (cancelled || !results?.[0]?.brandId) return;
-        const { brandId } = results[0] as { brandId: string };
-        setIconUrl(
-          `https://cdn.brandfetch.io/${brandId}/fallback/404/icon.svg`,
-        );
+        setBrandId(results[0].brandId);
+        setError(false);
       })
       .catch(() => {});
 
@@ -35,13 +43,16 @@ export function CompanyLogo({ name, size = 12, className }: CompanyLogoProps) {
     };
   }, [name]);
 
-  if (error || !iconUrl) {
+  if (error || !brandId) {
     return <Building2 className={className ?? 'size-3 shrink-0'} />;
   }
 
+  const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
+  const src = `https://cdn.brandfetch.io/${brandId}/fallback/404/${type}.svg&theme=${theme}`;
+
   return (
     <Image
-      src={iconUrl}
+      src={src}
       alt=""
       className={className ?? 'size-3 shrink-0 rounded-sm object-contain'}
       width={size}
