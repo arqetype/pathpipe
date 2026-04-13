@@ -16,20 +16,26 @@ type KanbanBoardProps = {
   hiddenColumns?: Set<ApplicationStatus>;
 };
 
+function buildColumnItems(
+  applications: Application[],
+): Record<string, string[]> {
+  return STATUS_CONFIG.reduce(
+    (acc, col) => {
+      acc[col.status] = applications
+        .filter((a) => a.status === col.status)
+        .map((a) => a.id);
+      return acc;
+    },
+    {} as Record<string, string[]>,
+  );
+}
+
 export function KanbanBoard({
   applications: initial,
   hiddenColumns = new Set(),
 }: KanbanBoardProps) {
   const [columnItems, setColumnItems] = useState<Record<string, string[]>>(() =>
-    STATUS_CONFIG.reduce(
-      (acc, col) => {
-        acc[col.status] = initial
-          .filter((a) => a.status === col.status)
-          .map((a) => a.id);
-        return acc;
-      },
-      {} as Record<string, string[]>,
-    ),
+    buildColumnItems(initial),
   );
 
   const applicationsById = useMemo(
@@ -38,18 +44,18 @@ export function KanbanBoard({
   );
 
   useEffect(() => {
-    setColumnItems(
-      STATUS_CONFIG.reduce(
-        (acc, col) => {
-          acc[col.status] = initial
-            .filter((a) => a.status === col.status)
-            .map((a) => a.id);
-          return acc;
-        },
-        {} as Record<string, string[]>,
-      ),
-    );
+    setColumnItems(buildColumnItems(initial));
   }, [initial]);
+
+  const appIdToStatus = useMemo(() => {
+    const map = new Map<string, ApplicationStatus>();
+    for (const [status, ids] of Object.entries(columnItems)) {
+      for (const id of ids) {
+        map.set(id, status as ApplicationStatus);
+      }
+    }
+    return map;
+  }, [columnItems]);
 
   const snapshot = useRef<Record<string, string[]> | null>(null);
   const [, startTransition] = useTransition();
@@ -79,10 +85,7 @@ export function KanbanBoard({
           return;
         }
 
-        const newStatus = Object.entries(columnItems).find(([, ids]) =>
-          ids.includes(sourceId),
-        )?.[0] as ApplicationStatus | undefined;
-
+        const newStatus = appIdToStatus.get(sourceId);
         const app = applicationsById.get(sourceId);
         if (!app || !newStatus || app.status === newStatus) {
           snapshot.current = null;
@@ -134,7 +137,14 @@ export function KanbanBoard({
       <DragOverlay>
         {(source) => {
           const app = (source.data as { application: Application }).application;
-          return <KanbanCard application={app} index={0} column="" overlay />;
+          return (
+            <KanbanCard
+              application={app}
+              index={0}
+              column={app.status}
+              overlay
+            />
+          );
         }}
       </DragOverlay>
     </DragDropProvider>

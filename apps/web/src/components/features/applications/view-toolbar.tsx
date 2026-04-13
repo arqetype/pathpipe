@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   Search,
@@ -55,15 +55,18 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
   );
 
   const [inputValue, setInputValue] = useState(currentSearch);
+  const inputRef = useRef(currentSearch);
 
   useEffect(() => {
     setInputValue(currentSearch);
+    inputRef.current = currentSearch;
   }, [currentSearch]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
-      if (inputValue) params.set('search', inputValue);
+      const current = inputRef.current;
+      if (current) params.set('search', current);
       else params.delete('search');
       router.push(`${pathname}?${params.toString()}`);
     }, 300);

@@ -3,15 +3,16 @@
 import { useSortable } from '@dnd-kit/react/sortable';
 import { Card, CardContent } from '@repo/ui/components/card';
 import type { Application } from '@repo/db/entities/application';
-import { Banknote, CalendarDays, Euro, HandCoins } from 'lucide-react';
+import { Banknote, CalendarDays } from 'lucide-react';
 import { cn } from '@repo/ui/lib/utils';
 import { formatDate, formatSalary } from '@/utils/applications-utils';
 import { CompanyLogo } from '@/components/icons/company-logo';
+import { ApplicationStatus } from '@repo/db/types/application/status';
 
 type KanbanCardProps = {
   application: Application;
   index: number;
-  column: string;
+  column: ApplicationStatus;
   overlay?: boolean;
 };
 

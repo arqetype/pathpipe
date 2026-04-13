@@ -14,29 +14,44 @@ type CompanyLogoProps = {
   className?: string;
 };
 
+// Module-level cache: name → brandId (null means "not found")
+const brandIdCache = new Map<string, string | null>();
+
 export function CompanyLogo({
   name,
   type = 'icon',
   size = 12,
   className,
 }: CompanyLogoProps) {
-  const [brandId, setBrandId] = useState<string | null>(null);
-  const [error, setError] = useState(false);
+  const [brandId, setBrandId] = useState<string | null>(
+    () => brandIdCache.get(name) ?? null,
+  );
+  const [error, setError] = useState(
+    () => brandIdCache.has(name) && !brandIdCache.get(name),
+  );
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
-    if (!name) return;
+    if (!name || brandIdCache.has(name)) return;
 
     let cancelled = false;
 
     fetch(`https://api.brandfetch.io/v2/search/${encodeURIComponent(name)}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((results) => {
-        if (cancelled || !results?.[0]?.brandId) return;
-        setBrandId(results[0].brandId);
-        setError(false);
+        if (cancelled) return;
+        const id = results?.[0]?.brandId ?? null;
+        brandIdCache.set(name, id);
+        if (id) {
+          setBrandId(id);
+        } else {
+          setError(true);
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        brandIdCache.set(name, null);
+        if (!cancelled) setError(true);
+      });
 
     return () => {
       cancelled = true;
