@@ -7,12 +7,9 @@ import type {
   ApplicationSortBy,
 } from '@repo/db/query/application';
 import { ApplicationStatus } from '@repo/db/types/application/status';
+import { str } from '@/utils/utils';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
-
-function str(v: string | string[] | undefined): string | undefined {
-  return Array.isArray(v) ? v[0] : v;
-}
 
 export default async function AppMainPage({
   searchParams,

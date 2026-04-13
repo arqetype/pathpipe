@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { ApplicationStatus } from '../types/application/status';
 import { User } from './user';
+import { ApplicationPriority } from '../types/application/priority';
 
 @Entity()
 export class Application {
@@ -37,6 +38,13 @@ export class Application {
     default: ApplicationStatus.WISHLIST,
   })
   status: ApplicationStatus;
+
+  @Column({
+    type: 'enum',
+    enum: ApplicationPriority,
+    default: ApplicationPriority.NONE,
+  })
+  priority: ApplicationPriority;
 
   @Column({ nullable: true })
   notes: string;

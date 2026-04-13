@@ -1,6 +1,5 @@
 'use client';
 
-import { CollisionPriority } from '@dnd-kit/abstract';
 import { useDroppable } from '@dnd-kit/react';
 import type { ReactNode } from 'react';
 import { cn } from '@repo/ui/lib/utils';
@@ -26,8 +25,7 @@ export function KanbanColumn({
   const { ref, isDropTarget } = useDroppable({
     id,
     type: 'column',
-    collisionPriority: CollisionPriority.Low,
-    accept: ['item', 'column'],
+    accept: 'item',
   });
 
   return (

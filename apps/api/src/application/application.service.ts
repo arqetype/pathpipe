@@ -48,10 +48,15 @@ export class ApplicationService {
       );
     }
 
-    qb.orderBy(
-      `application.${sortBy}`,
-      sortOrder.toUpperCase() as 'ASC' | 'DESC',
-    );
+    qb.addSelect(
+      `CASE application.priority WHEN 'HIGH' THEN 1 WHEN 'MEDIUM' THEN 2 WHEN 'LOW' THEN 3 ELSE 4 END`,
+      'priority_rank',
+    )
+      .orderBy('priority_rank', 'ASC')
+      .addOrderBy(
+        `application.${sortBy}`,
+        sortOrder.toUpperCase() as 'ASC' | 'DESC',
+      );
 
     const offset = (Number(page) - 1) * Number(limit);
     qb.skip(offset).take(Number(limit));

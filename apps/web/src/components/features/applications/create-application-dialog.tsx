@@ -33,6 +33,7 @@ import {
 } from '@repo/ui/components/select';
 import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
 import { ApplicationStatus } from '@repo/db/types/application/status';
+import { ApplicationPriority } from '@repo/db/types/application/priority';
 import { createApplicationAction } from '@/actions/application/create';
 
 const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
@@ -42,6 +43,13 @@ const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
   { value: ApplicationStatus.OFFER, label: 'Offer' },
   { value: ApplicationStatus.REJECTED, label: 'Rejected' },
   { value: ApplicationStatus.GHOSTED, label: 'Ghosted' },
+];
+
+const PRIORITY_OPTIONS: { value: ApplicationPriority; label: string }[] = [
+  { value: ApplicationPriority.NONE, label: 'None' },
+  { value: ApplicationPriority.LOW, label: 'Low' },
+  { value: ApplicationPriority.MEDIUM, label: 'Medium' },
+  { value: ApplicationPriority.HIGH, label: 'High' },
 ];
 
 export function CreateApplicationDialog() {
@@ -54,6 +62,7 @@ export function CreateApplicationDialog() {
       company: '',
       position: '',
       status: ApplicationStatus.WISHLIST,
+      priority: ApplicationPriority.NONE,
       url: '',
       salaryMin: undefined,
       salaryMax: undefined,
@@ -148,6 +157,30 @@ export function CreateApplicationDialog() {
                       </FormControl>
                       <SelectContent>
                         {STATUS_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Priority</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {PRIORITY_OPTIONS.map((opt) => (
                           <SelectItem key={opt.value} value={opt.value}>
                             {opt.label}
                           </SelectItem>

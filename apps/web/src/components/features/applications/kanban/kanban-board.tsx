@@ -2,7 +2,6 @@
 
 import { useState, useTransition, useRef, useMemo, useEffect } from 'react';
 import { DragDropProvider, DragOverlay } from '@dnd-kit/react';
-import { move } from '@dnd-kit/helpers';
 import type { Application } from '@repo/db/entities/application';
 import { ApplicationStatus } from '@repo/db/types/application/status';
 import { KanbanColumn } from './kanban-column';
@@ -10,6 +9,7 @@ import { KanbanCard } from './kanban-card';
 import { updateApplicationStatusAction } from '@/actions/application/update-status';
 import { STATUS_CONFIG } from '../status-config';
 import { toast } from 'sonner';
+import { move } from '@dnd-kit/helpers';
 
 type KanbanBoardProps = {
   applications: Application[];
@@ -47,16 +47,6 @@ export function KanbanBoard({
     setColumnItems(buildColumnItems(initial));
   }, [initial]);
 
-  const appIdToStatus = useMemo(() => {
-    const map = new Map<string, ApplicationStatus>();
-    for (const [status, ids] of Object.entries(columnItems)) {
-      for (const id of ids) {
-        map.set(id, status as ApplicationStatus);
-      }
-    }
-    return map;
-  }, [columnItems]);
-
   const snapshot = useRef<Record<string, string[]> | null>(null);
   const [, startTransition] = useTransition();
 
@@ -73,27 +63,20 @@ export function KanbanBoard({
       onDragEnd={(event) => {
         const { operation } = event;
 
-        if (operation.canceled) {
+        if (operation.canceled || !operation.target) {
           if (snapshot.current) setColumnItems(snapshot.current);
           snapshot.current = null;
           return;
         }
 
         const sourceId = operation.source?.id as string;
-        if (!sourceId) {
-          snapshot.current = null;
-          return;
-        }
-
-        const newStatus = appIdToStatus.get(sourceId);
+        const newStatus = operation.target.id as ApplicationStatus;
         const app = applicationsById.get(sourceId);
-        if (!app || !newStatus || app.status === newStatus) {
-          snapshot.current = null;
-          return;
-        }
 
         const savedSnapshot = snapshot.current;
         snapshot.current = null;
+
+        if (!app || app.status === newStatus) return;
 
         startTransition(async () => {
           const result = await updateApplicationStatusAction({
@@ -117,17 +100,10 @@ export function KanbanBoard({
               config={col}
               count={columnItems[col.status]?.length ?? 0}
             >
-              {(columnItems[col.status] ?? []).map((id, index) => {
+              {(columnItems[col.status] ?? []).map((id) => {
                 const app = applicationsById.get(id);
                 if (!app) return null;
-                return (
-                  <KanbanCard
-                    key={id}
-                    application={app}
-                    index={index}
-                    column={col.status}
-                  />
-                );
+                return <KanbanCard key={id} application={app} />;
               })}
             </KanbanColumn>
           ),
@@ -137,14 +113,7 @@ export function KanbanBoard({
       <DragOverlay>
         {(source) => {
           const app = (source.data as { application: Application }).application;
-          return (
-            <KanbanCard
-              application={app}
-              index={0}
-              column={app.status}
-              overlay
-            />
-          );
+          return <KanbanCard application={app} overlay />;
         }}
       </DragOverlay>
     </DragDropProvider>
