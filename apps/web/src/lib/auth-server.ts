@@ -4,46 +4,40 @@ import { cache } from 'react';
 import { get } from '@/lib/fetch';
 import { User } from '@repo/db/entities/user';
 
-export const getCurrentUser = cache(async () => {
+export const handleAuthenticationRedirection = cache(async () => {
   const cookieStore = await cookies();
-  const authCookie = cookieStore.get('auth-token');
+  const authToken = cookieStore.get('auth-token');
 
-  if (!authCookie) {
-    return redirect('/app/sign-in');
+  if (!authToken) {
+    return { isAuthenticated: false, redirectTo: '/app/sign-in', user: null };
   }
 
   try {
     const { ok, data } = await get<User>('/user/me');
 
     if (!ok) {
-      return redirect('/app/sign-in');
+      return { isAuthenticated: false, redirectTo: '/app/sign-in', user: null };
     }
 
-    return data;
+    return { isAuthenticated: true, redirectTo: '/app', user: data };
   } catch {
-    return redirect('/app/sign-in');
+    return { isAuthenticated: false, redirectTo: '/app/sign-in', user: null };
   }
 });
 
+export const getCurrentUser = cache(async () => {
+  const { isAuthenticated, redirectTo, user } =
+    await handleAuthenticationRedirection();
+
+  if (!isAuthenticated || !user) {
+    redirect(redirectTo);
+  }
+
+  return user;
+});
+
 export const getCurrentUserOrNull = cache(async () => {
-  const cookieStore = await cookies();
-  const authCookie = cookieStore.get('auth-token');
+  const { user } = await handleAuthenticationRedirection();
 
-  if (!authCookie) {
-    return null;
-  }
-
-  try {
-    const { ok, data } = await get<User>('/user/me');
-
-    if (!ok) {
-      return null;
-    }
-
-    const user: User = data;
-
-    return user;
-  } catch {
-    return null;
-  }
+  return user;
 });

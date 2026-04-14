@@ -1,4 +1,7 @@
-import { getCurrentUser } from '@/lib/auth-server';
+import {
+  getCurrentUser,
+  handleAuthenticationRedirection,
+} from '@/lib/auth-server';
 import { AppSidebar } from '@/components/navigation/sidebar';
 import { AppBreadcrumb } from '@/components/navigation/breadcrumbs/app-breadcrumb';
 import {
@@ -9,6 +12,7 @@ import {
 import { Separator } from '@repo/ui/components/separator';
 import type { ReactNode } from 'react';
 import { BreadcrumbProvider } from '@/components/navigation/breadcrumbs/breadcrumb-context';
+import { redirect } from 'next/navigation';
 
 type ApplicationLayoutProps = {
   children: ReactNode;
@@ -17,15 +21,15 @@ type ApplicationLayoutProps = {
 export default async function ApplicationLayout({
   children,
 }: ApplicationLayoutProps) {
+  const { isAuthenticated, redirectTo } =
+    await handleAuthenticationRedirection();
   const currentUser = await getCurrentUser();
+
+  if (!isAuthenticated) redirect(redirectTo);
 
   return (
     <SidebarProvider>
-      <BreadcrumbProvider
-        defaultLabels={{
-          settings: 'Settings',
-        }}
-      >
+      <BreadcrumbProvider defaultLabels={{ settings: 'Settings' }}>
         <AppSidebar user={currentUser} />
         <SidebarInset className="overflow-hidden">
           <header className="flex h-12 shrink-0 items-center gap-3 border-b px-4">
