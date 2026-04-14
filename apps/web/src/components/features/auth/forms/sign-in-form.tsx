@@ -26,8 +26,8 @@ import { redirect } from 'next/navigation';
 import { signInAction } from '@/actions/auth/sign-in';
 import { resendEmailAction } from '@/actions/auth/resend-email';
 import { useState } from 'react';
-import { AuthVerificationAlert } from '@repo/ui/components/auth-verification-alert';
-import { AuthVerificationError } from '@repo/ui/components/auth-verification-error';
+import { AuthVerificationAlert } from '@repo/ui/components/customs/auth-verification-alert';
+import { AuthVerificationError } from '@repo/ui/components/customs/auth-verification-error';
 import { forgotPasswordEmailAction } from '@/actions/auth/forgot-password-email';
 
 type StatusState = {

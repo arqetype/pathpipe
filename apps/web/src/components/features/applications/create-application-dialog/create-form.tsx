@@ -16,6 +16,7 @@ import { Input } from '@repo/ui/components/input';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -29,6 +30,7 @@ import { toast } from 'sonner';
 import { ApplicationStatus } from '@repo/db/types/application/status';
 import { ApplicationTier } from '@repo/db/types/application/tier';
 import { TierSelectOptions } from '../shared/tier-select-options';
+import SelectCompany from '@/components/shared/select-company';
 
 export function CreateApplicationForm() {
   const [isPending, startTransition] = useTransition();
@@ -76,7 +78,7 @@ export function CreateApplicationForm() {
             <FormItem className="flex-1">
               <FormLabel>Company</FormLabel>
               <FormControl>
-                <Input placeholder="Acme Corp" {...field} />
+                <SelectCompany value={field.value} onChange={field.onChange} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -105,17 +107,17 @@ export function CreateApplicationForm() {
             <FormItem className="flex-1">
               <FormLabel>Status</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {APPLICATION_STATUS_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.status} value={opt.status}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
+                  <SelectGroup>
+                    {APPLICATION_STATUS_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.status} value={opt.status}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -129,13 +131,13 @@ export function CreateApplicationForm() {
             <FormItem className="flex-1">
               <FormLabel>Tier</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  <TierSelectOptions />
+                  <SelectGroup>
+                    <TierSelectOptions />
+                  </SelectGroup>
                 </SelectContent>
               </Select>
               <FormMessage />

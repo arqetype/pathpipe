@@ -9,12 +9,15 @@ import {
 } from '@repo/db/query/application';
 import { User } from '@repo/db/entities/user';
 import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
+import { Company } from '@repo/db/entities/company';
 
 @Injectable()
 export class ApplicationService {
   constructor(
     @InjectRepository(Application)
     private readonly applicationsRepository: Repository<Application>,
+    @InjectRepository(Company)
+    private readonly companiesRepository: Repository<Company>,
   ) {}
 
   async findMany(
@@ -92,8 +95,25 @@ export class ApplicationService {
   }
 
   async create(user: User, dto: CreateApplicationDto): Promise<Application> {
+    const companyName = dto.company?.trim();
+
+    if (companyName) {
+      const existingCompany = await this.companiesRepository
+        .createQueryBuilder('company')
+        .where('company.name ILIKE :name', { name: companyName })
+        .getOne();
+
+      if (!existingCompany) {
+        const newCompany = this.companiesRepository.create({
+          name: companyName,
+        });
+        await this.companiesRepository.save(newCompany);
+      }
+    }
+
     const newApplication = this.applicationsRepository.create({
       ...dto,
+      company: companyName ?? dto.company,
       appliedAt: dto.appliedAt ? new Date(dto.appliedAt) : undefined,
       user,
     });
