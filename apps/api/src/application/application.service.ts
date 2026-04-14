@@ -8,6 +8,7 @@ import {
   PaginatedApplications,
 } from '@repo/db/query/application';
 import { User } from '@repo/db/entities/user';
+import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
 
 @Injectable()
 export class ApplicationService {
@@ -29,6 +30,16 @@ export class ApplicationService {
       limit = 20,
     } = query;
 
+    const allowedSortColumns = [
+      'created_at',
+      'updated_at',
+      'company',
+      'position',
+    ];
+    if (!allowedSortColumns.includes(sortBy)) {
+      throw new Error(`Invalid sortBy value: ${sortBy}`);
+    }
+
     const qb = this.applicationsRepository
       .createQueryBuilder('application')
       .leftJoin('application.user', 'user');
@@ -47,10 +58,15 @@ export class ApplicationService {
       );
     }
 
-    qb.orderBy(
-      `application.${sortBy}`,
-      sortOrder.toUpperCase() as 'ASC' | 'DESC',
-    );
+    qb.addSelect(
+      `CASE application.tier WHEN 'S_TIER' THEN 1 WHEN 'A_TIER' THEN 2 WHEN 'B_TIER' THEN 3 ELSE 4 END`,
+      'tier_rank',
+    )
+      .orderBy('tier_rank', 'ASC')
+      .addOrderBy(
+        `application.${sortBy}`,
+        sortOrder.toUpperCase() as 'ASC' | 'DESC',
+      );
 
     const offset = (Number(page) - 1) * Number(limit);
     qb.skip(offset).take(Number(limit));
@@ -75,16 +91,13 @@ export class ApplicationService {
     return application;
   }
 
-  async create(user: User, application: Application): Promise<Application> {
-    try {
-      const newApplication = this.applicationsRepository.create({
-        ...application,
-        user,
-      });
-      return await this.applicationsRepository.save(newApplication);
-    } catch {
-      return null;
-    }
+  async create(user: User, dto: CreateApplicationDto): Promise<Application> {
+    const newApplication = this.applicationsRepository.create({
+      ...dto,
+      appliedAt: dto.appliedAt ? new Date(dto.appliedAt) : undefined,
+      user,
+    });
+    return this.applicationsRepository.save(newApplication);
   }
 
   async update(id: string, data: Partial<Application>): Promise<Application> {

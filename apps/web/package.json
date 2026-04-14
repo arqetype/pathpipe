@@ -16,6 +16,9 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@dnd-kit/abstract": "^0.3.2",
+    "@dnd-kit/helpers": "^0.3.2",
+    "@dnd-kit/react": "^0.3.2",
     "@hookform/resolvers": "^5.2.2",
     "@repo/db": "workspace:*",
     "@repo/ui": "workspace:*",

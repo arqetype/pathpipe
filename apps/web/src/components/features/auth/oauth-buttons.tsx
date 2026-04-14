@@ -2,11 +2,11 @@
 
 import { Button } from '@repo/ui/components/button';
 import { useEffect, useState } from 'react';
-import GoogleIcon from '@/components/icons/google';
-import GitHubIcon from '@/components/icons/github';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
 import { TriangleAlertIcon } from 'lucide-react';
+import GoogleIcon from '@repo/ui/components/icons/google';
+import GitHubIcon from '@repo/ui/components/icons/github';
 
 export function OAuthButtons() {
   const searchParams = useSearchParams();

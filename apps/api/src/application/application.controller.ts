@@ -12,11 +12,12 @@ import {
 } from '@nestjs/common';
 import { ApplicationService } from './application.service';
 import { type ApplicationsQuery } from '@repo/db/query/application';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { User } from '@repo/db/entities/user';
+import { ApplicationStatus } from '@repo/db/types/application/status';
 import { UserRole } from '@repo/db/types/user/roles';
 import { Application } from '@repo/db/entities/application';
-import { ApplicationStatus } from '@repo/db/types/application/status';
+import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
+import { User } from '@repo/db/entities/user';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('applications')
 export class ApplicationController {
@@ -42,8 +43,11 @@ export class ApplicationController {
 
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  create(@CurrentUser() user: User, @Body() application: Application) {
-    return this.applicationService.create(user, application);
+  create(
+    @CurrentUser() user: User,
+    @Body() applicationDto: CreateApplicationDto,
+  ) {
+    return this.applicationService.create(user, applicationDto);
   }
 
   @HttpCode(HttpStatus.OK)

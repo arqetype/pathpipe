@@ -12,6 +12,8 @@ import { JwtAuthGuard } from './auth/guards/jwt.auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { OTPVerification } from '@repo/db/entities/otp-verification';
 import { ResetPasswordToken } from '@repo/db/entities/reset-password-token';
+import { ApplicationModule } from './application/application.module';
+import { Application } from '@repo/db/entities/application';
 
 @Module({
   imports: [
@@ -33,6 +35,7 @@ import { ResetPasswordToken } from '@repo/db/entities/reset-password-token';
           EmailVerificationToken,
           OTPVerification,
           ResetPasswordToken,
+          Application,
         ],
         synchronize: process.env.NODE_ENV !== 'production',
       }),
@@ -42,6 +45,7 @@ import { ResetPasswordToken } from '@repo/db/entities/reset-password-token';
     MailerModule,
     AuthModule,
     JwtModule,
+    ApplicationModule,
   ],
   providers: [
     {

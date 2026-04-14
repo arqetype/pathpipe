@@ -1,4 +1,4 @@
-import EnableOtp from '@/components/enable-otp';
+import EnableOtp from '@/components/features/settings/enable-otp';
 import { getCurrentUser } from '@/lib/auth-server';
 
 export default async function SecuritySettingsPage() {

@@ -1,5 +1,5 @@
-import SettingsUserInfo from '@/components/settings-user-info';
-import { SettingsNav } from '@/components/settings-nav';
+import SettingsUserInfo from '@/components/features/settings/settings-user-info';
+import { SettingsNav } from '@/components/features/settings/settings-nav';
 import { getCurrentUser } from '@/lib/auth-server';
 import { Suspense, type ReactNode } from 'react';
 

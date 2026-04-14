@@ -1,4 +1,4 @@
-import ThemeSwitcher from '@/components/theme-switcher';
+import ThemeSwitcher from '@/components/features/settings/theme-switcher';
 import { Label } from '@repo/ui/components/label';
 
 export default function AccountSettingsPage() {

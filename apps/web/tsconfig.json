@@ -19,9 +19,7 @@
     "**/*.tsx",
     "next-env.d.ts",
     "next.config.ts",
-    ".next/types/**/*.ts",
-    "src/components/tab-navigation.tsx",
-    "../../packages/ui/src/components/horizontal-select.tsx"
+    ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }
