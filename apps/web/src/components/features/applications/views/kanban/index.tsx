@@ -39,9 +39,11 @@ export function KanbanBoard({
     buildColumnItems(initial),
   );
 
+  const [applications, setApplications] = useState(initial);
+
   const applicationsById = useMemo(
-    () => new Map(initial.map((a) => [a.id, a])),
-    [initial],
+    () => new Map(applications.map((a) => [a.id, a])),
+    [applications],
   );
 
   useEffect(() => {
@@ -87,7 +89,13 @@ export function KanbanBoard({
               status: newStatus,
             });
 
-            if (!result.success) {
+            if (result.success) {
+              setApplications((apps) =>
+                apps.map((app) =>
+                  app.id === sourceId ? { ...app, status: newStatus } : app,
+                ),
+              );
+            } else {
               if (savedSnapshot) setColumnItems(savedSnapshot);
               toast.error('Failed to update status. Please try again.');
             }

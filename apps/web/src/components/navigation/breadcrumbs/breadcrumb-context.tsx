@@ -43,7 +43,9 @@ export function BreadcrumbProvider({
       const fullPath = '/' + segments.slice(0, index + 1).join('/');
       const href = index === segments.length - 1 ? undefined : fullPath; // No href for the current segment
       const label =
-        routes[fullPath] || segment.charAt(0).toUpperCase() + segment.slice(1);
+        defaultLabels[segment] ||
+        routes[fullPath] ||
+        segment.charAt(0).toUpperCase() + segment.slice(1);
       return {
         label,
         href,

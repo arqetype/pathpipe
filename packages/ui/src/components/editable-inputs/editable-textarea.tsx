@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
 import { Textarea } from '@repo/ui/components/textarea';
 
@@ -16,8 +18,8 @@ export default function EditableTextarea({
   useEffect(() => setDraft(value ?? ''), [value]);
 
   function commit() {
-    const next = draft.trim();
-    if (next !== value?.trim()) onSave(next);
+    const next = draft.trim() || undefined;
+    if (next !== (value?.trim() || undefined)) onSave(next);
   }
 
   return (

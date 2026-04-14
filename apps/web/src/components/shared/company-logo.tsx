@@ -62,7 +62,7 @@ export function CompanyLogo({
   }
 
   const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
-  const src = `https://cdn.brandfetch.io/${brandId}/fallback/404/${type}.svg&theme=${theme}`;
+  const src = `https://cdn.brandfetch.io/${brandId}/fallback/404/${type}.svg?theme=${theme}`;
 
   return (
     <Image

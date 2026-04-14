@@ -1,11 +1,13 @@
+import { ReactNode } from 'react';
+
 export default function Property({
   icon,
   label,
   children,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div className="flex items-center min-h-9 gap-4 rounded-md hover:bg-muted/50 -mx-3 px-3 transition-colors">

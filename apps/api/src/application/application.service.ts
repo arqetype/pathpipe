@@ -30,6 +30,16 @@ export class ApplicationService {
       limit = 20,
     } = query;
 
+    const allowedSortColumns = [
+      'created_at',
+      'updated_at',
+      'company',
+      'position',
+    ];
+    if (!allowedSortColumns.includes(sortBy)) {
+      throw new Error(`Invalid sortBy value: ${sortBy}`);
+    }
+
     const qb = this.applicationsRepository
       .createQueryBuilder('application')
       .leftJoin('application.user', 'user');

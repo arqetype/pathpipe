@@ -35,7 +35,7 @@ export const createApplicationAction = action
       throw new Error('Failed to create application');
     }
 
-    revalidatePath('/app');
+    revalidatePath('/app/applications');
 
     return data;
   });
