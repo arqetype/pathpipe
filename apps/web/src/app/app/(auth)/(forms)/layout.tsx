@@ -5,9 +5,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/components/card';
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { OAuthButtons } from '@/components/features/auth/oauth-buttons';
+import { handleAuthenticationRedirection } from '@/lib/auth-server';
 
 type AuthenticationFormLayoutProps = Readonly<{
   children: ReactNode;
@@ -16,9 +16,10 @@ type AuthenticationFormLayoutProps = Readonly<{
 export default async function AuthenticationFormLayout({
   children,
 }: AuthenticationFormLayoutProps) {
-  const cookieStore = await cookies();
-  const authToken = cookieStore.get('auth-token');
-  if (authToken) redirect('/app');
+  const { isAuthenticated, redirectTo } =
+    await handleAuthenticationRedirection();
+
+  if (isAuthenticated) redirect(redirectTo);
 
   return (
     <Card className="animate-in fade-in slide-in-from-bottom-4 duration-500">
