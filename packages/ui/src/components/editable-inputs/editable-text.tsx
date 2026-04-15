@@ -28,7 +28,6 @@ export default function EditableText({
 
   return (
     <Input
-      variant="ghost"
       value={draft}
       placeholder={placeholder}
       onChange={(e) => setDraft(e.target.value)}
@@ -40,7 +39,11 @@ export default function EditableText({
           e.currentTarget.blur();
         }
       }}
-      className={cn('h-auto px-2 py-1 -ml-2', className, inputClassName)}
+      className={cn(
+        'h-auto w-full bg-transparent border-0 hover:bg-accent rounded-full',
+        className,
+        inputClassName,
+      )}
     />
   );
 }

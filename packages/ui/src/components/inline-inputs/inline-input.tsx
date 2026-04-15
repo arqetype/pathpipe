@@ -7,6 +7,7 @@ export default function InlineInput({
   value,
   placeholder,
   type = 'text',
+
   onSave,
 }: {
   value: string | number | null | undefined;
@@ -25,7 +26,6 @@ export default function InlineInput({
 
   return (
     <Input
-      variant="ghost"
       type={type}
       value={draft}
       placeholder={placeholder}
@@ -38,7 +38,8 @@ export default function InlineInput({
           e.currentTarget.blur();
         }
       }}
-      className="px-2 -ml-2"
+      step={type === 'number' ? 1000 : undefined}
+      className="w-full bg-transparent border-0 text-sm hover:bg-accent"
     />
   );
 }

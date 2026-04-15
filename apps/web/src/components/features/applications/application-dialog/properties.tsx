@@ -11,7 +11,6 @@ import {
   Mail,
   User,
 } from 'lucide-react';
-import { cn } from '@repo/ui/lib/utils';
 import Property from '@repo/ui/components/customs/property';
 import InlineInput from '@repo/ui/components/inline-inputs/inline-input';
 import {
@@ -23,7 +22,6 @@ import {
   SelectValue,
 } from '@repo/ui/components/select';
 import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
-import { TIER_CONFIG } from '../constants/tier';
 import { formatSalary } from '@/utils/applications-utils';
 import { TierSelectOptions } from '../shared/tier-select-options';
 
@@ -45,7 +43,7 @@ export function ApplicationDialogProperties({
           value={app.status}
           onValueChange={(v) => onSave({ status: v as ApplicationStatus })}
         >
-          <SelectTrigger className="w-full px-2 -ml-2 [&>svg]:hidden">
+          <SelectTrigger className="w-full bg-transparent border-0 hover:bg-accent">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -65,7 +63,7 @@ export function ApplicationDialogProperties({
           value={app.tier}
           onValueChange={(v) => onSave({ tier: v as ApplicationTier })}
         >
-          <SelectTrigger className="w-full px-2 -ml-2 [&>svg]:hidden">
+          <SelectTrigger className="w-full bg-transparent border-0 hover:bg-accent">
             <SelectValue placeholder="Tier" />
           </SelectTrigger>
           <SelectContent>
@@ -94,31 +92,17 @@ export function ApplicationDialogProperties({
       </Property>
 
       <Property icon={<Banknote className="size-4" />} label="Salary">
-        {salary ? (
-          <div className="flex items-center gap-1.5 px-2 -ml-2 h-8">
-            <span>{salary}</span>
-          </div>
-        ) : (
-          <span className="px-2 -ml-2 h-8 flex items-center text-muted-foreground/50 italic text-sm">
-            Not specified
-          </span>
-        )}
-      </Property>
-
-      <Property icon={<Banknote className="size-4" />} label="Salary min">
         <InlineInput
           type="number"
           value={app.salaryMin}
-          placeholder="50 000"
+          placeholder="50"
           onSave={(v) => onSave({ salaryMin: v ? Number(v) : undefined })}
         />
-      </Property>
-
-      <Property icon={<Banknote className="size-4" />} label="Salary max">
+        <span className="px-1 text-sm text-muted-foreground">to</span>
         <InlineInput
           type="number"
           value={app.salaryMax}
-          placeholder="80 000"
+          placeholder="80"
           onSave={(v) => onSave({ salaryMax: v ? Number(v) : undefined })}
         />
       </Property>

@@ -21,8 +21,8 @@ import Link from 'next/link';
 import { signUpAction } from '@/actions/auth/sign-up';
 import { useState } from 'react';
 import { resendEmailAction } from '@/actions/auth/resend-email';
-import { AuthVerificationAlert } from '@repo/ui/components/auth-verification-alert';
-import { AuthVerificationError } from '@repo/ui/components/auth-verification-error';
+import { AuthVerificationAlert } from '@repo/ui/components/customs/auth-verification-alert';
+import { AuthVerificationError } from '@repo/ui/components/customs/auth-verification-error';
 
 const resolver = classValidatorResolver(SignUpDto);
 
