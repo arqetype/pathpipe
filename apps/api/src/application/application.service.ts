@@ -38,6 +38,8 @@ export class ApplicationService {
       'updated_at',
       'company',
       'position',
+      'salaryMin',
+      'salaryMax',
     ];
     if (!allowedSortColumns.includes(sortBy)) {
       throw new Error(`Invalid sortBy value: ${sortBy}`);

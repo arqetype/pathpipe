@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   Search,
@@ -28,9 +28,11 @@ import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
 
 const SORT_OPTIONS: { value: ApplicationSortBy; label: string }[] = [
   { value: 'created_at', label: 'Date added' },
-  { value: 'appliedAt', label: 'Date applied' },
+  { value: 'updated_at', label: 'Last updated' },
   { value: 'company', label: 'Company' },
-  { value: 'salaryMin', label: 'Salary' },
+  { value: 'position', label: 'Position' },
+  { value: 'salaryMin', label: 'Minimum Salary' },
+  { value: 'salaryMax', label: 'Maximum Salary' },
 ];
 
 type ViewToolbarProps = {
@@ -55,17 +57,15 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
   );
 
   const [inputValue, setInputValue] = useState(currentSearch);
-  const inputRef = useRef(currentSearch);
 
   useEffect(() => {
     setInputValue(currentSearch);
-    inputRef.current = currentSearch;
   }, [currentSearch]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
-      const current = inputRef.current;
+      const current = inputValue;
       if (current) params.set('search', current);
       else params.delete('search');
       router.push(`${pathname}?${params.toString()}`);
