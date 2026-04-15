@@ -1,20 +1,17 @@
 'use client';
 
-import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from '@repo/ui/components/combobox';
+  Autocomplete,
+  AutocompleteContent,
+  AutocompleteEmpty,
+  AutocompleteInput,
+  AutocompleteItem,
+  AutocompleteList,
+} from '@repo/ui/components/autocomplete';
 import { CompanyLogo } from './company-logo';
 
-type CompanyOption = {
-  id: string;
-  name: string;
-};
+type CompanyOption = { id: string; name: string };
 
 type SelectCompanyProps = {
   value: string;
@@ -29,135 +26,81 @@ export default function SelectCompany({
   onChange,
   placeholder = 'Acme Corp',
 }: SelectCompanyProps) {
-  const [query, setQuery] = useState(value ?? '');
-  const [selectedId, setSelectedId] = useState<string>('');
   const [results, setResults] = useState<CompanyOption[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<CompanyOption | null>(
-    null,
-  );
+  const [loading, setLoading] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [open, setOpen] = useState(false);
   const requestIdRef = useRef(0);
 
-  useEffect(() => {
-    setQuery(value ?? '');
-    setSelectedId('');
-    setSelectedCompany(null);
-  }, [value]);
+  const search = useCallback(async (query: string) => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!baseUrl) return;
 
-  useEffect(() => {
-    const trimmed = query.trim();
-    if (!trimmed && !isOpen) {
-      setResults([]);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
     const requestId = ++requestIdRef.current;
+    setLoading(true);
 
-    const timeout = setTimeout(async () => {
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-        if (!baseUrl) {
-          setResults([]);
-          return;
-        }
+    try {
+      const url = new URL('/companies', baseUrl);
+      if (query.trim()) url.searchParams.set('query', query.trim());
+      url.searchParams.set('limit', '10');
 
-        const url = new URL('/companies', baseUrl);
-        url.searchParams.set('query', trimmed);
-        url.searchParams.set('limit', '10');
+      const response = await fetch(url.toString(), { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch companies');
 
-        const response = await fetch(url.toString(), {
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch companies');
-        }
-
-        const data = (await response.json()) as CompanyOption[];
-        if (requestIdRef.current === requestId) {
-          setResults(data.slice(0, 10));
-        }
-      } catch {
-        if (requestIdRef.current === requestId) {
-          setResults([]);
-        }
-      } finally {
-        if (requestIdRef.current === requestId) {
-          setIsLoading(false);
-        }
+      const data = (await response.json()) as CompanyOption[];
+      if (requestIdRef.current === requestId) {
+        setResults(data.slice(0, 10));
+        setLoading(false);
       }
-    }, DEBOUNCE_MS);
+    } catch {
+      if (requestIdRef.current === requestId) {
+        setResults([]);
+        setLoading(false);
+      }
+    }
+  }, []);
 
+  useEffect(() => {
+    if (!focused || !value.trim()) return;
+    const timeout = setTimeout(() => search(value), DEBOUNCE_MS);
     return () => clearTimeout(timeout);
-  }, [query, isOpen]);
-
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const nextValue = event.target.value;
-    setQuery(nextValue);
-    setSelectedId('');
-    setSelectedCompany(null);
-    onChange(nextValue);
-    setIsOpen(true);
-  };
-
-  const handleSelect = (company: CompanyOption | null) => {
-    if (!company) return;
-    setSelectedId(company.id);
-    setSelectedCompany(company);
-    setQuery(company.name);
-    onChange(company.name);
-    setIsOpen(false);
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    window.setTimeout(() => setIsOpen(false), 100);
-  };
+  }, [value, focused, search]);
 
   return (
-    <Combobox
+    <Autocomplete
+      value={value}
+      onValueChange={onChange}
+      open={open}
+      onOpenChange={setOpen}
       items={results}
-      value={selectedId}
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      onValueChange={(nextValue) => {
-        const selected = results.find((company) => company.id === nextValue);
-        if (!selected) {
-          setSelectedId('');
-          setSelectedCompany(null);
-          return;
-        }
-        handleSelect(selected);
-      }}
+      itemToStringValue={(company: CompanyOption) => company.name}
+      autoHighlight
     >
-      <ComboboxInput
+      <AutocompleteInput
         placeholder={placeholder}
-        value={query}
-        onChange={handleInputChange}
-        onFocus={() => setIsOpen(true)}
-        onBlur={handleBlur}
+        loading={loading}
+        onFocus={() => {
+          setFocused(true);
+          setOpen(true);
+          search(value);
+        }}
+        onBlur={() => setFocused(false)}
       />
-      <ComboboxContent>
-        <ComboboxEmpty>No items found.</ComboboxEmpty>
-        <ComboboxList>
-          {(item) => (
-            <ComboboxItem key={item.id} value={item.id}>
-              <span className="flex items-center gap-2">
-                <CompanyLogo
-                  name={item.name}
-                  size={14}
-                  className="size-3 shrink-0"
-                />
-                <span>{item.name}</span>
-              </span>
-            </ComboboxItem>
+      <AutocompleteContent>
+        <AutocompleteEmpty>No companies found.</AutocompleteEmpty>
+        <AutocompleteList>
+          {(item: CompanyOption) => (
+            <AutocompleteItem key={item.id} value={item}>
+              <CompanyLogo
+                name={item.name}
+                size={14}
+                className="size-4 shrink-0 rounded-xs"
+              />
+              <span>{item.name}</span>
+            </AutocompleteItem>
           )}
-        </ComboboxList>
-      </ComboboxContent>
-    </Combobox>
+        </AutocompleteList>
+      </AutocompleteContent>
+    </Autocomplete>
   );
 }

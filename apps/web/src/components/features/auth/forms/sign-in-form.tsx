@@ -457,10 +457,10 @@ export function SignInForm() {
   return (
     <Form {...form}>
       <div className="mb-4 px-6 w-full">
-        <div className="bg-muted text-muted-foreground w-full flex items-center justify-between rounded-lg p-1 gap-2">
+        <div className="bg-muted text-muted-foreground w-full flex items-center justify-between rounded-full p-1 gap-2">
           <Button
             variant="outline"
-            className="flex-1 hover:bg-[var(--background)] cursor-default"
+            className="flex-1 hover:bg-[var(--background)] bg-background/70"
           >
             Sign In
           </Button>

@@ -98,7 +98,7 @@ export function SignUpForm() {
   return (
     <Form {...form}>
       <div className="mb-4 px-6 w-full">
-        <div className="bg-muted text-muted-foreground w-full flex items-center justify-between rounded-lg p-1 gap-2">
+        <div className="bg-muted text-muted-foreground w-full flex items-center justify-between rounded-full p-1 gap-2">
           <Link href="/app/sign-in" className="flex-1">
             <Button variant="ghost" className="w-full">
               Sign In
@@ -106,7 +106,7 @@ export function SignUpForm() {
           </Link>
           <Button
             variant="outline"
-            className="flex-1 hover:bg-[var(--background)] cursor-default"
+            className="flex-1 hover:bg-[var(--background)] cursor-default bg-background/70"
           >
             Sign Up
           </Button>
