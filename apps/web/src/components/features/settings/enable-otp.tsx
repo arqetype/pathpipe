@@ -10,9 +10,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  type AlertDialogRef,
 } from '@repo/ui/components/alert-dialog';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   Form,
   FormControl,
@@ -43,7 +42,7 @@ export default function EnableOtp({ user }: EnableOtpProps) {
   const [switchChecked, setSwitchChecked] = useState(user.need_otp);
   const [isInitiating, setIsInitiating] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
-  const dialogRef = useRef<AlertDialogRef>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const form = useForm<EnableOtpDto>({
     defaultValues: {
@@ -64,7 +63,7 @@ export default function EnableOtp({ user }: EnableOtpProps) {
       toast.error(response.message);
       setSwitchChecked(user.need_otp);
     } else {
-      dialogRef.current?.open();
+      setDialogOpen(true);
     }
     setIsInitiating(false);
   };
@@ -72,7 +71,7 @@ export default function EnableOtp({ user }: EnableOtpProps) {
   const handleClose = () => {
     if (isConfirming) return;
 
-    dialogRef.current?.close();
+    setDialogOpen(false);
     form.reset();
     setSwitchChecked(user.need_otp);
   };
@@ -86,7 +85,7 @@ export default function EnableOtp({ user }: EnableOtpProps) {
 
     if (result.success) {
       setSwitchChecked(!user.need_otp);
-      dialogRef.current?.close();
+      setDialogOpen(false);
       form.reset();
       toast.success(result.data.message);
     } else {
@@ -100,7 +99,7 @@ export default function EnableOtp({ user }: EnableOtpProps) {
   };
 
   return (
-    <AlertDialog ref={dialogRef}>
+    <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <div className="flex flex-row gap-3 items-center justify-between">
         <div className="space-y-1">
           <Label htmlFor="otp">Enable One-Time Password (OTP)</Label>

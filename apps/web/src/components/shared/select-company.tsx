@@ -30,13 +30,15 @@ export default function SelectCompany({
   const [loading, setLoading] = useState(false);
   const [focused, setFocused] = useState(false);
   const [open, setOpen] = useState(false);
-  const requestIdRef = useRef(0);
+  const abortCtrlRef = useRef<AbortController | null>(null);
 
   const search = useCallback(async (query: string) => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
     if (!baseUrl) return;
 
-    const requestId = ++requestIdRef.current;
+    abortCtrlRef.current?.abort();
+    const ctrl = new AbortController();
+    abortCtrlRef.current = ctrl;
     setLoading(true);
 
     try {
@@ -44,21 +46,23 @@ export default function SelectCompany({
       if (query.trim()) url.searchParams.set('query', query.trim());
       url.searchParams.set('limit', '10');
 
-      const response = await fetch(url.toString(), { credentials: 'include' });
+      const response = await fetch(url.toString(), {
+        credentials: 'include',
+        signal: ctrl.signal,
+      });
       if (!response.ok) throw new Error('Failed to fetch companies');
 
       const data = (await response.json()) as CompanyOption[];
-      if (requestIdRef.current === requestId) {
-        setResults(data.slice(0, 10));
-        setLoading(false);
-      }
-    } catch {
-      if (requestIdRef.current === requestId) {
-        setResults([]);
-        setLoading(false);
-      }
+      setResults(data.slice(0, 10));
+      setLoading(false);
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return;
+      setResults([]);
+      setLoading(false);
     }
   }, []);
+
+  useEffect(() => () => abortCtrlRef.current?.abort(), []);
 
   useEffect(() => {
     if (!focused || !value.trim()) return;

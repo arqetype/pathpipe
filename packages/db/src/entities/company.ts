@@ -1,15 +1,13 @@
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
-  Index,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  Unique,
 } from 'typeorm';
 
 @Entity()
-@Index(['name'])
+@Unique(['name'])
 export class Company {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -19,10 +17,4 @@ export class Company {
 
   @CreateDateColumn()
   created_at: Date;
-
-  @UpdateDateColumn()
-  updated_at: Date;
-
-  @DeleteDateColumn()
-  deleted_at: Date;
 }

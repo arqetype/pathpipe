@@ -100,17 +100,13 @@ export class ApplicationService {
     const companyName = dto.company?.trim();
 
     if (companyName) {
-      const existingCompany = await this.companiesRepository
-        .createQueryBuilder('company')
-        .where('company.name ILIKE :name', { name: companyName })
-        .getOne();
-
-      if (!existingCompany) {
-        const newCompany = this.companiesRepository.create({
-          name: companyName,
-        });
-        await this.companiesRepository.save(newCompany);
-      }
+      await this.companiesRepository
+        .createQueryBuilder()
+        .insert()
+        .into(Company)
+        .values({ name: companyName })
+        .orIgnore()
+        .execute();
     }
 
     const newApplication = this.applicationsRepository.create({
