@@ -28,7 +28,7 @@ export function CreateApplicationDialog() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>New application</DialogTitle>
         </DialogHeader>

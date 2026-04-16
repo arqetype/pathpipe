@@ -13,7 +13,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { OTPVerification } from '@repo/db/entities/otp-verification';
 import { ResetPasswordToken } from '@repo/db/entities/reset-password-token';
 import { ApplicationModule } from './application/application.module';
+import { CompanyModule } from './company/company.module';
 import { Application } from '@repo/db/entities/application';
+import { Company } from '@repo/db/entities/company';
 
 @Module({
   imports: [
@@ -36,6 +38,7 @@ import { Application } from '@repo/db/entities/application';
           OTPVerification,
           ResetPasswordToken,
           Application,
+          Company,
         ],
         synchronize: process.env.NODE_ENV !== 'production',
       }),
@@ -46,6 +49,7 @@ import { Application } from '@repo/db/entities/application';
     AuthModule,
     JwtModule,
     ApplicationModule,
+    CompanyModule,
   ],
   providers: [
     {

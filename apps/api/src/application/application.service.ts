@@ -9,12 +9,15 @@ import {
 } from '@repo/db/query/application';
 import { User } from '@repo/db/entities/user';
 import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
+import { Company } from '@repo/db/entities/company';
 
 @Injectable()
 export class ApplicationService {
   constructor(
     @InjectRepository(Application)
     private readonly applicationsRepository: Repository<Application>,
+    @InjectRepository(Company)
+    private readonly companiesRepository: Repository<Company>,
   ) {}
 
   async findMany(
@@ -35,6 +38,8 @@ export class ApplicationService {
       'updated_at',
       'company',
       'position',
+      'salaryMin',
+      'salaryMax',
     ];
     if (!allowedSortColumns.includes(sortBy)) {
       throw new Error(`Invalid sortBy value: ${sortBy}`);
@@ -92,8 +97,21 @@ export class ApplicationService {
   }
 
   async create(user: User, dto: CreateApplicationDto): Promise<Application> {
+    const companyName = dto.company?.trim();
+
+    if (companyName) {
+      await this.companiesRepository
+        .createQueryBuilder()
+        .insert()
+        .into(Company)
+        .values({ name: companyName })
+        .orIgnore()
+        .execute();
+    }
+
     const newApplication = this.applicationsRepository.create({
       ...dto,
+      company: companyName ?? dto.company,
       appliedAt: dto.appliedAt ? new Date(dto.appliedAt) : undefined,
       user,
     });

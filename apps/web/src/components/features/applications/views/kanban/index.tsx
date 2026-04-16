@@ -47,6 +47,7 @@ export function KanbanBoard({
   );
 
   useEffect(() => {
+    setApplications(initial);
     setColumnItems(buildColumnItems(initial));
   }, [initial]);
 

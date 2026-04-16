@@ -11,18 +11,17 @@ import {
   Mail,
   User,
 } from 'lucide-react';
-import { cn } from '@repo/ui/lib/utils';
-import Property from '@repo/ui/components/property';
+import Property from '@repo/ui/components/customs/property';
 import InlineInput from '@repo/ui/components/inline-inputs/inline-input';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
+  SelectValue,
 } from '@repo/ui/components/select';
 import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
-import { TIER_CONFIG } from '../constants/tier';
-import { formatSalary } from '@/utils/applications-utils';
 import { TierSelectOptions } from '../shared/tier-select-options';
 
 type ApplicationDialogPropertiesProps = {
@@ -34,8 +33,6 @@ export function ApplicationDialogProperties({
   app,
   onSave,
 }: ApplicationDialogPropertiesProps) {
-  const salary = formatSalary(app.salaryMin, app.salaryMax);
-
   return (
     <div className="px-8 py-4 flex flex-col gap-1">
       <Property icon={<Activity className="size-4" />} label="Status">
@@ -43,38 +40,17 @@ export function ApplicationDialogProperties({
           value={app.status}
           onValueChange={(v) => onSave({ status: v as ApplicationStatus })}
         >
-          <SelectTrigger
-            variant="ghost"
-            className="w-full px-2 -ml-2 [&>svg]:hidden"
-          >
-            {(() => {
-              const cfg = APPLICATION_STATUS_OPTIONS.find(
-                (s) => s.status === app.status,
-              );
-              return (
-                <span className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      'size-2 rounded-full shrink-0',
-                      cfg?.dotClass,
-                    )}
-                  />
-                  {cfg?.label}
-                </span>
-              );
-            })()}
+          <SelectTrigger className="w-full bg-transparent border-0 hover:bg-accent">
+            <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            {APPLICATION_STATUS_OPTIONS.map((opt) => (
-              <SelectItem key={opt.status} value={opt.status}>
-                <span className="flex items-center gap-2">
-                  <span
-                    className={cn('size-2 rounded-full shrink-0', opt.dotClass)}
-                  />
+            <SelectGroup>
+              {APPLICATION_STATUS_OPTIONS.map((opt) => (
+                <SelectItem key={opt.status} value={opt.status}>
                   {opt.label}
-                </span>
-              </SelectItem>
-            ))}
+                </SelectItem>
+              ))}
+            </SelectGroup>
           </SelectContent>
         </Select>
       </Property>
@@ -84,29 +60,13 @@ export function ApplicationDialogProperties({
           value={app.tier}
           onValueChange={(v) => onSave({ tier: v as ApplicationTier })}
         >
-          <SelectTrigger
-            variant="ghost"
-            className="w-full px-2 -ml-2 [&>svg]:hidden"
-          >
-            {(() => {
-              const v = app.tier;
-              const cfg = TIER_CONFIG[v];
-              return v === ApplicationTier.NONE ? (
-                <span className="text-muted-foreground">None</span>
-              ) : (
-                <span
-                  className={cn(
-                    'text-xs px-1.5 py-0.5 rounded border font-medium',
-                    cfg.className,
-                  )}
-                >
-                  {cfg.label}
-                </span>
-              );
-            })()}
+          <SelectTrigger className="w-full bg-transparent border-0 hover:bg-accent">
+            <SelectValue placeholder="Tier" />
           </SelectTrigger>
           <SelectContent>
-            <TierSelectOptions />
+            <SelectGroup>
+              <TierSelectOptions />
+            </SelectGroup>
           </SelectContent>
         </Select>
       </Property>
@@ -129,31 +89,17 @@ export function ApplicationDialogProperties({
       </Property>
 
       <Property icon={<Banknote className="size-4" />} label="Salary">
-        {salary ? (
-          <div className="flex items-center gap-1.5 px-2 -ml-2 h-8">
-            <span>{salary}</span>
-          </div>
-        ) : (
-          <span className="px-2 -ml-2 h-8 flex items-center text-muted-foreground/50 italic text-sm">
-            Not specified
-          </span>
-        )}
-      </Property>
-
-      <Property icon={<Banknote className="size-4" />} label="Salary min">
         <InlineInput
           type="number"
           value={app.salaryMin}
-          placeholder="50 000"
+          placeholder="50"
           onSave={(v) => onSave({ salaryMin: v ? Number(v) : undefined })}
         />
-      </Property>
-
-      <Property icon={<Banknote className="size-4" />} label="Salary max">
+        <span className="px-1 text-sm text-muted-foreground">to</span>
         <InlineInput
           type="number"
           value={app.salaryMax}
-          placeholder="80 000"
+          placeholder="80"
           onSave={(v) => onSave({ salaryMax: v ? Number(v) : undefined })}
         />
       </Property>

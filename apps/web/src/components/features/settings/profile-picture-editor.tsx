@@ -2,7 +2,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useForm, type Control } from 'react-hook-form';
 import { AvatarMoods, AvatarHairStyles } from '@repo/db/types/user/avatar';
-import HorizontalSelect from '../../../../../../packages/ui/src/components/horizontal-select';
+import {
+  HorizontalSelect,
+  HorizontalSelectItem,
+} from '@repo/ui/components/customs/horizontal-select';
 import { AvatarCustomizationDto } from '@repo/db/dto/settings/avatar-customization.dto';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import {
@@ -174,7 +177,7 @@ export default function ProfilePictureEditor() {
         <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1">
           <div className="flex flex-col gap-4 py-4 sm:flex-row">
             <div className="flex flex-col gap-2">
-              <div className="relative size-56 mx-auto rounded overflow-hidden border-2 border-muted-foreground/20 ">
+              <div className="relative size-56 mx-auto rounded-[20%] overflow-hidden">
                 {avatarPreview && (
                   <Image
                     src={avatarPreview}
@@ -200,7 +203,16 @@ export default function ProfilePictureEditor() {
                   <FormItem>
                     <FormLabel>How do you feel today?</FormLabel>
                     <FormControl className="p-0">
-                      <HorizontalSelect {...field} options={moodsOptions} />
+                      <HorizontalSelect
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        {moodsOptions.map((o) => (
+                          <HorizontalSelectItem key={o.value} value={o.value}>
+                            {o.label}
+                          </HorizontalSelectItem>
+                        ))}
+                      </HorizontalSelect>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -214,9 +226,15 @@ export default function ProfilePictureEditor() {
                     <FormLabel>What is your hair style?</FormLabel>
                     <FormControl className="p-0">
                       <HorizontalSelect
-                        {...field}
-                        options={hairStylesOptions}
-                      />
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        {hairStylesOptions.map((o) => (
+                          <HorizontalSelectItem key={o.value} value={o.value}>
+                            {o.label}
+                          </HorizontalSelectItem>
+                        ))}
+                      </HorizontalSelect>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

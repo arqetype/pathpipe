@@ -24,7 +24,6 @@ export default function EditableTextarea({
 
   return (
     <Textarea
-      variant="ghost"
       ref={ref}
       value={draft}
       placeholder={placeholder}

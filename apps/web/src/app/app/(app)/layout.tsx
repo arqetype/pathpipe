@@ -10,6 +10,7 @@ import {
   SidebarTrigger,
 } from '@repo/ui/components/sidebar';
 import { Separator } from '@repo/ui/components/separator';
+import { TooltipProvider } from '@repo/ui/components/tooltip';
 import type { ReactNode } from 'react';
 import { BreadcrumbProvider } from '@/components/navigation/breadcrumbs/breadcrumb-context';
 import { redirect } from 'next/navigation';
@@ -28,18 +29,20 @@ export default async function ApplicationLayout({
   if (!isAuthenticated) redirect(redirectTo);
 
   return (
-    <SidebarProvider>
-      <BreadcrumbProvider defaultLabels={{ settings: 'Settings' }}>
-        <AppSidebar user={currentUser} />
-        <SidebarInset className="overflow-hidden">
-          <header className="flex h-12 shrink-0 items-center gap-3 border-b px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="h-4" />
-            <AppBreadcrumb />
-          </header>
-          <div className="flex flex-1 flex-col min-h-0">{children}</div>
-        </SidebarInset>
-      </BreadcrumbProvider>
-    </SidebarProvider>
+    <TooltipProvider>
+      <SidebarProvider>
+        <BreadcrumbProvider defaultLabels={{ settings: 'Settings' }}>
+          <AppSidebar user={currentUser} />
+          <SidebarInset className="overflow-hidden">
+            <header className="flex h-12 shrink-0 items-center gap-3 border-b px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" />
+              <AppBreadcrumb />
+            </header>
+            <div className="flex flex-1 flex-col min-h-0">{children}</div>
+          </SidebarInset>
+        </BreadcrumbProvider>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }

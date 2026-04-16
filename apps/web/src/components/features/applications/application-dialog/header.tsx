@@ -16,8 +16,8 @@ export function ApplicationDialogHeader({
       <CompanyLogo
         key={app.company}
         name={app.company}
-        size={56}
-        className="size-14 rounded-xl object-contain shrink-0"
+        size={80}
+        className="size-20 rounded-xl object-contain shrink-0"
       />
 
       <div className="flex flex-col flex-1 gap-1 min-w-0">
