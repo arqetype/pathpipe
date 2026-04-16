@@ -3,69 +3,140 @@
 import * as React from 'react';
 import { cn } from '@repo/ui/lib/utils';
 
-type HorizontalSelectOption = {
-  label: string;
-  value: string;
+type HorizontalSelectContextValue = {
+  value?: string;
+  onValueChange: (value: string) => void;
   disabled?: boolean;
 };
 
-type HorizontalSelectProps = {
-  options: HorizontalSelectOption[];
+const HorizontalSelectContext =
+  React.createContext<HorizontalSelectContextValue>({
+    onValueChange: () => {},
+  });
+
+function HorizontalSelect({
+  value,
+  onValueChange,
+  disabled,
+  className,
+  children,
+  ...props
+}: {
   value?: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
+  onValueChange: (value: string) => void;
   disabled?: boolean;
-} & React.HTMLAttributes<HTMLDivElement>;
+} & Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'>) {
+  return (
+    <HorizontalSelectContext.Provider
+      value={{ value, onValueChange, disabled }}
+    >
+      <div
+        data-slot="horizontal-select"
+        className={cn(
+          'inline-flex w-fit items-center justify-start gap-1 rounded-4xl border border-input bg-input/30 p-1 flex-wrap',
+          'transition-colors outline-none',
+          'aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20',
+          'dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
+          disabled && 'cursor-not-allowed opacity-50',
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    </HorizontalSelectContext.Provider>
+  );
+}
 
-const HorizontalSelect = React.forwardRef<
-  HTMLDivElement,
-  HorizontalSelectProps
->(({ options, value, onChange, className, disabled, ...props }, ref) => {
-  const handleSelection = (optionValue: string) => {
-    if (value === optionValue) return; // Don't change if already selected
-    onChange(optionValue);
-  };
-
+function HorizontalSelectGroup({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      ref={ref}
-      data-slot="horizontal-select"
+      data-slot="horizontal-select-group"
+      className={cn('inline-flex items-center gap-1', className)}
+      {...props}
+    />
+  );
+}
+
+function HorizontalSelectLabel({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) {
+  return (
+    <span
+      data-slot="horizontal-select-label"
+      className={cn('px-2 text-xs text-muted-foreground', className)}
+      {...props}
+    />
+  );
+}
+
+function HorizontalSelectItem({
+  value: itemValue,
+  disabled: itemDisabled,
+  className,
+  children,
+  ...props
+}: {
+  value: string;
+  disabled?: boolean;
+} & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'value'>) {
+  const { value, onValueChange, disabled } = React.useContext(
+    HorizontalSelectContext,
+  );
+  const isSelected = value === itemValue;
+  const isDisabled = disabled || itemDisabled;
+
+  return (
+    <button
+      type="button"
+      data-slot="horizontal-select-item"
+      data-state={isSelected ? 'active' : 'inactive'}
+      disabled={isDisabled}
+      onClick={(e) => {
+        e.preventDefault();
+        if (!isDisabled && !isSelected) {
+          onValueChange(itemValue);
+        }
+      }}
       className={cn(
-        'bg-muted text-muted-foreground inline-flex w-fit items-center justify-start rounded-lg p-1.5 gap-1.5 flex-wrap',
-        'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
-        disabled && 'opacity-50 pointer-events-none',
+        'inline-flex items-center justify-center gap-1.5 rounded-4xl px-3 py-1 text-sm font-medium whitespace-nowrap',
+        'transition-colors outline-none',
+        'text-muted-foreground data-[state=active]:text-foreground',
+        'data-[state=active]:cursor-default data-[state=active]:bg-background',
+        'data-[state=active]:border data-[state=active]:border-input/50',
+        'hover:data-[state=inactive]:bg-input/50 hover:data-[state=inactive]:text-foreground',
+        'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
+        'disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}
       {...props}
     >
-      {options.map((option) => (
-        <button
-          key={option.value}
-          onClick={(e) => {
-            e.preventDefault();
-            if (!option.disabled && !disabled) {
-              handleSelection(option.value);
-            }
-          }}
-          disabled={option.disabled || disabled}
-          data-state={value === option.value ? 'active' : 'inactive'}
-          className={cn(
-            'px-3 py-1.5 data-[state=active]:cursor-default data-[state=active]:bg-background dark:data-[state=active]:text-foreground',
-            'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30',
-            'text-foreground dark:text-muted-foreground inline-flex items-center justify-center gap-1.5 rounded-md',
-            'border border-transparent text-sm font-medium whitespace-nowrap transition-[color,box-shadow,background-color]',
-            'focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50',
-            'data-[state=active]:shadow-sm hover:data-[state=inactive]:bg-background/50 hover:data-[state=inactive]:text-foreground/80',
-          )}
-          suppressHydrationWarning
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
+      {children}
+    </button>
   );
-});
+}
 
-HorizontalSelect.displayName = 'HorizontalSelect';
+function HorizontalSelectSeparator({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      data-slot="horizontal-select-separator"
+      className={cn('mx-1 h-5 w-px bg-border/50', className)}
+      {...props}
+    />
+  );
+}
 
-export default HorizontalSelect;
+export {
+  HorizontalSelect,
+  HorizontalSelectGroup,
+  HorizontalSelectItem,
+  HorizontalSelectLabel,
+  HorizontalSelectSeparator,
+};

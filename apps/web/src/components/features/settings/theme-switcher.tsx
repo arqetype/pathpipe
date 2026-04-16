@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -22,11 +23,13 @@ function ThemeSwitcher() {
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {themes.map(({ name, value }) => (
-          <SelectItem key={value} value={value}>
-            {name}
-          </SelectItem>
-        ))}
+        <SelectGroup>
+          {themes.map(({ name, value }) => (
+            <SelectItem key={value} value={value}>
+              {name}
+            </SelectItem>
+          ))}
+        </SelectGroup>
       </SelectContent>
     </Select>
   );

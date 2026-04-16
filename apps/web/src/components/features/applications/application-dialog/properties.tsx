@@ -22,7 +22,6 @@ import {
   SelectValue,
 } from '@repo/ui/components/select';
 import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
-import { formatSalary } from '@/utils/applications-utils';
 import { TierSelectOptions } from '../shared/tier-select-options';
 
 type ApplicationDialogPropertiesProps = {
@@ -34,8 +33,6 @@ export function ApplicationDialogProperties({
   app,
   onSave,
 }: ApplicationDialogPropertiesProps) {
-  const salary = formatSalary(app.salaryMin, app.salaryMax);
-
   return (
     <div className="px-8 py-4 flex flex-col gap-1">
       <Property icon={<Activity className="size-4" />} label="Status">

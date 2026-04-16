@@ -11,9 +11,12 @@ import '@repo/ui/globals.css';
 import { Toaster } from '@repo/ui/components/sonner';
 import { cn } from '@repo/ui/lib/utils';
 
-const spaceGroteskHeading = Space_Grotesk({subsets:['latin'],variable:'--font-heading'});
+const spaceGroteskHeading = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-heading',
+});
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -33,7 +36,12 @@ export default async function RootLayout({ children }: RootLayoutProps) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn('font-sans', "font-sans", geist.variable, spaceGroteskHeading.variable)}
+      className={cn(
+        'font-sans',
+        'font-sans',
+        geist.variable,
+        spaceGroteskHeading.variable,
+      )}
     >
       <body>
         <ThemeProvider>
