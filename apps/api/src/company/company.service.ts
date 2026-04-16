@@ -11,9 +11,9 @@ export class CompanyService {
     private readonly companiesRepository: Repository<Company>,
   ) {}
 
-  async search(query: string, limit = 10): Promise<CompanySearchResult[]> {
+  async search(query: string, limit = 20): Promise<CompanySearchResult[]> {
     const trimmed = query?.trim() ?? '';
-    const safeLimit = Math.min(Number(limit) || 10, 10);
+    const safeLimit = Math.min(Number(limit) || 20, 20);
 
     const qb = this.companiesRepository
       .createQueryBuilder('company')

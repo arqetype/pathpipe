@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { fetchCompanies } from '@/actions/application/fetch-companies';
 import {
   Autocomplete,
   AutocompleteContent,
@@ -30,39 +31,20 @@ export default function SelectCompany({
   const [loading, setLoading] = useState(false);
   const [focused, setFocused] = useState(false);
   const [open, setOpen] = useState(false);
-  const abortCtrlRef = useRef<AbortController | null>(null);
 
   const search = useCallback(async (query: string) => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!baseUrl) return;
-
-    abortCtrlRef.current?.abort();
-    const ctrl = new AbortController();
-    abortCtrlRef.current = ctrl;
     setLoading(true);
 
     try {
-      const url = new URL('/companies', baseUrl);
-      if (query.trim()) url.searchParams.set('query', query.trim());
-      url.searchParams.set('limit', '10');
-
-      const response = await fetch(url.toString(), {
-        credentials: 'include',
-        signal: ctrl.signal,
-      });
-      if (!response.ok) throw new Error('Failed to fetch companies');
-
-      const data = (await response.json()) as CompanyOption[];
-      setResults(data.slice(0, 10));
-      setLoading(false);
+      const companies = await fetchCompanies(query);
+      setResults(companies);
     } catch (err) {
-      if ((err as Error).name === 'AbortError') return;
+      console.error('Failed to fetch companies:', err);
       setResults([]);
+    } finally {
       setLoading(false);
     }
   }, []);
-
-  useEffect(() => () => abortCtrlRef.current?.abort(), []);
 
   useEffect(() => {
     if (!focused || !value.trim()) return;

@@ -32,14 +32,14 @@ export default async function ApplicationLayout({
     <TooltipProvider>
       <SidebarProvider>
         <BreadcrumbProvider defaultLabels={{ settings: 'Settings' }}>
-          <AppSidebar user={currentUser} />
-          <SidebarInset className="overflow-hidden">
-            <header className="flex h-12 shrink-0 items-center gap-3 border-b px-4">
+          <AppSidebar user={currentUser} className="z-20" />
+          <SidebarInset className="min-w-0 flex flex-col h-screen">
+            <div className="sticky top-0 z-30 flex h-12 items-center gap-3 border-b px-4 w-full bg-popover/80 backdrop-blur-2xl backdrop-saturate-150">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" />
               <AppBreadcrumb />
-            </header>
-            <div className="flex flex-1 flex-col min-h-0">{children}</div>
+            </div>
+            <div className="flex-1 h-full">{children}</div>
           </SidebarInset>
         </BreadcrumbProvider>
       </SidebarProvider>

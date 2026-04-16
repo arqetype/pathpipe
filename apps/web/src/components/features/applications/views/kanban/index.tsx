@@ -11,6 +11,7 @@ import { APPLICATION_STATUS_OPTIONS } from '../../constants/status';
 import { toast } from 'sonner';
 import { move } from '@dnd-kit/helpers';
 import { ApplicationDialog } from '../../application-dialog/index';
+import { useApplicationStore } from '../../store';
 
 type KanbanBoardProps = {
   applications: Application[];
@@ -35,11 +36,12 @@ export function KanbanBoard({
   applications: initial,
   hiddenColumns = new Set(),
 }: KanbanBoardProps) {
+  const { applications, setApplications, patchApplication, selectApplication } =
+    useApplicationStore();
+
   const [columnItems, setColumnItems] = useState<Record<string, string[]>>(() =>
     buildColumnItems(initial),
   );
-
-  const [applications, setApplications] = useState(initial);
 
   const applicationsById = useMemo(
     () => new Map(applications.map((a) => [a.id, a])),
@@ -49,9 +51,8 @@ export function KanbanBoard({
   useEffect(() => {
     setApplications(initial);
     setColumnItems(buildColumnItems(initial));
-  }, [initial]);
+  }, [initial, setApplications]);
 
-  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const snapshot = useRef<Record<string, string[]> | null>(null);
   const [, startTransition] = useTransition();
 
@@ -77,12 +78,12 @@ export function KanbanBoard({
 
           const sourceId = operation.source?.id as string;
           const newStatus = operation.target.id as ApplicationStatus;
-          const app = applicationsById.get(sourceId);
+          const application = applicationsById.get(sourceId);
 
           const savedSnapshot = snapshot.current;
           snapshot.current = null;
 
-          if (!app || app.status === newStatus) return;
+          if (!application || application.status === newStatus) return;
 
           startTransition(async () => {
             const result = await updateApplicationStatusAction({
@@ -91,11 +92,7 @@ export function KanbanBoard({
             });
 
             if (result.success) {
-              setApplications((apps) =>
-                apps.map((app) =>
-                  app.id === sourceId ? { ...app, status: newStatus } : app,
-                ),
-              );
+              patchApplication(sourceId, { status: newStatus });
             } else {
               if (savedSnapshot) setColumnItems(savedSnapshot);
               toast.error('Failed to update status. Please try again.');
@@ -103,7 +100,7 @@ export function KanbanBoard({
           });
         }}
       >
-        <div className="flex gap-4 h-full overflow-x-auto px-4 py-4">
+        <div className="grid grid-flow-col gap-4 h-full min-h-0 px-4 py-4 w-full">
           {APPLICATION_STATUS_OPTIONS.filter(
             (col) => !hiddenColumns.has(col.status),
           ).map((col) => (
@@ -114,13 +111,13 @@ export function KanbanBoard({
               count={columnItems[col.status]?.length ?? 0}
             >
               {(columnItems[col.status] ?? []).map((id) => {
-                const app = applicationsById.get(id);
-                if (!app) return null;
+                const application = applicationsById.get(id);
+                if (!application) return null;
                 return (
                   <KanbanCard
                     key={id}
-                    application={app}
-                    onClick={() => setSelectedApp(app)}
+                    application={application}
+                    onClick={() => selectApplication(id)}
                   />
                 );
               })}
@@ -130,17 +127,14 @@ export function KanbanBoard({
 
         <DragOverlay>
           {(source) => {
-            const app = (source.data as { application: Application })
+            const application = (source.data as { application: Application })
               .application;
-            return <KanbanCard application={app} overlay />;
+            return <KanbanCard application={application} overlay />;
           }}
         </DragOverlay>
       </DragDropProvider>
 
-      <ApplicationDialog
-        application={selectedApp}
-        onClose={() => setSelectedApp(null)}
-      />
+      <ApplicationDialog />
     </>
   );
 }

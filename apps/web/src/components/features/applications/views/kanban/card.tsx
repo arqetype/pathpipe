@@ -38,12 +38,13 @@ export function KanbanCard({
       onClick={overlay ? undefined : onClick}
       className={cn(
         'gap-3 py-3 cursor-grab active:cursor-grabbing select-none transition-shadow',
+        'min-h-[100px]', // Added minimum height to prevent shrinking
         !overlay && 'hover:shadow-md',
         overlay && 'shadow-xl rotate-1 cursor-grabbing',
         isDragSource && !overlay && 'opacity-40',
       )}
     >
-      <CardContent className="px-3 flex flex-col gap-2">
+      <CardContent className="px-3 flex flex-col gap-2 max-h-[500px] overflow-y-auto">
         <div className="flex flex-col gap-0.5">
           <div className="flex items-start justify-between gap-1">
             <p className="font-semibold text-sm leading-tight line-clamp-1">

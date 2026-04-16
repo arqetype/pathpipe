@@ -125,9 +125,11 @@ function AutocompleteList({
   return (
     <ScrollArea
       className={cn(
-        'size-full min-h-0 **:data-[slot=scroll-area-viewport]:h-full **:data-[slot=scroll-area-viewport]:overscroll-contain',
+        'w-full h-full overflow-auto pointer-events-auto overscroll-auto',
         scrollAreaClassName,
       )}
+      onWheel={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
     >
       <AutocompletePrimitive.List
         data-slot="autocomplete-list"

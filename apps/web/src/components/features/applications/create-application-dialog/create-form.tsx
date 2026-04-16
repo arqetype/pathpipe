@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTransition } from 'react';
 import { Loader2Icon } from 'lucide-react';
 import { Button } from '@repo/ui/components/button';
@@ -27,21 +27,27 @@ import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { useForm } from 'react-hook-form';
 import { createApplicationAction } from '@/actions/application/create';
 import { toast } from 'sonner';
+import { useApplicationStore } from '../store';
 import { ApplicationStatus } from '@repo/db/types/application/status';
 import { ApplicationTier } from '@repo/db/types/application/tier';
 import { TierSelectOptions } from '../shared/tier-select-options';
 import SelectCompany from '@/components/shared/select-company';
 
-export function CreateApplicationForm() {
+type CreateApplicationFormProps = {
+  status?: ApplicationStatus;
+};
+
+export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
   const [isPending, startTransition] = useTransition();
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const { closeCreateDialog } = useApplicationStore();
 
   const form = useForm<CreateApplicationDto>({
     resolver: classValidatorResolver(CreateApplicationDto),
     defaultValues: {
       company: '',
       position: '',
-      status: ApplicationStatus.WISHLIST,
+      status: (status as ApplicationStatus) || ApplicationStatus.WISHLIST,
       tier: ApplicationTier.NONE,
       url: '',
       salaryMin: undefined,
@@ -49,6 +55,12 @@ export function CreateApplicationForm() {
       appliedAt: '',
     },
   });
+
+  useEffect(() => {
+    if (status) {
+      form.setValue('status', status);
+    }
+  }, [form, status]);
 
   const handleSubmit = (data: CreateApplicationDto) => {
     startTransition(async () => {
@@ -62,6 +74,7 @@ export function CreateApplicationForm() {
         toast.success('Application created successfully.');
         form.reset();
         setStatusMessage(null);
+        closeCreateDialog();
       } else {
         setStatusMessage(result.message || 'Failed to create application.');
       }

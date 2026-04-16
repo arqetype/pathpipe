@@ -12,6 +12,6 @@ export class CompanyController {
     @Query('query') query?: string,
     @Query('limit') limit?: number | string,
   ): Promise<CompanySearchResult[]> {
-    return this.companyService.search(query ?? '', limit ? Number(limit) : 10);
+    return this.companyService.search(query ?? '', limit ? Number(limit) : 20);
   }
 }
