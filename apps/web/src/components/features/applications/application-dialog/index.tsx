@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useTransition } from 'react';
 import type { Application } from '@repo/db/entities/application';
 import { Dialog, DialogContent, DialogTitle } from '@repo/ui/components/dialog';
 import { Separator } from '@repo/ui/components/separator';
@@ -9,52 +9,73 @@ import { toast } from 'sonner';
 import { ApplicationDialogHeader } from './header';
 import { ApplicationDialogProperties } from './properties';
 import { ApplicationDialogNotes } from './notes';
+import { useApplicationStore } from '../store';
 
-type ApplicationDialogProps = {
-  application: Application | null;
-  onClose: () => void;
-};
-
-export function ApplicationDialog({
-  application,
-  onClose,
-}: ApplicationDialogProps) {
-  const [app, setApp] = useState<Application | null>(null);
+export function ApplicationDialog() {
+  const selectedApplicationId = useApplicationStore(
+    (state) => state.selectedApplicationId,
+  );
+  const selectedApplication = useApplicationStore(
+    (state) =>
+      state.applications.find((a) => a.id === state.selectedApplicationId) ??
+      null,
+  );
+  const { selectApplication, patchApplication } = useApplicationStore();
   const [, startTransition] = useTransition();
 
+  const lastApplicationRef = useRef<Application | null>(null);
   useEffect(() => {
-    if (application) setApp(application);
-  }, [application]);
+    if (selectedApplication) {
+      lastApplicationRef.current = selectedApplication;
+    }
+  }, [selectedApplication]);
+  const displayedApplication = useMemo(() => {
+    return selectedApplication ?? null;
+  }, [selectedApplication]);
 
   function save(data: Partial<Application>) {
-    if (!app) return;
-    const prev = app;
-    setApp({ ...app, ...data });
+    if (!displayedApplication) return;
+    const previous = patchApplication(displayedApplication.id, data);
     startTransition(async () => {
-      const result = await updateApplicationAction({ id: app.id, ...data });
+      const result = await updateApplicationAction({
+        id: displayedApplication.id,
+        ...data,
+      });
       if (!result.success) {
-        setApp(prev);
+        if (previous) patchApplication(displayedApplication.id, previous);
         toast.error('Failed to save changes.');
       }
     });
   }
 
   return (
-    <Dialog open={!!application} onOpenChange={(open) => !open && onClose()}>
+    <Dialog
+      open={!!selectedApplicationId}
+      onOpenChange={(open) => !open && selectApplication(null)}
+    >
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
         className="sm:max-w-2xl p-0 gap-0 max-h-[90vh] overflow-y-auto"
       >
         <DialogTitle className="sr-only">
-          {app?.position ?? 'Application details'}
+          {displayedApplication?.position ?? 'Application details'}
         </DialogTitle>
-        {app && (
+        {displayedApplication && (
           <>
-            <ApplicationDialogHeader app={app} onSave={save} />
+            <ApplicationDialogHeader
+              application={displayedApplication}
+              onSave={save}
+            />
             <Separator />
-            <ApplicationDialogProperties app={app} onSave={save} />
+            <ApplicationDialogProperties
+              application={displayedApplication}
+              onSave={save}
+            />
             <Separator />
-            <ApplicationDialogNotes app={app} onSave={save} />
+            <ApplicationDialogNotes
+              application={displayedApplication}
+              onSave={save}
+            />
           </>
         )}
       </DialogContent>

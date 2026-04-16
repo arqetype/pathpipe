@@ -3,12 +3,12 @@ import { FileText } from 'lucide-react';
 import EditableTextarea from '@repo/ui/components/editable-inputs/editable-textarea';
 
 type ApplicationDialogNotesProps = {
-  app: Application;
+  application: Application;
   onSave: (data: Partial<Application>) => void;
 };
 
 export function ApplicationDialogNotes({
-  app,
+  application,
   onSave,
 }: ApplicationDialogNotesProps) {
   return (
@@ -18,7 +18,7 @@ export function ApplicationDialogNotes({
         <span className="text-sm font-medium">Notes</span>
       </div>
       <EditableTextarea
-        value={app.notes}
+        value={application.notes}
         placeholder="Add notes, interview details, context…"
         onSave={(v) => onSave({ notes: v })}
       />

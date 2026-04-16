@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { PlusIcon } from 'lucide-react';
 import { Button } from '@repo/ui/components/button';
 import {
@@ -11,18 +10,23 @@ import {
   DialogTrigger,
 } from '@repo/ui/components/dialog';
 import { CreateApplicationForm } from './create-form';
+import { useApplicationStore } from '../store';
+import { ApplicationStatus } from '@repo/db/types/application/status';
 
 export function CreateApplicationDialog() {
-  const [open, setOpen] = useState(false);
-
-  function handleOpenChange(next: boolean) {
-    setOpen(next);
-  }
+  const { isCreateDialogOpen, closeCreateDialog, openCreateDialog, status } =
+    useApplicationStore();
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog
+      open={isCreateDialogOpen}
+      onOpenChange={(open) => (open ? undefined : closeCreateDialog())}
+    >
       <DialogTrigger asChild>
-        <Button size="sm">
+        <Button
+          size="sm"
+          onClick={() => openCreateDialog(ApplicationStatus.WISHLIST)}
+        >
           <PlusIcon className="size-4" />
           New application
         </Button>
@@ -33,7 +37,7 @@ export function CreateApplicationDialog() {
           <DialogTitle>New application</DialogTitle>
         </DialogHeader>
 
-        <CreateApplicationForm />
+        <CreateApplicationForm status={status || undefined} />
       </DialogContent>
     </Dialog>
   );

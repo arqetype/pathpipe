@@ -8,6 +8,7 @@ import type {
 } from '@repo/db/query/application';
 import { ApplicationStatus } from '@repo/db/types/application/status';
 import { str } from '@/utils/utils';
+import { ScrollArea, ScrollBar } from '@repo/ui/components/scroll-area';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -38,9 +39,15 @@ export default async function AppMainPage({
   const total = result.ok ? result.data.total : 0;
 
   return (
-    <div className="flex flex-1 flex-col min-h-0 w-full">
+    <div className="flex flex-col h-full max-h-[calc(100vh-theme(space.12))]">
       <ViewToolbar total={total} actions={<CreateApplicationDialog />} />
-      <KanbanBoard applications={applications} hiddenColumns={hiddenStatuses} />
+      <ScrollArea className="flex-1 flex flex-col h-full overflow-y-auto w-full">
+        <KanbanBoard
+          applications={applications}
+          hiddenColumns={hiddenStatuses}
+        />
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
     </div>
   );
 }

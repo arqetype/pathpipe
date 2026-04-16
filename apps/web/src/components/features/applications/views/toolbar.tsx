@@ -10,6 +10,7 @@ import {
   ArrowDown,
   Filter,
 } from 'lucide-react';
+
 import { ApplicationStatus } from '@repo/db/types/application/status';
 import { Button } from '@repo/ui/components/button';
 import { Input } from '@repo/ui/components/input';
@@ -96,7 +97,7 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
   const sortLabel = SORT_OPTIONS.find((o) => o.value === currentSortBy)?.label;
 
   return (
-    <div className="flex items-center justify-between gap-4 px-4 pt-4 pb-0 shrink-0">
+    <div className="flex items-center justify-between gap-4 p-4 shrink-0">
       <div className="flex items-center gap-2">
         {/* Search */}
         <div className="relative">

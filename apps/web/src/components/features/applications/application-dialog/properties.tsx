@@ -25,19 +25,19 @@ import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
 import { TierSelectOptions } from '../shared/tier-select-options';
 
 type ApplicationDialogPropertiesProps = {
-  app: Application;
+  application: Application;
   onSave: (data: Partial<Application>) => void;
 };
 
 export function ApplicationDialogProperties({
-  app,
+  application,
   onSave,
 }: ApplicationDialogPropertiesProps) {
   return (
     <div className="px-8 py-4 flex flex-col gap-1">
       <Property icon={<Activity className="size-4" />} label="Status">
         <Select
-          value={app.status}
+          value={application.status}
           onValueChange={(v) => onSave({ status: v as ApplicationStatus })}
         >
           <SelectTrigger className="w-full bg-transparent border-0 hover:bg-accent">
@@ -57,7 +57,7 @@ export function ApplicationDialogProperties({
 
       <Property icon={<Flag className="size-4" />} label="Tier">
         <Select
-          value={app.tier}
+          value={application.tier}
           onValueChange={(v) => onSave({ tier: v as ApplicationTier })}
         >
           <SelectTrigger className="w-full bg-transparent border-0 hover:bg-accent">
@@ -75,8 +75,8 @@ export function ApplicationDialogProperties({
         <InlineInput
           type="date"
           value={
-            app.appliedAt
-              ? new Date(app.appliedAt).toISOString().split('T')[0]
+            application.appliedAt
+              ? new Date(application.appliedAt).toISOString().split('T')[0]
               : ''
           }
           placeholder="Pick a date"
@@ -91,14 +91,14 @@ export function ApplicationDialogProperties({
       <Property icon={<Banknote className="size-4" />} label="Salary">
         <InlineInput
           type="number"
-          value={app.salaryMin}
+          value={application.salaryMin}
           placeholder="50"
           onSave={(v) => onSave({ salaryMin: v ? Number(v) : undefined })}
         />
         <span className="px-1 text-sm text-muted-foreground">to</span>
         <InlineInput
           type="number"
-          value={app.salaryMax}
+          value={application.salaryMax}
           placeholder="80"
           onSave={(v) => onSave({ salaryMax: v ? Number(v) : undefined })}
         />
@@ -107,13 +107,13 @@ export function ApplicationDialogProperties({
       <Property icon={<Link className="size-4" />} label="Job URL">
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
           <InlineInput
-            value={app.url}
+            value={application.url}
             placeholder="https://…"
             onSave={(v) => onSave({ url: v })}
           />
-          {app.url && (
+          {application.url && (
             <a
-              href={app.url}
+              href={application.url}
               target="_blank"
               rel="noopener noreferrer"
               className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
@@ -126,7 +126,7 @@ export function ApplicationDialogProperties({
 
       <Property icon={<User className="size-4" />} label="Contact">
         <InlineInput
-          value={app.contactName}
+          value={application.contactName}
           placeholder="Name"
           onSave={(v) => onSave({ contactName: v })}
         />
@@ -136,13 +136,13 @@ export function ApplicationDialogProperties({
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
           <InlineInput
             type="email"
-            value={app.contactEmail}
+            value={application.contactEmail}
             placeholder="email@company.com"
             onSave={(v) => onSave({ contactEmail: v })}
           />
-          {app.contactEmail && (
+          {application.contactEmail && (
             <a
-              href={`mailto:${app.contactEmail}`}
+              href={`mailto:${application.contactEmail}`}
               className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
             >
               <ExternalLink className="size-3.5" />
