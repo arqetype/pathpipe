@@ -36,27 +36,52 @@ export function Layout({ children, previewMessage }: EmailLayoutProps) {
           }}
         >
           {previewMessage && <Preview>{previewMessage}</Preview>}
-          <Container>
-            <Section>
+          <Container className="max-w-lg mx-auto bg-card border border-border">
+            {/* Header Section */}
+            <Section className="bg-primary text-primary-foreground py-6 text-center">
               <Img
                 src="https://weareweaver.org/logo.png"
                 alt="Weaver Logo"
                 width="130"
                 height="50"
-                className="bg-gray-100"
+                className="mx-auto"
               />
             </Section>
-            {children}
-            <Hr />
-            <Section>
-              <Text className="text-gray-500 text-sm">
+
+            {/* Main Content */}
+            <Section className="p-6">{children}</Section>
+
+            {/* Footer Section */}
+            <Hr className="mt-6 border-border" />
+            <Section className="text-center">
+              <Text className="text-sm text-muted-foreground">
+                Need help? Contact our support team at{' '}
+                <Link
+                  href="mailto:support@weareweaver.org"
+                  className="underline text-primary"
+                >
+                  support@weareweaver.org
+                </Link>
+                .
+              </Text>
+              <Text className="text-sm text-muted-foreground mt-2">
+                Visit our{' '}
+                <Link
+                  href="https://weareweaver.org/help"
+                  className="underline text-primary"
+                >
+                  Help Center
+                </Link>{' '}
+                for more information.
+              </Text>
+              <Text className="text-sm text-muted-foreground mt-4">
                 <Link
                   href="https://weareweaver.org"
                   className="underline text-primary"
                 >
                   Weaver
-                </Link>
-                , your AI-powered planning assistant.
+                </Link>{' '}
+                - Your job tracker excel substitute.
               </Text>
             </Section>
           </Container>

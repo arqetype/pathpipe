@@ -11,12 +11,13 @@ interface ResetPasswordEmailProps {
 }
 
 export function ResetPasswordEmail({ token, user }: ResetPasswordEmailProps) {
-  const previewMessage = 'Click the button below to reset your password';
+  const previewMessage =
+    '👋 Reset your password! Reset your password to regain access to your account.';
   const resetUrl = `http://localhost:3000/app/reset-password?token=${token}`;
 
   return (
     <Layout previewMessage={previewMessage}>
-      <Section>
+      <Section className="text-center">
         <Img
           src={user.profilePictureUrl}
           alt={`${user.name}'s profile picture`}
@@ -24,25 +25,29 @@ export function ResetPasswordEmail({ token, user }: ResetPasswordEmailProps) {
           height="96"
           className="mx-auto mb-4 rounded-full"
         />
+        <Text className="text-3xl font-bold text-primary">
+          Reset your password
+        </Text>
+        <Text className="text-foreground mt-2">
+          We're excited to have you on board. Use the link below to securely
+          reset your password and regain access to your account.
+        </Text>
       </Section>
       <Section>
         <Row>
-          <Text className="text-3xl font-bold">
-            Hi {user.name}, forgot your password?
-          </Text>
-          <Text className="text-lg">
-            Someone recently requested a password change for your Weaver
-            account. If this was you, you can set a new password here:
+          <Text className="text-lg text-foreground mt-4">
+            Hi {user.name}, click the button below to reset your password:
           </Text>
           <Button
             href={resetUrl}
-            className="bg-primary text-primary-foreground w-full py-3 text-center rounded-md focus:outline-none"
+            className="text-lg w-full bg-primary font-semibold p-2 text-center rounded-full text-primary-foreground"
           >
-            Reset Password
+            Reset password
           </Button>
-          <Text className="text-md">
-            If you don't want to change your password or didn't request this,
-            just ignore and delete this message.
+          <Text className="text-sm text-foreground mt-2">
+            This link is valid for 10 minutes. If you did not request this
+            password reset, please ignore this email and consider changing your
+            password for security.
           </Text>
         </Row>
       </Section>
