@@ -1,14 +1,50 @@
-import type { TailwindConfig } from '@react-email/components';
+import type { TailwindConfig } from 'react-email';
 
 export default {
   theme: {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#de2e00',
+          DEFAULT: 'oklch(0.508 0.118 165.612)',
         },
         ['primary-foreground']: {
-          DEFAULT: '#ffffff',
+          DEFAULT: 'oklch(0.979 0.021 166.113)',
+        },
+        secondary: {
+          DEFAULT: 'oklch(0.967 0.001 286.375)',
+        },
+        ['secondary-foreground']: {
+          DEFAULT: 'oklch(0.21 0.006 285.885)',
+        },
+        background: {
+          DEFAULT: 'oklch(1 0 0)',
+        },
+        foreground: {
+          DEFAULT: 'oklch(0.153 0.006 107.1)',
+        },
+        muted: {
+          DEFAULT: 'oklch(0.966 0.005 106.5)',
+        },
+        ['muted-foreground']: {
+          DEFAULT: 'oklch(0.58 0.031 107.3)',
+        },
+        accent: {
+          DEFAULT: 'oklch(0.966 0.005 106.5)',
+        },
+        ['accent-foreground']: {
+          DEFAULT: 'oklch(0.228 0.013 107.4)',
+        },
+        destructive: {
+          DEFAULT: 'oklch(0.577 0.245 27.325)',
+        },
+        border: {
+          DEFAULT: 'oklch(0.93 0.007 106.5)',
+        },
+        input: {
+          DEFAULT: 'oklch(0.93 0.007 106.5)',
+        },
+        ring: {
+          DEFAULT: 'oklch(0.737 0.021 106.9)',
         },
       },
     },

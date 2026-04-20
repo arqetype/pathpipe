@@ -1,4 +1,4 @@
-import { Img, Row, Section, Text } from '@react-email/components';
+import { Img, Row, Section, Text } from 'react-email';
 import React from 'react';
 import { Layout } from '../../components/layout';
 
@@ -11,11 +11,12 @@ type OTPEmailProps = {
 };
 
 export function OTPEmail({ otp, user }: OTPEmailProps) {
-  const previewMessage = 'Your one-time password (OTP) for Weaver';
+  const previewMessage =
+    '👋 Welcome to Weaver! Use the OTP below to securely log in.';
 
   return (
     <Layout previewMessage={previewMessage}>
-      <Section>
+      <Section className="text-center">
         <Img
           src={user.profilePictureUrl}
           alt={`${user.name}'s profile picture`}
@@ -23,23 +24,29 @@ export function OTPEmail({ otp, user }: OTPEmailProps) {
           height="96"
           className="mx-auto mb-4 rounded-full"
         />
+        <Text className="text-3xl font-bold text-primary">
+          Welcome to Weaver!
+        </Text>
+        <Text className="text-foreground mt-2">
+          We're excited to have you on board. Use the one-time password below to
+          securely log in and start exploring.
+        </Text>
       </Section>
       <Section>
         <Row>
-          <Text className="text-3xl font-bold">
-            Hi {user.name}, here is your OTP
+          <Text className="text-lg text-foreground mt-4">
+            Hi {user.name}, here is your one-time password (OTP):
           </Text>
-          <Text className="text-lg">
-            Use this one-time password to complete your login or verification
-            process. This OTP is valid for a short period, so please use it
-            promptly.
-          </Text>
-          <Text className="text-2xl bg-gray-200 p-4 text-center rounded-md">
+          <Text
+            className="text-2xl bg-accent p-4 text-center rounded-full tracking-widest
+ font-bold text-primary"
+          >
             {otp}
           </Text>
-          <Text className="text-md">
-            If you did not request this OTP, please ignore this email, and
-            consider changing your password for security.
+          <Text className="text-sm text-foreground mt-2">
+            This OTP is valid for 10 minutes. If you did not request this OTP,
+            please ignore this email and consider changing your password for
+            security.
           </Text>
         </Row>
       </Section>
