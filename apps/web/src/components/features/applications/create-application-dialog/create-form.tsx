@@ -21,221 +21,61 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/ui/components/select';
-import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
-import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
+import { CANDIDATE_STAGE_OPTIONS } from '../constants/status';
+import { CreateCandidateDto } from '@repo/db/dto/candidate/create-candidate.dto';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { useForm } from 'react-hook-form';
 import { createApplicationAction } from '@/actions/application/create';
 import { toast } from 'sonner';
 import { useApplicationStore } from '../store';
-import { ApplicationStatus } from '@repo/db/types/application/status';
-import { ApplicationTier } from '@repo/db/types/application/tier';
-import { TierSelectOptions } from '../shared/tier-select-options';
-import SelectCompany from '@/components/shared/select-company';
+import { CandidateStage } from '@repo/db/types/candidate/stage';
+import { CandidateSource } from '@repo/db/types/candidate/source';
 
 type CreateApplicationFormProps = {
-  status?: ApplicationStatus;
+  stage?: CandidateStage;
 };
 
-export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
+export function CreateApplicationForm({ stage }: CreateApplicationFormProps) {
   const [isPending, startTransition] = useTransition();
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const { closeCreateDialog } = useApplicationStore();
 
-  const form = useForm<CreateApplicationDto>({
-    resolver: classValidatorResolver(CreateApplicationDto),
+  const form = useForm<CreateCandidateDto>({
+    resolver: classValidatorResolver(CreateCandidateDto),
     defaultValues: {
-      company: '',
-      position: '',
-      status: (status as ApplicationStatus) || ApplicationStatus.WISHLIST,
-      tier: ApplicationTier.NONE,
-      url: '',
-      salaryMin: undefined,
-      salaryMax: undefined,
-      appliedAt: '',
+      firstName: '',
+      lastName: '',
+      phone: '',
+      linkedinUrl: '',
+      stage: (stage as CandidateStage) || CandidateStage.APPLIED,
+      source: CandidateSource.MANUAL,
     },
   });
 
   useEffect(() => {
-    if (status) {
-      form.setValue('status', status);
+    if (stage) {
+      form.setValue('stage', stage);
     }
-  }, [form, status]);
+  }, [form, stage]);
 
-  const handleSubmit = (data: CreateApplicationDto) => {
+  const handleSubmit = (data: CreateCandidateDto) => {
     startTransition(async () => {
       const result = await createApplicationAction({
         ...data,
-        url: data.url || undefined,
-        appliedAt: data.appliedAt || undefined,
+        phone: data.phone || undefined,
+        linkedinUrl: data.linkedinUrl || undefined,
       });
 
       if (result.success) {
-        toast.success('Application created successfully.');
+        toast.success('Candidate created successfully.');
         form.reset();
         setStatusMessage(null);
         closeCreateDialog();
       } else {
-        setStatusMessage(result.message || 'Failed to create application.');
+        setStatusMessage(result.message || 'Failed to create candidate.');
       }
     });
   };
-
-  const renderFormContent = () => (
-    <>
-      <div className="flex gap-3">
-        <FormField
-          control={form.control}
-          name="company"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Company</FormLabel>
-              <FormControl>
-                <SelectCompany value={field.value} onChange={field.onChange} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="position"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Position</FormLabel>
-              <FormControl>
-                <Input placeholder="Software Engineer" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-
-      <div className="flex gap-3">
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Status</FormLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {APPLICATION_STATUS_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.status} value={opt.status}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="tier"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Tier</FormLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <TierSelectOptions />
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="appliedAt"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Applied Date</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-
-      <FormField
-        control={form.control}
-        name="url"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Job URL</FormLabel>
-            <FormControl>
-              <Input placeholder="https://jobs.example.com/..." {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <div className="flex gap-3">
-        <FormField
-          control={form.control}
-          name="salaryMin"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Salary Min</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="50000"
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value ? Number(e.target.value) : undefined,
-                    )
-                  }
-                  value={field.value ?? ''}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="salaryMax"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Salary Max</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="80000"
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value ? Number(e.target.value) : undefined,
-                    )
-                  }
-                  value={field.value ?? ''}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-    </>
-  );
 
   return (
     <Form {...form}>
@@ -243,7 +83,122 @@ export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
         {statusMessage && (
           <div className="text-red-500 text-sm">{statusMessage}</div>
         )}
-        {renderFormContent()}
+
+        <div className="flex gap-3">
+          <FormField
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>First name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Jane" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>Last name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Smith" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="flex gap-3">
+          <FormField
+            control={form.control}
+            name="stage"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>Stage</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {CANDIDATE_STAGE_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.status} value={opt.status}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="source"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>Source</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value={CandidateSource.MANUAL}>
+                        Manual
+                      </SelectItem>
+                      <SelectItem value={CandidateSource.CAREERS_PAGE}>
+                        Careers page
+                      </SelectItem>
+                      <SelectItem value={CandidateSource.EMAIL}>
+                        Email
+                      </SelectItem>
+                      <SelectItem value={CandidateSource.REFERRAL}>
+                        Referral
+                      </SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone</FormLabel>
+              <FormControl>
+                <Input placeholder="+1 555 000 0000" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="linkedinUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>LinkedIn URL</FormLabel>
+              <FormControl>
+                <Input placeholder="https://linkedin.com/in/..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? (
             <>
@@ -251,7 +206,7 @@ export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
               Adding...
             </>
           ) : (
-            'Add Application'
+            'Add Candidate'
           )}
         </Button>
       </form>

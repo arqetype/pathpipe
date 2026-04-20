@@ -2,37 +2,37 @@
 
 import { post } from '@/lib/fetch';
 import { action } from '@/lib/safe-action';
-import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
+import { CreateCandidateDto } from '@repo/db/dto/candidate/create-candidate.dto';
 import { IsEnum, IsString } from 'class-validator';
-import { ApplicationStatus } from '@repo/db/types/application/status';
+import { CandidateStage } from '@repo/db/types/candidate/stage';
 import { revalidatePath } from 'next/cache';
 
-class CreateApplicationResponse {
+class CreateCandidateResponse {
   @IsString()
   id: string;
 
   @IsString()
-  company: string;
+  firstName: string;
 
   @IsString()
-  position: string;
+  lastName: string;
 
-  @IsEnum(ApplicationStatus)
-  status: ApplicationStatus;
+  @IsEnum(CandidateStage)
+  stage: CandidateStage;
 }
 
 export const createApplicationAction = action
   .needsAuth()
-  .inputDto(CreateApplicationDto)
-  .outputDto(CreateApplicationResponse)
+  .inputDto(CreateCandidateDto)
+  .outputDto(CreateCandidateResponse)
   .action(async ({ parsedInput }) => {
-    const { ok, data } = await post<CreateApplicationResponse>(
+    const { ok, data } = await post<CreateCandidateResponse>(
       '/applications',
       parsedInput,
     );
 
     if (!ok) {
-      throw new Error('Failed to create application');
+      throw new Error('Failed to create candidate');
     }
 
     revalidatePath('/app/applications');

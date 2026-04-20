@@ -11,7 +11,7 @@ import {
   Filter,
 } from 'lucide-react';
 
-import { ApplicationStatus } from '@repo/db/types/application/status';
+import { CandidateStage } from '@repo/db/types/candidate/stage';
 import { Button } from '@repo/ui/components/button';
 import { Input } from '@repo/ui/components/input';
 import {
@@ -24,16 +24,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@repo/ui/components/dropdown-menu';
-import type { ApplicationSortBy } from '@repo/db/query/application';
-import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
+import type { CandidateSortBy } from '@repo/db/query/candidate';
+import { CANDIDATE_STAGE_OPTIONS } from '../constants/status';
 
-const SORT_OPTIONS: { value: ApplicationSortBy; label: string }[] = [
+const SORT_OPTIONS: { value: CandidateSortBy; label: string }[] = [
   { value: 'created_at', label: 'Date added' },
   { value: 'updated_at', label: 'Last updated' },
-  { value: 'company', label: 'Company' },
-  { value: 'position', label: 'Position' },
-  { value: 'salaryMin', label: 'Minimum Salary' },
-  { value: 'salaryMax', label: 'Maximum Salary' },
+  { value: 'firstName', label: 'First name' },
+  { value: 'lastName', label: 'Last name' },
 ];
 
 type ViewToolbarProps = {
@@ -48,13 +46,13 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
 
   const currentSearch = searchParams.get('search') ?? '';
   const currentSortBy =
-    (searchParams.get('sortBy') as ApplicationSortBy) ?? 'created_at';
+    (searchParams.get('sortBy') as CandidateSortBy) ?? 'created_at';
   const currentSortOrder =
     (searchParams.get('sortOrder') as 'asc' | 'desc') ?? 'desc';
 
   const hiddenParam = searchParams.get('hidden') ?? '';
   const hiddenStatuses = new Set(
-    hiddenParam ? (hiddenParam.split(',') as ApplicationStatus[]) : [],
+    hiddenParam ? (hiddenParam.split(',') as CandidateStage[]) : [],
   );
 
   const [inputValue, setInputValue] = useState(currentSearch);
@@ -82,10 +80,10 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
     router.push(`${pathname}?${params.toString()}`);
   }
 
-  function toggleStatus(status: ApplicationStatus) {
+  function toggleStatus(stage: CandidateStage) {
     const next = new Set(hiddenStatuses);
-    if (next.has(status)) next.delete(status);
-    else next.add(status);
+    if (next.has(stage)) next.delete(stage);
+    else next.add(stage);
     setParam('hidden', next.size > 0 ? [...next].join(',') : null);
   }
 
@@ -162,7 +160,7 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
           </Button>
         </div>
 
-        {/* Status filter */}
+        {/* Stage filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -171,7 +169,7 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
               className="h-8 gap-1.5 text-xs font-normal"
             >
               <Filter className="size-3.5" />
-              Status
+              Stage
               {hiddenStatuses.size > 0 && (
                 <span className="ml-0.5 rounded-full bg-primary text-primary-foreground size-4 text-[10px] flex items-center justify-center">
                   {hiddenStatuses.size}
@@ -181,10 +179,10 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-44">
             <DropdownMenuLabel className="text-xs">
-              Filter by status
+              Filter by stage
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {APPLICATION_STATUS_OPTIONS.map((s) => (
+            {CANDIDATE_STAGE_OPTIONS.map((s) => (
               <DropdownMenuCheckboxItem
                 key={s.status}
                 checked={!hiddenStatuses.has(s.status)}
@@ -202,7 +200,7 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
         </DropdownMenu>
 
         <p className="text-sm text-muted-foreground pl-1">
-          {total} application{total !== 1 ? 's' : ''}
+          {total} candidate{total !== 1 ? 's' : ''}
         </p>
       </div>
 

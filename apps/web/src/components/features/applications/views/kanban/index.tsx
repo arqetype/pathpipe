@@ -2,29 +2,27 @@
 
 import { useState, useTransition, useRef, useMemo, useEffect } from 'react';
 import { DragDropProvider, DragOverlay } from '@dnd-kit/react';
-import type { Application } from '@repo/db/entities/application';
-import { ApplicationStatus } from '@repo/db/types/application/status';
+import type { Candidate } from '@repo/db/entities/candidate';
+import { CandidateStage } from '@repo/db/types/candidate/stage';
 import { KanbanColumn } from './column';
 import { KanbanCard } from './card';
 import { updateApplicationStatusAction } from '@/actions/application/update-status';
-import { APPLICATION_STATUS_OPTIONS } from '../../constants/status';
+import { CANDIDATE_STAGE_OPTIONS } from '../../constants/status';
 import { toast } from 'sonner';
 import { move } from '@dnd-kit/helpers';
 import { ApplicationDialog } from '../../application-dialog/index';
 import { useApplicationStore } from '../../store';
 
 type KanbanBoardProps = {
-  applications: Application[];
-  hiddenColumns?: Set<ApplicationStatus>;
+  applications: Candidate[];
+  hiddenColumns?: Set<CandidateStage>;
 };
 
-function buildColumnItems(
-  applications: Application[],
-): Record<string, string[]> {
-  return APPLICATION_STATUS_OPTIONS.reduce(
+function buildColumnItems(applications: Candidate[]): Record<string, string[]> {
+  return CANDIDATE_STAGE_OPTIONS.reduce(
     (acc, col) => {
       acc[col.status] = applications
-        .filter((a) => a.status === col.status)
+        .filter((a) => a.stage === col.status)
         .map((a) => a.id);
       return acc;
     },
@@ -77,31 +75,31 @@ export function KanbanBoard({
           }
 
           const sourceId = operation.source?.id as string;
-          const newStatus = operation.target.id as ApplicationStatus;
+          const newStage = operation.target.id as CandidateStage;
           const application = applicationsById.get(sourceId);
 
           const savedSnapshot = snapshot.current;
           snapshot.current = null;
 
-          if (!application || application.status === newStatus) return;
+          if (!application || application.stage === newStage) return;
 
           startTransition(async () => {
             const result = await updateApplicationStatusAction({
               id: sourceId,
-              status: newStatus,
+              stage: newStage,
             });
 
             if (result.success) {
-              patchApplication(sourceId, { status: newStatus });
+              patchApplication(sourceId, { stage: newStage });
             } else {
               if (savedSnapshot) setColumnItems(savedSnapshot);
-              toast.error('Failed to update status. Please try again.');
+              toast.error('Failed to update stage. Please try again.');
             }
           });
         }}
       >
         <div className="grid grid-flow-col gap-4 h-full min-h-0 px-4 py-4 w-full">
-          {APPLICATION_STATUS_OPTIONS.filter(
+          {CANDIDATE_STAGE_OPTIONS.filter(
             (col) => !hiddenColumns.has(col.status),
           ).map((col) => (
             <KanbanColumn
@@ -127,7 +125,7 @@ export function KanbanBoard({
 
         <DragOverlay>
           {(source) => {
-            const application = (source.data as { application: Application })
+            const application = (source.data as { application: Candidate })
               .application;
             return <KanbanCard application={application} overlay />;
           }}
