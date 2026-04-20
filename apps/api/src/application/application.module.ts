@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { ApplicationService } from './application.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApplicationController } from './application.controller';
-import { Application } from '@repo/db/entities/application';
-import { Company } from '@repo/db/entities/company';
+import { Candidate } from '@repo/db/entities/candidate';
+import { JobOpening } from '@repo/db/entities/job-opening';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Application, Company])],
+  imports: [TypeOrmModule.forFeature([Candidate, JobOpening])],
   providers: [ApplicationService],
   exports: [ApplicationService],
   controllers: [ApplicationController],
