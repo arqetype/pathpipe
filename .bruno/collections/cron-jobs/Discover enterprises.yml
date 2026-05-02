@@ -1,0 +1,15 @@
+info:
+  name: Discover enterprises
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:4100/cron/trigger/enterprises/discover
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

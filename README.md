@@ -1,10 +1,6 @@
 # Weaver
 
-TODO: describe the product
-
-## ⚡️ Overview
-
-TODO: write a little text
+Job seeker tracking application built with a modern tech stack, designed for developers to manage their job applications, track progress, and receive suggestions based on their profiles.
 
 ## 🏗️ Architecture & Technology Stack
 
@@ -40,57 +36,13 @@ TODO: write a little text
 - **React Email** - Email template development with React components
 - **MailDev** - Local email testing server
 
-## 📁 Project Structure
-
-```
-weaver/
-├── apps/                          # Application packages
-│   ├── api/                       # NestJS backend API
-│   │   ├── src/
-│   │   │   ├── auth/             # Authentication module (JWT, guards, strategies)
-│   │   │   ├── user/             # User management service
-│   │   │   ├── health/           # Health check endpoints
-│   │   │   ├── mailer/           # Email service integration
-│   │   │   ├── verification/     # Email/OTP verification system
-│   │   │   └── common/           # Shared utilities and decorators
-│   │   └── test/                 # E2E tests
-│   └── web/                      # Next.js frontend application
-│       ├── src/
-│       │   ├── app/             # App Router pages and layouts
-│       │   ├── components/      # React components (header, forms, providers)
-│       │   ├── actions/         # Server actions for data mutations
-│       │   └── lib/             # Utility functions and configurations
-│       └── components.json      # shadcn/ui configuration
-├── packages/                     # Shared packages
-│   ├── db/                      # Database entities and DTOs
-│   │   └── src/
-│   │       ├── entities/        # TypeORM entities (User,etc.)
-│   │       └── dto/             # Data transfer objects
-│   ├── email/                   # Email templates and mailer utilities
-│   │   ├── src/
-│   │   │   ├── templates/       # React Email templates
-│   │   │   └── components/      # Reusable email components
-│   │   └── mailer.tsx           # Email service configuration
-│   ├── ui/                      # Shared UI component library
-│   │   └── src/
-│   │       ├── components/      # Reusable React components
-│   │       ├── hooks/           # Custom React hooks
-│   │       └── styles/          # Global styles and theme
-│   └── config packages/         # Shared configuration
-│       ├── eslint-config/       # ESLint configurations per environment
-│       ├── jest-config/         # Jest configurations
-│       ├── prettier-config/     # Prettier configurations
-│       └── typescript-config/   # TypeScript configurations
-└── docker-compose.dev.yml       # Development environment setup
-```
-
 ## 🧑‍💻 Development Environment
 
 The development workflow is designed to be plug-and-play using Docker and Turborepo:
 
 - **Frontend**: http://localhost:3000 (Next.js with Turbopack)
 - **Backend API**: http://localhost:4000 (NestJS with auto-reload)
-- **Jobs Worker**: http://localhost: 4100 (Hono)
+- **Workers CRON + API**: http://localhost:4100 (Hono with hexagonal architecture)
 - **Database**: PostgreSQL on port 5432
 - **Email Development Server**: http://localhost:1080 (MailDev for receiving emails, configured in the `@repo/email` package)
 - **Email Template Preview**: http://localhost:1081 (React Email development server, configured in the `@repo/email` package)
@@ -101,7 +53,7 @@ All services start and stop automatically via `pnpm run dev`.
 
 ### Root Level Commands
 
-- `pnpm run dev` - Start all development services (frontend, backend, email servers)
+- `pnpm run dev` - Start all development services (frontend, backend, email servers and docker infrastructure)
 - `pnpm run build` - Build all packages using Turborepo
 - `pnpm run test` - Run unit tests across all packages
 - `pnpm run lint` - Lint entire repository
@@ -122,14 +74,6 @@ All services start and stop automatically via `pnpm run dev`.
 - **Email System** - Transactional emails with beautiful templates
 - **Health Monitoring** - API health checks and status endpoints
 - **Type Safety** - End-to-end TypeScript for robust development
-
-<!-- ### Planned Features
-
-- **AI Meal Analysis** - Automatic calorie estimation from text or image input
-- **Personalized Recommendations** - AI-driven suggestions based on user history
-- **Nutrition Tracking** - Comprehensive macro and micronutrient tracking
-- **Goal Setting** - Custom calorie and nutrition goals
-- **Progress Analytics** - Data visualization and trend analysis -->
 
 ## 🚀 Getting Started
 
@@ -172,12 +116,6 @@ All services start and stop automatically via `pnpm run dev`.
    pnpm run dev
    ```
 
-The application will be available at:
-
-- Frontend: http://localhost:3000
-- API: http://localhost:4000
-- Email preview: http://localhost:1081
-
 ## 🧪 Testing
 
 - **Unit Tests**: `pnpm run test`
@@ -204,8 +142,6 @@ pnpm run test
 ```
 
 ## 📚 Philosophy & Goals
-
-TODO: write a little text
 
 The project emphasizes:
 

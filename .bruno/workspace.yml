@@ -1,0 +1,12 @@
+opencollection: 1.0.0
+info:
+  name: "Weaver"
+  type: workspace
+
+collections:
+  - name: "cron-jobs"
+    path: "collections/cron-jobs"
+
+specs:
+
+docs: ''

@@ -16,6 +16,6 @@
     "removeComments": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "strictNullChecks": false,
+    "strictNullChecks": false
   }
 }

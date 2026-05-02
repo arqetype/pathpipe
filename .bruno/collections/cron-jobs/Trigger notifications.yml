@@ -1,0 +1,15 @@
+info:
+  name: Trigger notifications
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: http://localhost:4100/cron/trigger/notifications
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

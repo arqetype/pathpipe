@@ -1,0 +1,15 @@
+info:
+  name: Discover job offers
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:4100/cron/trigger/jobs/discover
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

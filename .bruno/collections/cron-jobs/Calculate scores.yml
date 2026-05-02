@@ -1,0 +1,19 @@
+info:
+  name: Calculate scores
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: http://localhost:4100/cron/trigger/score/:candidateId
+  params:
+    - name: candidateId
+      value: ""
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
