@@ -90,6 +90,7 @@ The development workflow is designed to be plug-and-play using Docker and Turbor
 
 - **Frontend**: http://localhost:3000 (Next.js with Turbopack)
 - **Backend API**: http://localhost:4000 (NestJS with auto-reload)
+- **Jobs Worker**: http://localhost: 4100 (Hono)
 - **Database**: PostgreSQL on port 5432
 - **Email Development Server**: http://localhost:1080 (MailDev for receiving emails, configured in the `@repo/email` package)
 - **Email Template Preview**: http://localhost:1081 (React Email development server, configured in the `@repo/email` package)
