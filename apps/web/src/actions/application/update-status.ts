@@ -2,22 +2,23 @@
 
 import { patch } from '@/lib/fetch';
 import { action } from '@/lib/safe-action';
-import { Candidate } from '@repo/db/entities/candidate';
-import { UpdateCandidateStageDto } from '@repo/db/dto/candidate/update-candidate-stage.dto';
+import { Application } from '@repo/db/entities/application';
+import { UpdateApplicationStatusDto } from '@repo/db/dto/application/update-application-status.dto';
 import { revalidatePath } from 'next/cache';
 
 export const updateApplicationStatusAction = action
-  .inputDto(UpdateCandidateStageDto)
+  .inputDto(UpdateApplicationStatusDto)
   .needsAuth()
   .action(async ({ parsedInput }) => {
-    const { id, stage } = parsedInput;
+    const { id, status } = parsedInput;
 
-    const { ok, data } = await patch<Candidate>(`/applications/${id}/status`, {
-      status: stage,
-    });
+    const { ok, data } = await patch<Application>(
+      `/applications/${id}/status`,
+      { status },
+    );
 
     if (!ok) {
-      throw new Error('Failed to update candidate stage');
+      throw new Error('Failed to update application status');
     }
 
     revalidatePath('/app/applications');

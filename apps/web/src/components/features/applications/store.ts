@@ -1,21 +1,21 @@
 import { create } from 'zustand';
-import type { Candidate } from '@repo/db/entities/candidate';
-import type { CandidateStage } from '@repo/db/types/candidate/stage';
+import type { Application } from '@repo/db/entities/application';
+import type { ApplicationStatus } from '@repo/db/types/application/status';
 
 type ApplicationStore = {
-  applications: Candidate[];
+  applications: Application[];
   selectedApplicationId: string | null;
   isCreateDialogOpen: boolean;
-  stage: CandidateStage | null;
-  setApplications: (applications: Candidate[]) => void;
+  status: ApplicationStatus | null;
+  setApplications: (applications: Application[]) => void;
   selectApplication: (id: string | null) => void;
-  openCreateDialog: (columnId: CandidateStage | null) => void;
+  openCreateDialog: (columnId: ApplicationStatus | null) => void;
   closeCreateDialog: () => void;
-  addApplication: (application: Candidate) => void;
+  addApplication: (application: Application) => void;
   patchApplication: (
     id: string,
-    data: Partial<Candidate>,
-  ) => Candidate | undefined;
+    data: Partial<Application>,
+  ) => Application | undefined;
   removeApplication: (id: string) => void;
 };
 
@@ -23,16 +23,16 @@ export const useApplicationStore = create<ApplicationStore>((set, get) => ({
   applications: [],
   selectedApplicationId: null,
   isCreateDialogOpen: false,
-  stage: null,
+  status: null,
 
   setApplications: (applications) => set({ applications }),
 
   selectApplication: (id) => set({ selectedApplicationId: id }),
 
   openCreateDialog: (columnId) =>
-    set({ isCreateDialogOpen: true, stage: columnId || null }),
+    set({ isCreateDialogOpen: true, status: columnId || null }),
 
-  closeCreateDialog: () => set({ isCreateDialogOpen: false, stage: null }),
+  closeCreateDialog: () => set({ isCreateDialogOpen: false, status: null }),
 
   addApplication: (application) =>
     set((state) => ({ applications: [...state.applications, application] })),

@@ -11,10 +11,10 @@ import {
 } from '@repo/ui/components/dialog';
 import { CreateApplicationForm } from './create-form';
 import { useApplicationStore } from '../store';
-import { CandidateStage } from '@repo/db/types/candidate/stage';
+import { ApplicationStatus } from '@repo/db/types/application/status';
 
 export function CreateApplicationDialog() {
-  const { isCreateDialogOpen, closeCreateDialog, openCreateDialog, stage } =
+  const { isCreateDialogOpen, closeCreateDialog, openCreateDialog, status } =
     useApplicationStore();
 
   return (
@@ -25,19 +25,19 @@ export function CreateApplicationDialog() {
       <DialogTrigger asChild>
         <Button
           size="sm"
-          onClick={() => openCreateDialog(CandidateStage.APPLIED)}
+          onClick={() => openCreateDialog(ApplicationStatus.WISHLIST)}
         >
           <PlusIcon className="size-4" />
-          New candidate
+          New application
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>New candidate</DialogTitle>
+          <DialogTitle>New application</DialogTitle>
         </DialogHeader>
 
-        <CreateApplicationForm stage={stage || undefined} />
+        <CreateApplicationForm status={status || undefined} />
       </DialogContent>
     </Dialog>
   );

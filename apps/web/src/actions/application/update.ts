@@ -2,19 +2,19 @@
 
 import { patch } from '@/lib/fetch';
 import { action } from '@/lib/safe-action';
-import { UpdateCandidateDto } from '@repo/db/dto/candidate/update-candidate.dto';
-import { Candidate } from '@repo/db/entities/candidate';
+import { UpdateApplicationDto } from '@repo/db/dto/application/update-application.dto';
+import { Application } from '@repo/db/entities/application';
 import { revalidatePath } from 'next/cache';
 
 export const updateApplicationAction = action
-  .inputDto(UpdateCandidateDto)
+  .inputDto(UpdateApplicationDto)
   .needsAuth()
   .action(async ({ parsedInput }) => {
     const { id, ...data } = parsedInput;
 
-    const { ok } = await patch<Candidate>(`/applications/${id}`, data);
+    const { ok } = await patch<Application>(`/applications/${id}`, data);
 
-    if (!ok) throw new Error('Failed to update candidate');
+    if (!ok) throw new Error('Failed to update application');
 
     revalidatePath('/app/applications');
   });
