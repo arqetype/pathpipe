@@ -1,10 +1,10 @@
-import type { Candidate } from '@repo/db/entities/candidate';
+import type { Application } from '@repo/db/entities/application';
 import { FileText } from 'lucide-react';
 import EditableTextarea from '@repo/ui/components/editable-inputs/editable-textarea';
 
 type ApplicationDialogNotesProps = {
-  application: Candidate;
-  onSave: (data: Partial<Candidate>) => void;
+  application: Application;
+  onSave: (data: Partial<Application>) => void;
 };
 
 export function ApplicationDialogNotes({

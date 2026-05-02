@@ -11,7 +11,7 @@ import {
   Filter,
 } from 'lucide-react';
 
-import { CandidateStage } from '@repo/db/types/candidate/stage';
+import { ApplicationStatus } from '@repo/db/types/application/status';
 import { Button } from '@repo/ui/components/button';
 import { Input } from '@repo/ui/components/input';
 import {
@@ -24,14 +24,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@repo/ui/components/dropdown-menu';
-import type { CandidateSortBy } from '@repo/db/query/candidate';
-import { CANDIDATE_STAGE_OPTIONS } from '../constants/status';
+import type { ApplicationSortBy } from '@repo/db/query/application';
+import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
 
-const SORT_OPTIONS: { value: CandidateSortBy; label: string }[] = [
+const SORT_OPTIONS: { value: ApplicationSortBy; label: string }[] = [
   { value: 'created_at', label: 'Date added' },
   { value: 'updated_at', label: 'Last updated' },
-  { value: 'firstName', label: 'First name' },
-  { value: 'lastName', label: 'Last name' },
+  { value: 'company', label: 'Company' },
+  { value: 'position', label: 'Position' },
+  { value: 'salaryMin', label: 'Minimum Salary' },
+  { value: 'salaryMax', label: 'Maximum Salary' },
 ];
 
 type ViewToolbarProps = {
@@ -46,13 +48,13 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
 
   const currentSearch = searchParams.get('search') ?? '';
   const currentSortBy =
-    (searchParams.get('sortBy') as CandidateSortBy) ?? 'created_at';
+    (searchParams.get('sortBy') as ApplicationSortBy) ?? 'created_at';
   const currentSortOrder =
     (searchParams.get('sortOrder') as 'asc' | 'desc') ?? 'desc';
 
   const hiddenParam = searchParams.get('hidden') ?? '';
   const hiddenStatuses = new Set(
-    hiddenParam ? (hiddenParam.split(',') as CandidateStage[]) : [],
+    hiddenParam ? (hiddenParam.split(',') as ApplicationStatus[]) : [],
   );
 
   const [inputValue, setInputValue] = useState(currentSearch);
@@ -80,10 +82,10 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
     router.push(`${pathname}?${params.toString()}`);
   }
 
-  function toggleStatus(stage: CandidateStage) {
+  function toggleStatus(status: ApplicationStatus) {
     const next = new Set(hiddenStatuses);
-    if (next.has(stage)) next.delete(stage);
-    else next.add(stage);
+    if (next.has(status)) next.delete(status);
+    else next.add(status);
     setParam('hidden', next.size > 0 ? [...next].join(',') : null);
   }
 
@@ -160,7 +162,7 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
           </Button>
         </div>
 
-        {/* Stage filter */}
+        {/* Status filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -169,7 +171,7 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
               className="h-8 gap-1.5 text-xs font-normal"
             >
               <Filter className="size-3.5" />
-              Stage
+              Status
               {hiddenStatuses.size > 0 && (
                 <span className="ml-0.5 rounded-full bg-primary text-primary-foreground size-4 text-[10px] flex items-center justify-center">
                   {hiddenStatuses.size}
@@ -179,10 +181,10 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-44">
             <DropdownMenuLabel className="text-xs">
-              Filter by stage
+              Filter by status
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {CANDIDATE_STAGE_OPTIONS.map((s) => (
+            {APPLICATION_STATUS_OPTIONS.map((s) => (
               <DropdownMenuCheckboxItem
                 key={s.status}
                 checked={!hiddenStatuses.has(s.status)}
@@ -200,7 +202,7 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
         </DropdownMenu>
 
         <p className="text-sm text-muted-foreground pl-1">
-          {total} candidate{total !== 1 ? 's' : ''}
+          {total} application{total !== 1 ? 's' : ''}
         </p>
       </div>
 

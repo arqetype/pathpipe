@@ -3,10 +3,10 @@ import { KanbanBoard } from '@/components/features/applications/views/kanban';
 import { ViewToolbar } from '@/components/features/applications/views/toolbar';
 import { CreateApplicationDialog } from '@/components/features/applications/create-application-dialog';
 import type {
-  PaginatedCandidates,
-  CandidateSortBy,
-} from '@repo/db/query/candidate';
-import { CandidateStage } from '@repo/db/types/candidate/stage';
+  PaginatedApplications,
+  ApplicationSortBy,
+} from '@repo/db/query/application';
+import { ApplicationStatus } from '@repo/db/types/application/status';
 import { str } from '@/utils/utils';
 import { ScrollArea, ScrollBar } from '@repo/ui/components/scroll-area';
 
@@ -20,11 +20,11 @@ export default async function AppMainPage({
   const params = await searchParams;
 
   const search = str(params.search);
-  const sortBy = str(params.sortBy) as CandidateSortBy | undefined;
+  const sortBy = str(params.sortBy) as ApplicationSortBy | undefined;
   const sortOrder = str(params.sortOrder) as 'asc' | 'desc' | undefined;
   const hiddenParam = str(params.hidden) ?? '';
   const hiddenStatuses = new Set(
-    hiddenParam ? (hiddenParam.split(',') as CandidateStage[]) : [],
+    hiddenParam ? (hiddenParam.split(',') as ApplicationStatus[]) : [],
   );
 
   const query = new URLSearchParams({ limit: '500' });
@@ -32,7 +32,7 @@ export default async function AppMainPage({
   if (sortBy) query.set('sortBy', sortBy);
   if (sortOrder) query.set('sortOrder', sortOrder);
 
-  const result = await get<PaginatedCandidates>(
+  const result = await get<PaginatedApplications>(
     `/applications?${query.toString()}`,
   );
   const applications = result.ok ? result.data.data : [];

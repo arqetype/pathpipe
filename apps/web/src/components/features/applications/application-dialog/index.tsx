@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useTransition } from 'react';
-import type { Candidate } from '@repo/db/entities/candidate';
+import type { Application } from '@repo/db/entities/application';
 import { Dialog, DialogContent, DialogTitle } from '@repo/ui/components/dialog';
 import { Separator } from '@repo/ui/components/separator';
 import { updateApplicationAction } from '@/actions/application/update';
@@ -23,7 +23,7 @@ export function ApplicationDialog() {
   const { selectApplication, patchApplication } = useApplicationStore();
   const [, startTransition] = useTransition();
 
-  const lastApplicationRef = useRef<Candidate | null>(null);
+  const lastApplicationRef = useRef<Application | null>(null);
   useEffect(() => {
     if (selectedApplication) {
       lastApplicationRef.current = selectedApplication;
@@ -33,7 +33,7 @@ export function ApplicationDialog() {
     return selectedApplication ?? null;
   }, [selectedApplication]);
 
-  function save(data: Partial<Candidate>) {
+  function save(data: Partial<Application>) {
     if (!displayedApplication) return;
     const previous = patchApplication(displayedApplication.id, data);
     startTransition(async () => {
@@ -58,9 +58,7 @@ export function ApplicationDialog() {
         className="sm:max-w-2xl p-0 gap-0 max-h-[90vh] overflow-y-auto"
       >
         <DialogTitle className="sr-only">
-          {displayedApplication
-            ? `${displayedApplication.firstName} ${displayedApplication.lastName}`
-            : 'Candidate details'}
+          {displayedApplication?.position ?? 'Application details'}
         </DialogTitle>
         {displayedApplication && (
           <>

@@ -1,13 +1,14 @@
-import type { Candidate } from '@repo/db/entities/candidate';
-import { CandidateStage } from '@repo/db/types/candidate/stage';
-import { CandidateSource } from '@repo/db/types/candidate/source';
+import type { Application } from '@repo/db/entities/application';
+import { ApplicationTier } from '@repo/db/types/application/tier';
+import { ApplicationStatus } from '@repo/db/types/application/status';
 import {
   Activity,
+  Banknote,
+  CalendarDays,
   ExternalLink,
+  Flag,
   Link,
   Mail,
-  Phone,
-  Radio,
   User,
 } from 'lucide-react';
 import Property from '@repo/ui/components/customs/property';
@@ -20,11 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/ui/components/select';
-import { CANDIDATE_STAGE_OPTIONS } from '../constants/status';
+import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
+import { TierSelectOptions } from '../shared/tier-select-options';
 
 type ApplicationDialogPropertiesProps = {
-  application: Candidate;
-  onSave: (data: Partial<Candidate>) => void;
+  application: Application;
+  onSave: (data: Partial<Application>) => void;
 };
 
 export function ApplicationDialogProperties({
@@ -33,17 +35,17 @@ export function ApplicationDialogProperties({
 }: ApplicationDialogPropertiesProps) {
   return (
     <div className="px-8 py-4 flex flex-col gap-1">
-      <Property icon={<Activity className="size-4" />} label="Stage">
+      <Property icon={<Activity className="size-4" />} label="Status">
         <Select
-          value={application.stage}
-          onValueChange={(v) => onSave({ stage: v as CandidateStage })}
+          value={application.status}
+          onValueChange={(v) => onSave({ status: v as ApplicationStatus })}
         >
           <SelectTrigger className="w-full bg-transparent border-0 hover:bg-accent">
-            <SelectValue placeholder="Stage" />
+            <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              {CANDIDATE_STAGE_OPTIONS.map((opt) => (
+              {APPLICATION_STATUS_OPTIONS.map((opt) => (
                 <SelectItem key={opt.status} value={opt.status}>
                   {opt.label}
                 </SelectItem>
@@ -53,45 +55,65 @@ export function ApplicationDialogProperties({
         </Select>
       </Property>
 
-      <Property icon={<Radio className="size-4" />} label="Source">
+      <Property icon={<Flag className="size-4" />} label="Tier">
         <Select
-          value={application.source}
-          onValueChange={(v) => onSave({ source: v as CandidateSource })}
+          value={application.tier}
+          onValueChange={(v) => onSave({ tier: v as ApplicationTier })}
         >
           <SelectTrigger className="w-full bg-transparent border-0 hover:bg-accent">
-            <SelectValue placeholder="Source" />
+            <SelectValue placeholder="Tier" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value={CandidateSource.MANUAL}>Manual</SelectItem>
-              <SelectItem value={CandidateSource.CAREERS_PAGE}>
-                Careers page
-              </SelectItem>
-              <SelectItem value={CandidateSource.EMAIL}>Email</SelectItem>
-              <SelectItem value={CandidateSource.REFERRAL}>Referral</SelectItem>
+              <TierSelectOptions />
             </SelectGroup>
           </SelectContent>
         </Select>
       </Property>
 
-      <Property icon={<Phone className="size-4" />} label="Phone">
+      <Property icon={<CalendarDays className="size-4" />} label="Applied date">
         <InlineInput
-          value={application.phone}
-          placeholder="+1 555 000 0000"
-          onSave={(v) => onSave({ phone: v })}
+          type="date"
+          value={
+            application.appliedAt
+              ? new Date(application.appliedAt).toISOString().split('T')[0]
+              : ''
+          }
+          placeholder="Pick a date"
+          onSave={(v) =>
+            onSave({
+              appliedAt: v ? (new Date(v) as unknown as Date) : undefined,
+            })
+          }
         />
       </Property>
 
-      <Property icon={<Link className="size-4" />} label="LinkedIn">
+      <Property icon={<Banknote className="size-4" />} label="Salary">
+        <InlineInput
+          type="number"
+          value={application.salaryMin}
+          placeholder="50"
+          onSave={(v) => onSave({ salaryMin: v ? Number(v) : undefined })}
+        />
+        <span className="px-1 text-sm text-muted-foreground">to</span>
+        <InlineInput
+          type="number"
+          value={application.salaryMax}
+          placeholder="80"
+          onSave={(v) => onSave({ salaryMax: v ? Number(v) : undefined })}
+        />
+      </Property>
+
+      <Property icon={<Link className="size-4" />} label="Job URL">
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
           <InlineInput
-            value={application.linkedinUrl}
-            placeholder="https://linkedin.com/in/..."
-            onSave={(v) => onSave({ linkedinUrl: v })}
+            value={application.url}
+            placeholder="https://…"
+            onSave={(v) => onSave({ url: v })}
           />
-          {application.linkedinUrl && (
+          {application.url && (
             <a
-              href={application.linkedinUrl}
+              href={application.url}
               target="_blank"
               rel="noopener noreferrer"
               className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"

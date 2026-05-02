@@ -1,38 +1,34 @@
-import { CandidateStage } from '@repo/db/types/candidate/stage';
+import { ApplicationStatus } from '@repo/db/types/application/status';
 
-export const CANDIDATE_STAGE_OPTIONS: {
-  status: CandidateStage;
+export const APPLICATION_STATUS_OPTIONS: {
+  status: ApplicationStatus;
   label: string;
   dotClass: string;
 }[] = [
   {
-    status: CandidateStage.APPLIED,
+    status: ApplicationStatus.WISHLIST,
+    label: 'Wishlist',
+    dotClass: 'bg-violet-400',
+  },
+  {
+    status: ApplicationStatus.APPLIED,
     label: 'Applied',
     dotClass: 'bg-blue-400',
   },
   {
-    status: CandidateStage.SCREENING,
-    label: 'Screening',
-    dotClass: 'bg-violet-400',
-  },
-  {
-    status: CandidateStage.INTERVIEW,
+    status: ApplicationStatus.INTERVIEW,
     label: 'Interview',
     dotClass: 'bg-amber-400',
   },
+  { status: ApplicationStatus.OFFER, label: 'Offer', dotClass: 'bg-green-400' },
   {
-    status: CandidateStage.OFFER,
-    label: 'Offer',
-    dotClass: 'bg-green-400',
-  },
-  {
-    status: CandidateStage.HIRED,
-    label: 'Hired',
-    dotClass: 'bg-emerald-500',
-  },
-  {
-    status: CandidateStage.REJECTED,
+    status: ApplicationStatus.REJECTED,
     label: 'Rejected',
     dotClass: 'bg-red-400',
+  },
+  {
+    status: ApplicationStatus.GHOSTED,
+    label: 'Ghosted',
+    dotClass: 'bg-slate-400',
   },
 ];

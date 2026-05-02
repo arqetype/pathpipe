@@ -1,8 +1,10 @@
 # Weaver
 
+TODO: describe the product
+
 ## ⚡️ Overview
 
-Our aim is to overhaul the Weaver platform into a mini Applicant Tracking System (ATS) designed for recruiters. This next-gen system will simplify job openings, candidate pipelines, and team workflows to make hiring effective, efficient and more human-centric.
+TODO: write a little text
 
 ## 🏗️ Architecture & Technology Stack
 

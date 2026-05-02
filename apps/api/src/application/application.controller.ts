@@ -11,11 +11,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApplicationService } from './application.service';
-import { type CandidatesQuery } from '@repo/db/query/candidate';
-import { CandidateStage } from '@repo/db/types/candidate/stage';
+import { type ApplicationsQuery } from '@repo/db/query/application';
+import { ApplicationStatus } from '@repo/db/types/application/status';
 import { UserRole } from '@repo/db/types/user/roles';
-import { Candidate } from '@repo/db/entities/candidate';
-import { CreateCandidateDto } from '@repo/db/dto/candidate/create-candidate.dto';
+import { Application } from '@repo/db/entities/application';
+import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
 import { User } from '@repo/db/entities/user';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -25,11 +25,11 @@ export class ApplicationController {
 
   @HttpCode(HttpStatus.OK)
   @Get()
-  getAll(@CurrentUser() user: User, @Query() query: CandidatesQuery) {
+  getAll(@CurrentUser() user: User, @Query() query: ApplicationsQuery) {
     if (user.role === UserRole.ADMIN) {
       return this.applicationService.findMany(query);
     }
-    return this.applicationService.findMany(query);
+    return this.applicationService.findMany(query, user.id);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -38,13 +38,16 @@ export class ApplicationController {
     if (user.role === UserRole.ADMIN) {
       return this.applicationService.findById(id);
     }
-    return this.applicationService.findByIdAndUser(id);
+    return this.applicationService.findByIdAndUser(id, user.id);
   }
 
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  create(@CurrentUser() user: User, @Body() candidateDto: CreateCandidateDto) {
-    return this.applicationService.create(user, candidateDto);
+  create(
+    @CurrentUser() user: User,
+    @Body() applicationDto: CreateApplicationDto,
+  ) {
+    return this.applicationService.create(user, applicationDto);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -52,25 +55,25 @@ export class ApplicationController {
   update(
     @CurrentUser() user: User,
     @Param('id') id: string,
-    @Body() data: Partial<Candidate>,
+    @Body() data: Partial<Application>,
   ) {
     if (user.role === UserRole.ADMIN) {
       return this.applicationService.update(id, data);
     }
-    return this.applicationService.updateByUser(id, data);
+    return this.applicationService.updateByUser(id, user.id, data);
   }
 
   @HttpCode(HttpStatus.OK)
   @Patch(':id/status')
-  updateStage(
+  updateStatus(
     @CurrentUser() user: User,
     @Param('id') id: string,
-    @Body('status') stage: CandidateStage,
+    @Body('status') status: ApplicationStatus,
   ) {
     if (user.role === UserRole.ADMIN) {
-      return this.applicationService.updateStage(id, stage);
+      return this.applicationService.updateStatus(id, status);
     }
-    return this.applicationService.updateStageByUser(id, stage);
+    return this.applicationService.updateStatusByUser(id, user.id, status);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -79,6 +82,6 @@ export class ApplicationController {
     if (user.role === UserRole.ADMIN) {
       return this.applicationService.remove(id);
     }
-    return this.applicationService.removeByUser(id);
+    return this.applicationService.removeByUser(id, user.id);
   }
 }

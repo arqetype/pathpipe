@@ -8,46 +8,43 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CandidateStage } from '../types/candidate/stage';
-import { CandidateSource } from '../types/candidate/source';
-import { JobOpening } from './job-opening';
+import { ApplicationStatus } from '../types/application/status';
+import { User } from './user';
+import { ApplicationTier } from '../types/application/tier';
 
 @Entity()
-export class Candidate {
+export class Application {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  firstName: string;
+  company: string;
 
   @Column()
-  lastName: string;
+  position: string;
 
   @Column({ nullable: true })
-  phone: string;
+  url: string;
 
   @Column({ nullable: true })
-  linkedinUrl: string;
+  salaryMin: number;
 
   @Column({ nullable: true })
-  resumeUrl: string;
-
-  @Column({ type: 'text', nullable: true })
-  coverLetter: string;
+  salaryMax: number;
 
   @Column({
     type: 'enum',
-    enum: CandidateStage,
-    default: CandidateStage.APPLIED,
+    enum: ApplicationStatus,
+    default: ApplicationStatus.WISHLIST,
   })
-  stage: CandidateStage;
+  status: ApplicationStatus;
 
   @Column({
     type: 'enum',
-    enum: CandidateSource,
-    default: CandidateSource.MANUAL,
+    enum: ApplicationTier,
+    default: ApplicationTier.NONE,
   })
-  source: CandidateSource;
+  tier: ApplicationTier;
 
   @Column({ nullable: true })
   notes: string;
@@ -58,6 +55,9 @@ export class Candidate {
   @Column({ nullable: true })
   contactEmail: string;
 
+  @Column({ nullable: true })
+  appliedAt: Date;
+
   @CreateDateColumn()
   created_at: Date;
 
@@ -67,7 +67,7 @@ export class Candidate {
   @DeleteDateColumn()
   deleted_at: Date;
 
-  @ManyToOne(() => JobOpening, { nullable: true })
+  @ManyToOne(() => User)
   @JoinColumn()
-  jobOpening: JobOpening;
+  user: User;
 }

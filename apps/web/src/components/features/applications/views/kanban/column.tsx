@@ -2,7 +2,7 @@
 
 import { useDroppable } from '@dnd-kit/react';
 import type { ReactNode } from 'react';
-import type { CandidateStage } from '@repo/db/types/candidate/stage';
+import type { ApplicationStatus } from '@repo/db/types/application/status';
 import { cn } from '@repo/ui/lib/utils';
 import { Card, CardContent } from '@repo/ui/components/card';
 import { PlusIcon } from 'lucide-react';
@@ -14,7 +14,7 @@ type ColumnConfig = {
 };
 
 type KanbanColumnProps = {
-  id: CandidateStage;
+  id: ApplicationStatus;
   config: ColumnConfig;
   count: number;
   children: ReactNode;
@@ -53,7 +53,7 @@ export function KanbanColumn({
         <Card
           className="group-hover:opacity-100 opacity-0 relative p-3 border-dashed cursor-pointer hover:bg-background/70 transition-all ring-0 border border-foreground/10 border-1"
           onClick={() => useApplicationStore.getState().openCreateDialog(id)}
-          aria-label={`Add new candidate to ${config.label}`}
+          aria-label={`Add new card to ${config.label}`}
         >
           <CardContent className="flex items-center justify-center">
             <PlusIcon className="h-4 w-4 text-muted-foreground" />
