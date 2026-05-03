@@ -1,7 +1,5 @@
 import { DataSource } from 'typeorm';
-import { RawJobListing } from '@repo/db/entities/raw-job-listing';
 import { Company } from '@repo/db/entities/company';
-import { CompanySuggestion } from '@repo/db/entities/company-suggestion';
 import { configService } from '../config/config.service';
 import { Application } from '@repo/db/entities/application';
 import { User } from '@repo/db/entities/user';
@@ -20,7 +18,7 @@ export function createDataSource(): DataSource {
     username: dbConfig.username,
     password: dbConfig.password,
     database: dbConfig.name,
-    entities: [RawJobListing, Application, Company, CompanySuggestion, User],
+    entities: [Application, Company, User],
     synchronize: process.env.NODE_ENV !== 'production',
   });
 }
