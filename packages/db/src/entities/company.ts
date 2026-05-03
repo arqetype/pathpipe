@@ -24,6 +24,9 @@ export class Company {
   name: string;
 
   @Column({ nullable: true })
+  logoUrl: string;
+
+  @Column({ nullable: true })
   website: string;
 
   @Column({ nullable: true })

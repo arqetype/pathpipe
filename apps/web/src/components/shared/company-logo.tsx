@@ -9,6 +9,7 @@ type LogoType = 'icon' | 'logo' | 'symbol';
 
 type CompanyLogoProps = {
   name: string;
+  logoUrl?: string;
   type?: LogoType;
   size?: number;
   className?: string;
@@ -18,6 +19,7 @@ const brandIdCache = new Map<string, string | null>();
 
 export function CompanyLogo({
   name,
+  logoUrl,
   type = 'icon',
   size = 12,
   className,
@@ -31,7 +33,7 @@ export function CompanyLogo({
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
-    if (!name || brandIdCache.has(name)) return;
+    if (!name || brandIdCache.has(name) || logoUrl) return;
 
     let cancelled = false;
 
@@ -55,10 +57,23 @@ export function CompanyLogo({
     return () => {
       cancelled = true;
     };
-  }, [name]);
+  }, [name, logoUrl]);
 
-  if (error || !brandId) {
+  if (error || (!brandId && !logoUrl)) {
     return <Building2 className={className ?? 'size-3 shrink-0'} />;
+  }
+
+  if (logoUrl) {
+    return (
+      <Image
+        src={logoUrl}
+        alt=""
+        className={className ?? 'size-3 shrink-0 rounded-sm object-contain'}
+        width={size}
+        height={size}
+        unoptimized
+      />
+    );
   }
 
   const theme = resolvedTheme === 'dark' ? 'dark' : 'light';

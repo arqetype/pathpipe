@@ -36,7 +36,7 @@ export default async function ApplicationLayout({
           <SidebarInset className="min-w-0 flex flex-col h-screen">
             <div className="sticky top-0 z-30 flex h-12 items-center gap-3 border-b px-4 w-full bg-popover/80 backdrop-blur-2xl backdrop-saturate-150">
               <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" />
+              <Separator orientation="vertical" className="h-12" />
               <AppBreadcrumb />
             </div>
             <div className="flex-1 h-full">{children}</div>
