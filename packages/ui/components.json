@@ -9,7 +9,7 @@
     "baseColor": "olive",
     "cssVariables": true
   },
-  "iconLibrary": "lucide",
+  "iconLibrary": "remixicon",
   "rtl": false,
   "menuColor": "default-translucent",
   "menuAccent": "subtle",

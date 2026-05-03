@@ -2,15 +2,15 @@ import type { Application } from '@repo/db/entities/application';
 import { ApplicationTier } from '@repo/db/types/application/tier';
 import { ApplicationStatus } from '@repo/db/types/application/status';
 import {
-  Activity,
-  Banknote,
-  CalendarDays,
-  ExternalLink,
-  Flag,
-  Link,
-  Mail,
-  User,
-} from 'lucide-react';
+  RiMoneyDollarBoxLine,
+  RiCalendarLine,
+  RiExternalLinkLine,
+  RiFlagLine,
+  RiLinksLine,
+  RiMailLine,
+  RiUserLine,
+  RiListUnordered,
+} from '@remixicon/react';
 import Property from '@repo/ui/components/customs/property';
 import InlineInput from '@repo/ui/components/inline-inputs/inline-input';
 import {
@@ -35,7 +35,7 @@ export function ApplicationDialogProperties({
 }: ApplicationDialogPropertiesProps) {
   return (
     <div className="px-8 py-4 flex flex-col gap-1">
-      <Property icon={<Activity className="size-4" />} label="Status">
+      <Property icon={<RiListUnordered className="size-4" />} label="Status">
         <Select
           value={application.status}
           onValueChange={(v) => onSave({ status: v as ApplicationStatus })}
@@ -55,7 +55,7 @@ export function ApplicationDialogProperties({
         </Select>
       </Property>
 
-      <Property icon={<Flag className="size-4" />} label="Tier">
+      <Property icon={<RiFlagLine className="size-4" />} label="Tier">
         <Select
           value={application.tier}
           onValueChange={(v) => onSave({ tier: v as ApplicationTier })}
@@ -71,7 +71,10 @@ export function ApplicationDialogProperties({
         </Select>
       </Property>
 
-      <Property icon={<CalendarDays className="size-4" />} label="Applied date">
+      <Property
+        icon={<RiCalendarLine className="size-4" />}
+        label="Applied date"
+      >
         <InlineInput
           type="date"
           value={
@@ -88,7 +91,10 @@ export function ApplicationDialogProperties({
         />
       </Property>
 
-      <Property icon={<Banknote className="size-4" />} label="Salary">
+      <Property
+        icon={<RiMoneyDollarBoxLine className="size-4" />}
+        label="Salary"
+      >
         <InlineInput
           type="number"
           value={application.salaryMin}
@@ -104,7 +110,7 @@ export function ApplicationDialogProperties({
         />
       </Property>
 
-      <Property icon={<Link className="size-4" />} label="Job URL">
+      <Property icon={<RiLinksLine className="size-4" />} label="Job URL">
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
           <InlineInput
             value={application.url}
@@ -118,13 +124,13 @@ export function ApplicationDialogProperties({
               rel="noopener noreferrer"
               className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
             >
-              <ExternalLink className="size-3.5" />
+              <RiExternalLinkLine className="size-3.5" />
             </a>
           )}
         </div>
       </Property>
 
-      <Property icon={<User className="size-4" />} label="Contact">
+      <Property icon={<RiUserLine className="size-4" />} label="Contact">
         <InlineInput
           value={application.contactName}
           placeholder="Name"
@@ -132,7 +138,7 @@ export function ApplicationDialogProperties({
         />
       </Property>
 
-      <Property icon={<Mail className="size-4" />} label="Email">
+      <Property icon={<RiMailLine className="size-4" />} label="Email">
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
           <InlineInput
             type="email"
@@ -145,7 +151,7 @@ export function ApplicationDialogProperties({
               href={`mailto:${application.contactEmail}`}
               className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
             >
-              <ExternalLink className="size-3.5" />
+              <RiExternalLinkLine className="size-3.5" />
             </a>
           )}
         </div>

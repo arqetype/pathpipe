@@ -13,7 +13,7 @@ import {
 } from '@repo/ui/components/form';
 import { Input } from '@repo/ui/components/input';
 import { Checkbox } from '@repo/ui/components/checkbox';
-import { Loader2Icon, MailIcon } from 'lucide-react';
+import { RiLoader5Line, RiMailLine } from '@remixicon/react';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { SignUpDto } from '@repo/db/dto/auth/sign-up.dto';
@@ -116,7 +116,7 @@ export function SignUpForm() {
       {isVerificationSent ? (
         <div className="px-6">
           <AuthVerificationAlert
-            icon={MailIcon}
+            icon={RiMailLine}
             title="Email Verification Required"
             description={
               <>
@@ -143,7 +143,7 @@ export function SignUpForm() {
             >
               {isPending ? (
                 <>
-                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                  <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
                   Sending...
                 </>
               ) : (
@@ -264,7 +264,7 @@ export function SignUpForm() {
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? (
                 <>
-                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                  <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
                   Registering...
                 </>
               ) : (

@@ -10,8 +10,8 @@ import {
 } from '@repo/ui/components/card';
 import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
-import { AlertCircleIcon, CheckCircleIcon } from 'lucide-react';
 import { cn } from '@repo/ui/lib/utils';
+import { RiCheckboxCircleLine, RiErrorWarningLine } from '@remixicon/react';
 
 type VerifyEmailPageProps = {
   searchParams: Promise<{
@@ -30,7 +30,7 @@ export default async function VerifyEmailPage({
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-2 bg-destructive/10 rounded-full">
-              <AlertCircleIcon className="h-10 w-10 text-destructive" />
+              <RiErrorWarningLine className="h-10 w-10 text-destructive" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">
@@ -68,7 +68,7 @@ export default async function VerifyEmailPage({
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-2 bg-primary/10 rounded-full">
-              <CheckCircleIcon className="h-10 w-10 text-primary" />
+              <RiCheckboxCircleLine className="h-10 w-10 text-primary" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">
@@ -102,7 +102,7 @@ export default async function VerifyEmailPage({
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-2 bg-destructive/10 rounded-full">
-              <AlertCircleIcon className="h-10 w-10 text-destructive" />
+              <RiErrorWarningLine className="h-10 w-10 text-destructive" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">

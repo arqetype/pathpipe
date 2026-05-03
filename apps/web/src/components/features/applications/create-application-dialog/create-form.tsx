@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTransition } from 'react';
-import { Loader2Icon } from 'lucide-react';
+import { RiLoader5Line } from '@remixicon/react';
 import { Button } from '@repo/ui/components/button';
 import {
   Form,
@@ -247,7 +247,7 @@ export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? (
             <>
-              <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
               Adding...
             </>
           ) : (

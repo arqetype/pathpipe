@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Building2 } from 'lucide-react';
+import { RiBuildingLine } from '@remixicon/react';
 
 type CompanyLogoProps = {
   name: string;
@@ -17,7 +17,7 @@ export function CompanyLogo({
   className,
 }: CompanyLogoProps) {
   if (!logoUrl) {
-    return <Building2 className={className ?? 'size-3 shrink-0'} />;
+    return <RiBuildingLine className={className ?? 'size-3 shrink-0'} />;
   }
 
   return (

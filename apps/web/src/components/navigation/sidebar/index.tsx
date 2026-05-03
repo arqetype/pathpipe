@@ -1,11 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { Briefcase } from 'lucide-react';
+import { RiBriefcaseLine, RiBuildingLine } from '@remixicon/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { startTransition } from 'react';
-
 import { NavUser } from '@/components/navigation/sidebar/nav-user';
 import {
   Sidebar,
@@ -22,7 +21,8 @@ import { signOutAction } from '@/actions/auth/sign-out';
 import type { User } from '@repo/db/entities/user';
 
 const navItems = [
-  { title: 'Applications', href: '/app/applications', icon: Briefcase },
+  { title: 'Applications', href: '/app/applications', icon: RiBriefcaseLine },
+  { title: 'Companies', href: '/app/companies', icon: RiBuildingLine },
 ];
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
@@ -62,7 +62,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
             <SidebarMenuButton size="lg" asChild>
               <Link href="/app">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Briefcase className="size-4" />
+                  <RiBriefcaseLine className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Weaver</span>

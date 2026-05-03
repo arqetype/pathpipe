@@ -1,6 +1,10 @@
 'use client';
 
-import { LogOut, MoreVertical, Settings } from 'lucide-react';
+import {
+  RiLogoutBoxLine,
+  RiMore2Line,
+  RiSettings3Line,
+} from '@remixicon/react';
 import Link from 'next/link';
 
 import {
@@ -63,7 +67,7 @@ export function NavUser({
                   {user.email}
                 </span>
               </div>
-              <MoreVertical className="ml-auto size-4" />
+              <RiMore2Line className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -96,14 +100,14 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
                 <Link href="/app/settings">
-                  <Settings />
+                  <RiSettings3Line />
                   Settings
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onSignOutAction}>
-              <LogOut />
+              <RiLogoutBoxLine />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

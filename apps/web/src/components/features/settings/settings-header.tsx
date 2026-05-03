@@ -2,7 +2,7 @@
 
 import { signOutAction } from '@/actions/auth/sign-out';
 import { Button, buttonVariants } from '@repo/ui/components/button';
-import { ArrowLeftIcon } from 'lucide-react';
+import { RiArrowLeftLine } from '@remixicon/react';
 import Link from 'next/link';
 import ThemeSwitcher from './theme-switcher';
 
@@ -14,7 +14,7 @@ export default function SettingsHeader() {
   return (
     <header className="mb-4 w-full flex items-center justify-between">
       <Link href="/app/" className={buttonVariants({ variant: 'default' })}>
-        <ArrowLeftIcon />
+        <RiArrowLeftLine />
         Back to App
       </Link>
       <div className="flex items-center gap-4">

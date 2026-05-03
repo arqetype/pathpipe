@@ -10,9 +10,9 @@ import {
 } from '@repo/ui/components/card';
 import { cn } from '@repo/ui/lib/utils';
 import Link from 'next/link';
-import { AlertCircleIcon } from 'lucide-react';
 import { resetPasswordUserAction } from '@/actions/auth/reset-password-user';
 import type { UUID } from 'node:crypto';
+import { RiErrorWarningLine } from '@remixicon/react';
 
 type ResetPasswordPageProps = {
   searchParams: Promise<{ token?: UUID }>;
@@ -29,7 +29,7 @@ export default async function ResetPasswordPage({
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-2 bg-destructive/10 rounded-full">
-              <AlertCircleIcon className="h-10 w-10 text-destructive" />
+              <RiErrorWarningLine className="h-10 w-10 text-destructive" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">
@@ -67,7 +67,7 @@ export default async function ResetPasswordPage({
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-2 bg-destructive/10 rounded-full">
-              <AlertCircleIcon className="h-10 w-10 text-destructive" />
+              <RiErrorWarningLine className="h-10 w-10 text-destructive" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">
@@ -103,7 +103,7 @@ export default async function ResetPasswordPage({
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-2 bg-destructive/10 rounded-full">
-              <AlertCircleIcon className="h-10 w-10 text-destructive" />
+              <RiErrorWarningLine className="h-10 w-10 text-destructive" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">

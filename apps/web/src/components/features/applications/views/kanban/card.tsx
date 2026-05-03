@@ -3,7 +3,7 @@
 import { useDraggable } from '@dnd-kit/react';
 import { Card, CardContent } from '@repo/ui/components/card';
 import type { Application } from '@repo/db/entities/application';
-import { Banknote, CalendarDays } from 'lucide-react';
+import { RiMoneyDollarBoxLine, RiCalendarLine } from '@remixicon/react';
 import { cn } from '@repo/ui/lib/utils';
 import { formatDate, formatSalary } from '@/utils/applications-utils';
 import { CompanyLogo } from '@/components/shared/company-logo';
@@ -73,13 +73,13 @@ export function KanbanCard({
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             {salary && (
               <span className="flex items-center gap-1">
-                <Banknote className="size-3 shrink-0" />
+                <RiMoneyDollarBoxLine className="size-3 shrink-0" />
                 {salary}
               </span>
             )}
             {date && (
               <span className="flex items-center gap-1">
-                <CalendarDays className="size-3 shrink-0" />
+                <RiCalendarLine className="size-3 shrink-0" />
                 {date}
               </span>
             )}

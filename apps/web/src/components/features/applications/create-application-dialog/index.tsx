@@ -1,6 +1,6 @@
 'use client';
 
-import { PlusIcon } from 'lucide-react';
+import { RiAddLine } from '@remixicon/react';
 import { Button } from '@repo/ui/components/button';
 import {
   Dialog,
@@ -27,7 +27,7 @@ export function CreateApplicationDialog() {
           size="sm"
           onClick={() => openCreateDialog(ApplicationStatus.WISHLIST)}
         >
-          <PlusIcon className="size-4" />
+          <RiAddLine className="size-4" />
           New application
         </Button>
       </DialogTrigger>

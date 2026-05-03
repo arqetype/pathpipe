@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { ArrowLeftIcon } from 'lucide-react';
 import Link from 'next/link';
+import { RiArrowLeftLine } from '@remixicon/react';
 
 type AuthenticationLayoutProps = Readonly<{
   children: ReactNode;
@@ -17,7 +17,7 @@ export default function AuthenticationLayout({
             href="/"
             className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground"
           >
-            <ArrowLeftIcon className="mr-2 size-4" />
+            <RiArrowLeftLine className="mr-2 size-4" />
             Back to home
           </Link>
         </div>

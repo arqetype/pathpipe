@@ -28,7 +28,7 @@ import { previewAvatarCustomizationAction } from '@/actions/user/preview-avatar'
 import { saveAvatarCustomizationAction } from '@/actions/user/save-avatar';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { DicesIcon, Loader2Icon, SaveIcon } from 'lucide-react';
+import { RiLoader5Line, RiSaveLine, RiDice5Line } from '@remixicon/react';
 import Link from 'next/link';
 
 const moodsOptions = AvatarMoods.map((mood) => ({
@@ -189,7 +189,7 @@ export default function ProfilePictureEditor() {
                 )}
                 {formData !== debouncedAndThrottledFormData && (
                   <div className="absolute inset-0 flex items-center justify-center bg-background/70 text-white text-sm">
-                    <Loader2Icon className="animate-spin text-primary" />
+                    <RiLoader5Line className="animate-spin text-primary" />
                   </div>
                 )}
               </div>
@@ -312,10 +312,10 @@ export default function ProfilePictureEditor() {
               size="icon"
               onClick={handleRandomValue}
             >
-              <DicesIcon />
+              <RiDice5Line />
             </Button>
             <Button type="submit" className="flex-1 mt-4">
-              <SaveIcon />
+              <RiSaveLine />
               Update my profile avatar
             </Button>
           </div>

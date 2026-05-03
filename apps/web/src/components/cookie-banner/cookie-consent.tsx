@@ -1,9 +1,9 @@
 'use client';
 
-import { CookieIcon } from 'lucide-react';
 import { Button } from '@repo/ui/components/button';
 import { useEffect, useState } from 'react';
 import { cn } from '@repo/ui/lib/utils';
+import { RiCookieLine } from '@remixicon/react';
 
 type CookieConsentProps = {
   variant?: 'default' | 'small' | 'minimal';
@@ -77,7 +77,7 @@ export function CookieConsent({
         <div className="grid gap-2">
           <div className="border-b border-border h-12 sm:h-14 flex items-center justify-between p-3 sm:p-4">
             <h1 className="text-base sm:text-lg font-medium">We use cookies</h1>
-            <CookieIcon className="h-4 w-4 sm:h-[1.2rem] sm:w-[1.2rem] animate-wiggle" />
+            <RiCookieLine className="h-4 w-4 sm:h-[1.2rem] sm:w-[1.2rem] animate-wiggle" />
           </div>
           <div className="p-3 sm:p-4">
             <p className="text-xs sm:text-sm font-normal text-start text-muted-foreground">
@@ -128,7 +128,7 @@ export function CookieConsent({
       <div className="m-0 sm:m-3 dark:bg-card bg-background border border-border rounded-lg shadow-lg">
         <div className="flex items-center justify-between p-3">
           <h1 className="text-base sm:text-lg font-medium">We use cookies</h1>
-          <CookieIcon className="h-4 w-4 sm:h-[1.2rem] sm:w-[1.2rem] animate-wiggle" />
+          <RiCookieLine className="h-4 w-4 sm:h-[1.2rem] sm:w-[1.2rem] animate-wiggle" />
         </div>
         <div className="p-3 -mt-2">
           <p className="text-xs sm:text-sm text-left text-muted-foreground">
@@ -172,7 +172,7 @@ export function CookieConsent({
         <div className="m-0 sm:m-3 dark:bg-card bg-background border border-border rounded-lg shadow-lg">
           <div className="p-3 flex items-center justify-between border-b border-border">
             <div className="flex items-center gap-2">
-              <CookieIcon className="h-3 w-3 sm:h-4 sm:w-4 animate-wiggle" />
+              <RiCookieLine className="h-3 w-3 sm:h-4 sm:w-4 animate-wiggle" />
               <span className="text-xs sm:text-sm font-medium">
                 Cookie Notice
               </span>

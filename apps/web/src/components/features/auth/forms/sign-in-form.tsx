@@ -21,7 +21,7 @@ import { useForm } from 'react-hook-form';
 import { useTransition } from 'react';
 import Link from 'next/link';
 import { Button } from '@repo/ui/components/button';
-import { Loader2Icon, ShieldCheckIcon, MailIcon } from 'lucide-react';
+import { RiLoader5Line, RiShieldCheckLine, RiMailLine } from '@remixicon/react';
 import { redirect } from 'next/navigation';
 import { signInAction } from '@/actions/auth/sign-in';
 import { resendEmailAction } from '@/actions/auth/resend-email';
@@ -244,7 +244,7 @@ export function SignInForm() {
   const renderForgotPasswordView = () => (
     <div className="px-1">
       <AuthVerificationAlert
-        icon={MailIcon}
+        icon={RiMailLine}
         title={
           forgotPasswordStatus.success
             ? 'Password Reset Email Sent'
@@ -267,7 +267,7 @@ export function SignInForm() {
   const renderEmailVerificationView = () => (
     <div className="px-1">
       <AuthVerificationAlert
-        icon={MailIcon}
+        icon={RiMailLine}
         title="Email Verification Required"
         description={
           <>
@@ -293,7 +293,7 @@ export function SignInForm() {
         >
           {isPending ? (
             <>
-              <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
               Sending...
             </>
           ) : (
@@ -346,7 +346,7 @@ export function SignInForm() {
               >
                 {forgotPasswordPending ? (
                   <span>
-                    <Loader2Icon className="mr-1 h-3 w-3 inline animate-spin" />
+                    <RiLoader5Line className="mr-1 h-3 w-3 inline animate-spin" />
                     Sending...
                   </span>
                 ) : (
@@ -374,7 +374,7 @@ export function SignInForm() {
     <>
       <div className="mb-4">
         <AuthVerificationAlert
-          icon={ShieldCheckIcon}
+          icon={RiShieldCheckLine}
           title="Two-Factor Authentication"
           description={
             <>
@@ -478,7 +478,7 @@ export function SignInForm() {
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? (
                 <>
-                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                  <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
                   {showOtp ? 'Verifying code...' : 'Sign in'}
                 </>
               ) : showOtp ? (

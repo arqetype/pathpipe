@@ -26,7 +26,7 @@ import { Button, buttonVariants } from '@repo/ui/components/button';
 import { useState, useTransition } from 'react';
 import { resetPasswordAction } from '@/actions/auth/reset-password';
 import { Alert, AlertDescription, AlertTitle } from '@repo/ui/components/alert';
-import { CheckCircleIcon } from 'lucide-react';
+import { RiCheckboxCircleLine } from '@remixicon/react';
 import Link from 'next/link';
 import { cn } from '@repo/ui/lib/utils';
 import { ResetPasswordUserResponseDto } from '@repo/db/dto/auth/reset-password-user.dto';
@@ -149,7 +149,7 @@ export default function ResetPasswordForm({
         <>
           <CardContent>
             <Alert>
-              <CheckCircleIcon />
+              <RiCheckboxCircleLine className="size-4" />
               <AlertTitle>Password reset successfully!</AlertTitle>
               <AlertDescription>
                 You can now log in with your new password.

@@ -1,5 +1,5 @@
+import { RiFileTextLine } from '@remixicon/react';
 import type { Application } from '@repo/db/entities/application';
-import { FileText } from 'lucide-react';
 import EditableTextarea from '@repo/ui/components/editable-inputs/editable-textarea';
 
 type ApplicationDialogNotesProps = {
@@ -14,7 +14,7 @@ export function ApplicationDialogNotes({
   return (
     <div className="px-8 py-6">
       <div className="flex items-center gap-2 text-muted-foreground mb-3">
-        <FileText className="size-4" />
+        <RiFileTextLine className="size-4" />
         <span className="text-sm font-medium">Notes</span>
       </div>
       <EditableTextarea

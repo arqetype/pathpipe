@@ -1,10 +1,8 @@
 import * as React from 'react';
-import { LucideIcon } from 'lucide-react';
-
 import { cn } from '@repo/ui/lib/utils';
 
 interface AuthVerificationAlertProps extends React.ComponentProps<'div'> {
-  icon: LucideIcon;
+  icon: React.ElementType;
   title: string;
   description?: React.ReactNode;
 }

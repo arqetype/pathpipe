@@ -5,7 +5,11 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@repo/ui/lib/utils';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { XIcon, ChevronsUpDownIcon, Loader2Icon } from 'lucide-react';
+import {
+  RiCloseLine,
+  RiArrowUpDownLine,
+  RiLoader5Line,
+} from '@remixicon/react';
 
 const inputVariants = cva(
   'outline-none flex w-full text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 [[readonly]]:bg-muted/80 [[readonly]]:cursor-not-allowed border border-input focus-visible:border-ring aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 rounded-4xl bg-input/30 text-sm transition-colors focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-[3px]',
@@ -55,7 +59,7 @@ function AutocompleteInput({
       />
       {loading ? (
         <span className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2">
-          <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
+          <RiLoader5Line className="size-4 animate-spin text-muted-foreground" />
         </span>
       ) : (
         <>
@@ -285,7 +289,7 @@ function AutocompleteClear({
       )}
       {...props}
     >
-      <XIcon className="size-4" />
+      <RiCloseLine className="size-4" />
     </AutocompletePrimitive.Clear>
   );
 }
@@ -303,7 +307,7 @@ function AutocompleteTrigger({
       )}
       {...props}
     >
-      <ChevronsUpDownIcon className="size-4 opacity-70" />
+      <RiArrowUpDownLine className="size-4 opacity-70" />
     </AutocompletePrimitive.Trigger>
   );
 }

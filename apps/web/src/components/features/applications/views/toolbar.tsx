@@ -3,13 +3,13 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
-  Search,
-  X,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  Filter,
-} from 'lucide-react';
+  RiSearchLine,
+  RiCloseLine,
+  RiArrowUpDownLine,
+  RiArrowUpLine,
+  RiArrowDownLine,
+  RiFilterLine,
+} from '@remixicon/react';
 
 import { ApplicationStatus } from '@repo/db/types/application/status';
 import { Button } from '@repo/ui/components/button';
@@ -93,7 +93,8 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
     setParam('sortOrder', currentSortOrder === 'asc' ? 'desc' : 'asc');
   }
 
-  const SortOrderIcon = currentSortOrder === 'asc' ? ArrowUp : ArrowDown;
+  const SortOrderIcon =
+    currentSortOrder === 'asc' ? RiArrowUpLine : RiArrowDownLine;
   const sortLabel = SORT_OPTIONS.find((o) => o.value === currentSortBy)?.label;
 
   return (
@@ -101,7 +102,7 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
       <div className="flex items-center gap-2">
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+          <RiSearchLine className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
           <Input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -113,7 +114,7 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
               onClick={() => setInputValue('')}
               className="absolute -translate-y-1/2 ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-2 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
             >
-              <X />
+              <RiCloseLine />
               <span className="sr-only">Close</span>
             </button>
           )}
@@ -128,7 +129,7 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
                 size="sm"
                 className="h-8 gap-1.5 text-xs font-normal rounded-r-none border-r-0"
               >
-                <ArrowUpDown className="size-3.5" />
+                <RiArrowUpDownLine className="size-3.5" />
                 {sortLabel}
               </Button>
             </DropdownMenuTrigger>
@@ -170,7 +171,7 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
               size="sm"
               className="h-8 gap-1.5 text-xs font-normal"
             >
-              <Filter className="size-3.5" />
+              <RiFilterLine className="size-3.5" />
               Status
               {hiddenStatuses.size > 0 && (
                 <span className="ml-0.5 rounded-full bg-primary text-primary-foreground size-4 text-[10px] flex items-center justify-center">
