@@ -2,6 +2,8 @@
   "name": "@repo/db",
   "version": "1.0.0",
   "scripts": {
+    "dev": "pnpm build --watch",
+    "build": "tsc -b --clean && tsc",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write . --ignore-unknown"
   },

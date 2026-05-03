@@ -11,7 +11,7 @@ import {
 } from 'class-validator';
 
 @ValidatorConstraint({ name: 'PasswordMatch', async: false })
-export class PasswordMatchConstraint implements ValidatorConstraintInterface {
+class PasswordMatchConstraint implements ValidatorConstraintInterface {
   validate(confirmPassword: string, args: ValidationArguments) {
     const object = args.object as SignUpDto;
     return object.password === confirmPassword;
@@ -23,7 +23,7 @@ export class PasswordMatchConstraint implements ValidatorConstraintInterface {
 }
 
 @ValidatorConstraint({ name: 'TermsAccepted', async: false })
-export class TermsAcceptedConstraint implements ValidatorConstraintInterface {
+class TermsAcceptedConstraint implements ValidatorConstraintInterface {
   validate(terms: boolean) {
     return terms === true;
   }

@@ -11,7 +11,7 @@ import {
 import type { UUID } from 'node:crypto';
 
 @ValidatorConstraint({ name: 'PasswordMatch', async: false })
-export class PasswordMatchConstraint implements ValidatorConstraintInterface {
+class PasswordMatchConstraint implements ValidatorConstraintInterface {
   validate(confirmPassword: string, args: ValidationArguments) {
     const object = args.object as ResetPasswordDto;
     return object.newPassword === confirmPassword;

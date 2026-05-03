@@ -3,6 +3,8 @@ import { Hono } from 'hono';
 import { initializeDataSource } from '@/infrastructure/database/data-source';
 import { configService } from '@/infrastructure/config/config.service';
 import { createCronRouter } from '@/infrastructure/cron/cron-trigger.controller';
+import { createTaskRouter } from '@/infrastructure/task/task-result.controller';
+import { TaskRepository } from '@/infrastructure/task/task-repository';
 import { EmailNotificationAdapter } from '@/adapters/notification/email-notification.adapter';
 import { KeywordScoringAdapter } from '@/adapters/scoring/keyword-scoring.adapter';
 import { CronSchedulerService } from '@/domain/services/cron-scheduler.service';
@@ -43,15 +45,18 @@ async function start() {
     const enterpriseDiscoveryService = new EnterpriseDiscoveryService();
     const scoringService = new ScoringService(scoringAdapter);
     const notificationService = new NotificationService(emailAdapter);
+    const taskRepository = new TaskRepository();
 
     const cronScheduler = new CronSchedulerService(
       jobDiscoveryService,
       enterpriseDiscoveryService,
       scoringService,
       notificationService,
+      taskRepository,
     );
 
     app.route('/cron', createCronRouter(cronScheduler));
+    app.route('/tasks', createTaskRouter(taskRepository));
 
     cronScheduler.scheduleAll();
     console.log('Cron jobs scheduled');
