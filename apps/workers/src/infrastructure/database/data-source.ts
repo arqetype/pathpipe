@@ -4,6 +4,7 @@ import { Company } from '@repo/db/entities/company';
 import { configService } from '../config/config.service';
 import { Application } from '@repo/db/entities/application';
 import { User } from '@repo/db/entities/user';
+import { Task } from '@repo/db/entities/task';
 
 export function createDataSource(): DataSource {
   const dbConfig = configService.get('database');
@@ -15,7 +16,7 @@ export function createDataSource(): DataSource {
     username: dbConfig.username,
     password: dbConfig.password,
     database: dbConfig.name,
-    entities: [RawJobListing, Application, Company, User],
+    entities: [RawJobListing, Application, Company, User, Task],
     synchronize: process.env.NODE_ENV !== 'production',
   });
 }

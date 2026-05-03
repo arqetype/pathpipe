@@ -12,20 +12,28 @@ import { JobDiscoveryService } from '@/domain/services/job-discovery.service';
 import { EnterpriseDiscoveryService } from '@/domain/services/enterprise-discovery.service';
 import { ScoringService } from '@/domain/services/scoring.service';
 import { NotificationService } from '@/domain/services/notification.service';
-import { logger } from 'hono/logger';
 import { ArbeitnowDiscoveryAdapter } from './adapters/discovery/arbeitnow-discovery.adapter';
 import { Mailer } from '@repo/email';
+import pino from 'pino';
+import pretty from 'pino-pretty';
 
 const app = new Hono();
-app.use(logger());
+const logger = pino(pretty());
+
+app.use(async (c, next) => {
+  const start = Date.now();
+  await next();
+  const ms = Date.now() - start;
+  logger.info(`${c.req.method} ${c.req.path} - ${c.res.status} (${ms}ms)`);
+});
 
 async function start() {
   try {
     await configService.validate();
-    console.log('Configuration validated');
+    logger.info('Configuration validated');
 
     await initializeDataSource();
-    console.log('Database connected');
+    logger.info('Database connected');
 
     const emailConfig = configService.get('email');
 
@@ -59,14 +67,14 @@ async function start() {
     app.route('/tasks', createTaskRouter(taskRepository));
 
     cronScheduler.scheduleAll();
-    console.log('Cron jobs scheduled');
+    logger.info('Cron jobs scheduled');
 
     const port = configService.get('workers').port;
     serve({ fetch: app.fetch, port }, (info) => {
-      console.log(`Workers server running on port ${info.port}`);
+      logger.info(`Workers server running on port ${info.port}`);
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    logger.error('Failed to start server:' + error);
     process.exit(1);
   }
 }
