@@ -6,4 +6,5 @@ export interface CompanySearchQuery {
 export interface CompanySearchResult {
   id: string;
   name: string;
+  logoUrl?: string;
 }

@@ -2,7 +2,7 @@
 
 import { publicPost } from '@/lib/fetch';
 import { action } from '@/lib/safe-action';
-import { UUID } from 'crypto';
+import { type UUID } from 'crypto';
 import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 class VerifyEmailActionDto {

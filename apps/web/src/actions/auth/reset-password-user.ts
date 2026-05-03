@@ -2,7 +2,7 @@
 
 import { publicPost } from '@/lib/fetch';
 import { action } from '@/lib/safe-action';
-import { ResetPasswordUserResponseDto } from '@repo/db/dto/auth/reset-password-user.dto';
+import { type ResetPasswordUserResponseDto } from '@repo/db/dto/auth/reset-password-user.dto';
 import { IsObject, IsString, IsUUID } from 'class-validator';
 
 class ResetPasswordUserActionDto {

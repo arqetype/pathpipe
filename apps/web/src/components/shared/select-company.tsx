@@ -12,7 +12,7 @@ import {
 } from '@repo/ui/components/autocomplete';
 import { CompanyLogo } from './company-logo';
 
-type CompanyOption = { id: string; name: string };
+type CompanyOption = { id: string; name: string; logoUrl?: string };
 
 type SelectCompanyProps = {
   value: string;

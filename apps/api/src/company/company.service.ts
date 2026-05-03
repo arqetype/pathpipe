@@ -17,7 +17,7 @@ export class CompanyService {
 
     const qb = this.companiesRepository
       .createQueryBuilder('company')
-      .select(['company.id', 'company.name'])
+      .select(['company.id', 'company.name', 'company.logoUrl'])
       .orderBy('company.name', 'ASC')
       .take(safeLimit);
 
@@ -30,6 +30,7 @@ export class CompanyService {
     return companies.map((company) => ({
       id: company.id,
       name: company.name,
+      logoUrl: company.logoUrl,
     }));
   }
 }

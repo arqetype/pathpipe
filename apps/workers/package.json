@@ -1,0 +1,29 @@
+{
+  "name": "workers",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "node --watch --import dotenv/config --import tsx --no-warnings src/index.ts",
+    "build": "tsc -b --clean && tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.14",
+    "@repo/db": "workspace:*",
+    "@repo/email": "workspace:*",
+    "croner": "^10.0.1",
+    "dotenv": "^16.4.7",
+    "hono": "^4.12.16",
+    "pg": "^8.13.1",
+    "pino": "^9.6.0",
+    "pino-pretty": "^12.0.0",
+    "typeorm": "^0.3.28",
+    "cheerio": "^1.0.0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^20.11.17",
+    "tsx": "^4.7.1",
+    "typescript": "^6.0.2"
+  }
+}
