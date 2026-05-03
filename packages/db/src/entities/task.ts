@@ -11,6 +11,7 @@ export enum TaskType {
   ENTERPRISE_DISCOVERY = 'enterprise_discovery',
   SCORING = 'scoring',
   NOTIFICATIONS = 'notifications',
+  CAREERS_SCRAPING = 'careers_scraping',
 }
 
 export enum TaskStatus {

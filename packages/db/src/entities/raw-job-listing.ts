@@ -5,20 +5,15 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-export enum JobListingSource {
-  ARBEITNOW = 'arbeitnow',
-}
+export enum JobListingSource {}
 
 @Entity()
 export class RawJobListing {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({
-    type: 'enum',
-    enum: JobListingSource,
-  })
-  source: JobListingSource;
+  @Column()
+  source: string;
 
   @Column()
   externalId: string;
