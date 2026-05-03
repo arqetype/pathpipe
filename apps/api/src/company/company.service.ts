@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Company } from '@repo/db/entities/company';
+import { Company, CompanyStatus } from '@repo/db/entities/company';
 import { CompanySearchResult } from '@repo/db/query/company';
+import { UpdateCompanyDto } from '@repo/db/dto/company/update-company.dto';
 
 @Injectable()
 export class CompanyService {
@@ -19,10 +20,11 @@ export class CompanyService {
       .createQueryBuilder('company')
       .select(['company.id', 'company.name', 'company.logoUrl'])
       .orderBy('company.name', 'ASC')
-      .take(safeLimit);
+      .take(safeLimit)
+      .where('company.status = :status', { status: CompanyStatus.APPROVED });
 
     if (trimmed) {
-      qb.where('company.name ILIKE :prefix', { prefix: `${trimmed}%` });
+      qb.andWhere('company.name ILIKE :prefix', { prefix: `${trimmed}%` });
     }
 
     const companies = await qb.getMany();
@@ -32,5 +34,26 @@ export class CompanyService {
       name: company.name,
       logoUrl: company.logoUrl,
     }));
+  }
+
+  async findAll(): Promise<Company[]> {
+    return this.companiesRepository.find({ order: { name: 'ASC' } });
+  }
+
+  async update(id: string, data: UpdateCompanyDto): Promise<Company> {
+    const payload = {
+      ...data,
+      lastCheckedAt: data.lastCheckedAt
+        ? new Date(data.lastCheckedAt)
+        : undefined,
+    };
+
+    await this.companiesRepository.update({ id }, payload);
+    return this.companiesRepository.findOneOrFail({ where: { id } });
+  }
+
+  async updateStatus(id: string, status: CompanyStatus): Promise<Company> {
+    await this.companiesRepository.update({ id }, { status });
+    return this.companiesRepository.findOneOrFail({ where: { id } });
   }
 }

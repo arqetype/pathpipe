@@ -9,7 +9,7 @@ import {
 } from '@repo/db/query/application';
 import { User } from '@repo/db/entities/user';
 import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
-import { Company } from '@repo/db/entities/company';
+import { Company, CompanyStatus } from '@repo/db/entities/company';
 
 @Injectable()
 export class ApplicationService {
@@ -96,17 +96,46 @@ export class ApplicationService {
     return application;
   }
 
+  private async resolveCompanyLogoUrl(
+    name: string,
+    type: 'icon' | 'logo' | 'symbol' = 'icon',
+  ): Promise<string | null> {
+    try {
+      const response = await fetch(
+        `https://api.brandfetch.io/v2/search/${encodeURIComponent(name)}`,
+      );
+      if (!response.ok) return null;
+      const results = (await response.json()) as Array<{ brandId?: string }>;
+      const brandId = results?.[0]?.brandId;
+      if (!brandId) return null;
+      return `https://cdn.brandfetch.io/${brandId}/fallback/404/${type}.svg?`;
+    } catch {
+      return null;
+    }
+  }
+
   async create(user: User, dto: CreateApplicationDto): Promise<Application> {
     const companyName = dto.company?.trim();
 
     if (companyName) {
-      await this.companiesRepository
-        .createQueryBuilder()
-        .insert()
-        .into(Company)
-        .values({ name: companyName })
-        .orIgnore()
-        .execute();
+      const existingCompany = await this.companiesRepository.findOne({
+        where: { name: companyName },
+      });
+
+      if (!existingCompany) {
+        const logoUrl = await this.resolveCompanyLogoUrl(companyName);
+        await this.companiesRepository
+          .createQueryBuilder()
+          .insert()
+          .into(Company)
+          .values({
+            name: companyName,
+            logoUrl: logoUrl ?? null,
+            status: CompanyStatus.PENDING,
+          })
+          .orIgnore()
+          .execute();
+      }
     }
 
     const newApplication = this.applicationsRepository.create({
