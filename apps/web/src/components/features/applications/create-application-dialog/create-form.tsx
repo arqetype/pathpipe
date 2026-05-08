@@ -91,7 +91,10 @@ export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
             <FormItem className="flex-1">
               <FormLabel>Company</FormLabel>
               <FormControl>
-                <SelectCompany value={field.value} onChange={field.onChange} />
+                <SelectCompany
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -47,7 +47,8 @@ export class ApplicationService {
 
     const qb = this.applicationsRepository
       .createQueryBuilder('application')
-      .leftJoin('application.user', 'user');
+      .leftJoin('application.user', 'user')
+      .leftJoinAndSelect('application.company', 'company');
 
     if (userId) qb.where('user.id = :userId', { userId });
 
@@ -58,7 +59,7 @@ export class ApplicationService {
 
     if (search) {
       qb.andWhere(
-        '(application.company ILIKE :search OR application.position ILIKE :search)',
+        '(company.name ILIKE :search OR application.position ILIKE :search)',
         { search: `%${search}%` },
       );
     }
@@ -116,31 +117,33 @@ export class ApplicationService {
 
   async create(user: User, dto: CreateApplicationDto): Promise<Application> {
     const companyName = dto.company?.trim();
+    let companyId: string | undefined;
 
     if (companyName) {
-      const existingCompany = await this.companiesRepository.findOne({
+      let existingCompany = await this.companiesRepository.findOne({
         where: { name: companyName },
       });
 
       if (!existingCompany) {
         const logoUrl = await this.resolveCompanyLogoUrl(companyName);
-        await this.companiesRepository
-          .createQueryBuilder()
-          .insert()
-          .into(Company)
-          .values({
-            name: companyName,
-            logoUrl: logoUrl ?? null,
-            status: CompanyStatus.PENDING,
-          })
-          .orIgnore()
-          .execute();
+        const created = await this.companiesRepository.save({
+          name: companyName,
+          logoUrl: logoUrl ?? null,
+          status: CompanyStatus.PENDING,
+        });
+        existingCompany = created;
       }
+
+      companyId = existingCompany.id;
     }
+
+    const company = await this.companiesRepository.findOne({
+      where: { id: companyId },
+    });
 
     const newApplication = this.applicationsRepository.create({
       ...dto,
-      company: companyName ?? dto.company,
+      company,
       appliedAt: dto.appliedAt ? new Date(dto.appliedAt) : undefined,
       user,
     });

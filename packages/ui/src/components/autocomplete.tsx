@@ -12,7 +12,7 @@ import {
 } from '@remixicon/react';
 
 const inputVariants = cva(
-  'outline-none flex w-full text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 [[readonly]]:bg-muted/80 [[readonly]]:cursor-not-allowed border border-input focus-visible:border-ring aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 rounded-4xl bg-input/30 text-sm transition-colors focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-[3px]',
+  'outline-none flex w-full text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 [[readonly]]:bg-muted/80 [[readonly]]:cursor-not-allowed border border-input focus-visible:border-ring aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 rounded-4xl bg-input/30 text-sm whitespace-nowrap transition-colors focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-[3px] data-placeholder:text-muted-foreground',
   {
     variants: {
       size: {
@@ -174,12 +174,12 @@ function AutocompleteRow({
 function AutocompleteItem({
   className,
   ...props
-}: React.ComponentProps<typeof AutocompletePrimitive.Item>) {
+}: AutocompletePrimitive.Item.Props) {
   return (
     <AutocompletePrimitive.Item
       data-slot="autocomplete-item"
       className={cn(
-        "text-foreground data-highlighted:text-foreground data-highlighted:before:bg-accent gap-2.5 rounded-xl px-3 py-2 text-sm data-highlighted:before:rounded-lg [&_svg:not([class*='size-'])]:size-4 relative flex cursor-default items-center outline-hidden transition-colors select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:relative data-highlighted:z-0 data-highlighted:before:absolute data-highlighted:before:inset-x-0 data-highlighted:before:inset-y-0 data-highlighted:before:z-[-1] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([role=img]):not([class*=text-])]:opacity-60",
+        "text-foreground data-highlighted:text-foreground data-highlighted:before:bg-accent gap-2.5 rounded-xl pr-8 pl-3 py-2 text-sm data-highlighted:before:rounded-lg [&_svg:not([class*='size-'])]:size-4 relative flex cursor-default items-center outline-hidden transition-colors select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:relative data-highlighted:z-0 data-highlighted:before:absolute data-highlighted:before:inset-x-0 data-highlighted:before:inset-y-0 data-highlighted:before:z-[-1] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([role=img]):not([class*=text-])]:opacity-60",
         className,
       )}
       {...props}
@@ -223,7 +223,7 @@ function AutocompleteContent({
           <AutocompletePrimitive.Popup
             data-slot="autocomplete-popup"
             className={cn(
-              'bg-popover text-popover-foreground rounded-2xl shadow-2xl ring-foreground/5 flex max-h-[min(var(--available-height),24rem)] w-(--anchor-width) max-w-(--available-width) origin-(--transform-origin) scroll-pt-2 scroll-pb-2 flex-col overscroll-contain py-0.5 ring-1 transition-[scale,opacity] has-data-starting-style:scale-98 has-data-starting-style:opacity-0 has-data-[side=none]:scale-100 has-data-[side=none]:transition-none',
+              'bg-popover/70 text-popover-foreground rounded-2xl shadow-2xl ring-foreground/5 ring-1 flex max-h-[min(var(--available-height),24rem)] w-(--anchor-width) max-w-(--available-width) origin-(--transform-origin) scroll-pt-2 scroll-pb-2 flex-col overscroll-contain py-0.5 transition-[scale,opacity] has-data-starting-style:scale-98 has-data-starting-style:opacity-0 has-data-[side=none]:scale-100 has-data-[side=none]:transition-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 before:pointer-events-none before:absolute before:inset-0 before:-z-1 before:rounded-[inherit] before:backdrop-blur-2xl before:backdrop-saturate-150',
               className,
             )}
             {...props}

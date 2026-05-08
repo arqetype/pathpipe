@@ -25,7 +25,6 @@ export default async function SettingsUserInfo() {
       <div className="w-full flex justify-center">
         <Avatar className="size-24">
           <AvatarImage
-            className="rounded-[30%]"
             src={currentUser.avatar_url}
             alt={`Profile picture of ${currentUser.name}`}
           />

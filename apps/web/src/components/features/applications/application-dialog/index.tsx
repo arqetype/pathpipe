@@ -4,8 +4,11 @@ import { useEffect, useMemo, useRef, useTransition } from 'react';
 import type { Application } from '@repo/db/entities/application';
 import { Dialog, DialogContent, DialogTitle } from '@repo/ui/components/dialog';
 import { Separator } from '@repo/ui/components/separator';
+import { Button } from '@repo/ui/components/button';
 import { updateApplicationAction } from '@/actions/application/update';
+import { deleteApplicationAction } from '@/actions/application/delete';
 import { toast } from 'sonner';
+import { RiDeleteBinLine } from '@remixicon/react';
 import { ApplicationDialogHeader } from './header';
 import { ApplicationDialogProperties } from './properties';
 import { ApplicationDialogNotes } from './notes';
@@ -20,7 +23,8 @@ export function ApplicationDialog() {
       state.applications.find((a) => a.id === state.selectedApplicationId) ??
       null,
   );
-  const { selectApplication, patchApplication } = useApplicationStore();
+  const { selectApplication, patchApplication, removeApplication } =
+    useApplicationStore();
   const [, startTransition] = useTransition();
 
   const lastApplicationRef = useRef<Application | null>(null);
@@ -46,6 +50,13 @@ export function ApplicationDialog() {
         toast.error('Failed to save changes.');
       }
     });
+  }
+
+  function handleDelete() {
+    if (!displayedApplication) return;
+    selectApplication(null);
+    removeApplication(displayedApplication.id);
+    deleteApplicationAction({ id: displayedApplication.id });
   }
 
   return (
@@ -76,6 +87,17 @@ export function ApplicationDialog() {
               application={displayedApplication}
               onSave={save}
             />
+            <Separator />
+            <div className="px-8 py-4 flex justify-end">
+              <Button
+                variant="outline"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={handleDelete}
+              >
+                <RiDeleteBinLine className="size-4 mr-2" />
+                Delete
+              </Button>
+            </div>
           </>
         )}
       </DialogContent>

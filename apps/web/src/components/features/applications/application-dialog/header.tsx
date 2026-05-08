@@ -12,10 +12,11 @@ export function ApplicationDialogHeader({
   onSave,
 }: ApplicationDialogHeaderProps) {
   return (
-    <div className="px-8 pt-8 pb-6 flex items-center gap-5">
+    <div className="px-8 pt-8 pb-6 flex items-start gap-5">
       <CompanyLogo
-        key={application.company}
-        name={application.company}
+        key={application.company?.id ?? application.id}
+        name={application.company?.name ?? 'Unknown'}
+        logoUrl={application.company?.logoUrl}
         size={80}
         className="size-20 rounded-xl object-contain shrink-0"
       />
@@ -30,9 +31,9 @@ export function ApplicationDialogHeader({
         />
 
         <EditableText
-          value={application.company}
+          value={application.company?.name ?? ''}
           placeholder="Company name"
-          onSave={(v) => v && onSave({ company: v })}
+          onSave={() => {}}
           className="block text-lg md:text-lg text-muted-foreground"
           inputClassName="text-lg md:text-lg text-muted-foreground"
         />

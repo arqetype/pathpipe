@@ -1,6 +1,18 @@
-import { IsBoolean, IsDateString, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
+import { CompanyIndustry } from '../../types/company/industry';
 
 export class UpdateCompanyDto {
+  @IsOptional()
+  @IsUUID()
+  id?: string;
+
   @IsOptional()
   @IsString()
   name?: string;
@@ -18,8 +30,8 @@ export class UpdateCompanyDto {
   careersUrl?: string;
 
   @IsOptional()
-  @IsString()
-  industry?: string;
+  @IsEnum(CompanyIndustry)
+  industry?: CompanyIndustry;
 
   @IsOptional()
   @IsString()

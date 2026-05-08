@@ -12,10 +12,11 @@ type CompanyOption = { id: string; name: string };
  */
 export async function fetchCompanies(query?: string): Promise<CompanyOption[]> {
   const path = query?.trim()
-    ? `/companies?query=${encodeURIComponent(query.trim())}`
-    : '/companies';
+    ? `/companies/suggestions?query=${encodeURIComponent(query.trim())}`
+    : '/companies/suggestions';
 
   const result = await get<CompanyOption[]>(path);
+  console.log('fetchCompanies result:', result);
 
   if (result.ok) {
     return result.data;

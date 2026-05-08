@@ -12,16 +12,22 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from '@repo/ui/components/sidebar';
 import { signOutAction } from '@/actions/auth/sign-out';
+import { UserRole } from '@repo/db/types/user/roles';
 import type { User } from '@repo/db/entities/user';
 
-const navItems = [
+const userNavItems = [
   { title: 'Applications', href: '/app/applications', icon: RiBriefcaseLine },
+];
+
+const adminNavItems = [
   { title: 'Companies', href: '/app/companies', icon: RiBuildingLine },
 ];
 
@@ -31,6 +37,7 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
 
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
   const pathname = usePathname();
+  const isAdmin = user.role === UserRole.ADMIN;
 
   const handleSignOut = () => {
     startTransition(async () => {
@@ -80,7 +87,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => {
+              {userNavItems.map((item) => {
                 const isActive =
                   item.href === '/app'
                     ? pathname === '/app'
@@ -103,6 +110,36 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isAdmin && (
+          <>
+            <SidebarSeparator className="my-2" />
+            <SidebarGroup>
+              <SidebarGroupLabel>Administration</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {adminNavItems.map((item) => {
+                    const isActive = pathname.startsWith(item.href);
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive}
+                          tooltip={item.title}
+                        >
+                          <Link href={item.href}>
+                            <item.icon />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
       </SidebarContent>
 
       <SidebarFooter>

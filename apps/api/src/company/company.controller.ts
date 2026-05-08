@@ -1,15 +1,21 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import { CompanyService } from './company.service';
-import { CompanySearchResult } from '@repo/db/query/company';
+import {
+  CompanySearchResult,
+  PaginatedCompanies,
+} from '@repo/db/query/company';
+import type { CompaniesQuery } from '@repo/db/query/company';
 import { Company } from '@repo/db/entities/company';
 import { UpdateCompanyDto } from '@repo/db/dto/company/update-company.dto';
 import { UpdateCompanyStatusDto } from '@repo/db/dto/company/update-company-status.dto';
@@ -20,17 +26,26 @@ export class CompanyController {
 
   @HttpCode(HttpStatus.OK)
   @Get()
-  search(
-    @Query('query') query?: string,
-    @Query('limit') limit?: number | string,
-  ): Promise<CompanySearchResult[]> {
-    return this.companyService.search(query ?? '', limit ? Number(limit) : 20);
+  getAll(@Query() query: CompaniesQuery): Promise<PaginatedCompanies> {
+    return this.companyService.findAll(query);
   }
 
   @HttpCode(HttpStatus.OK)
-  @Get('all')
-  getAll(): Promise<Company[]> {
-    return this.companyService.findAll();
+  @Get('suggestions')
+  suggestions(
+    @Query('query') query?: string,
+    @Query('limit') limit?: number | string,
+  ): Promise<CompanySearchResult[]> {
+    return this.companyService.suggestions(
+      query ?? '',
+      limit ? Number(limit) : 20,
+    );
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post()
+  create(@Body() data: { name: string }): Promise<Company> {
+    return this.companyService.create(data.name);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -49,5 +64,11 @@ export class CompanyController {
     @Body() data: UpdateCompanyStatusDto,
   ): Promise<Company> {
     return this.companyService.updateStatus(id, data.status);
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete(':id')
+  remove(@Param('id') id: string): Promise<void> {
+    return this.companyService.remove(id);
   }
 }

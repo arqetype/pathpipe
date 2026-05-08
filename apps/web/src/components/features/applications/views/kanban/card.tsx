@@ -64,8 +64,13 @@ export function KanbanCard({
               )}
           </div>
           <div className="flex items-center gap-1 text-muted-foreground">
-            <CompanyLogo name={application.company} key={application.company} />
-            <p className="text-xs line-clamp-1">{application.company}</p>
+            <CompanyLogo
+              name={application.company?.name ?? 'Unknown'}
+              logoUrl={application.company?.logoUrl}
+            />
+            <p className="text-xs line-clamp-1">
+              {application.company?.name ?? 'Unknown'}
+            </p>
           </div>
         </div>
 
