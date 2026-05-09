@@ -29,7 +29,6 @@ export default function SelectCompany({
   placeholder = 'Select a company',
 }: SelectCompanyProps) {
   const [results, setResults] = useState<CompanyOption[]>([]);
-  const [loading, setLoading] = useState(false);
   const [focused, setFocused] = useState(false);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,7 +38,6 @@ export default function SelectCompany({
   useEffect(() => {
     if (!focused) return;
     (async () => {
-      setLoading(true);
       try {
         const companies = await fetchCompanies(
           debouncedSearchQuery.trim() || undefined,
@@ -49,8 +47,6 @@ export default function SelectCompany({
       } catch (err) {
         console.error('Failed to fetch companies:', err);
         setResults([]);
-      } finally {
-        setLoading(false);
       }
     })();
   }, [focused, debouncedSearchQuery]);

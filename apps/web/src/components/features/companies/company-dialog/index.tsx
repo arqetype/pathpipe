@@ -6,9 +6,7 @@ import {
   Dialog,
   DialogContent,
   DialogFooter,
-  DialogTitle,
 } from '@repo/ui/components/dialog';
-import { Separator } from '@repo/ui/components/separator';
 import { Button } from '@repo/ui/components/button';
 import { updateCompanyAction } from '@/actions/company/update';
 import { deleteCompanyAction } from '@/actions/company/delete';
