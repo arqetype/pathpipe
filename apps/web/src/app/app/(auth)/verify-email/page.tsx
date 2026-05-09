@@ -26,7 +26,7 @@ export default async function VerifyEmailPage({
 
   if (!token) {
     return (
-      <Card className="border shadow-md max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <Card className="max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-2 bg-destructive/10 rounded-full">
@@ -48,7 +48,7 @@ export default async function VerifyEmailPage({
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2 px-6 pt-2">
+        <CardFooter>
           <Link
             href="/app/sign-in"
             className={cn(buttonVariants({ variant: 'default' }), 'w-full')}
@@ -64,7 +64,7 @@ export default async function VerifyEmailPage({
 
   if (response.success) {
     return (
-      <Card className="border shadow-md max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <Card className="max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-2 bg-primary/10 rounded-full">
@@ -86,7 +86,7 @@ export default async function VerifyEmailPage({
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2 px-6 pt-2">
+        <CardFooter>
           <Link
             className={cn(buttonVariants({ variant: 'default' }), 'w-full')}
             href="/app/sign-in"
@@ -98,7 +98,7 @@ export default async function VerifyEmailPage({
     );
   } else {
     return (
-      <Card className="border shadow-md max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <Card className="max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-2 bg-destructive/10 rounded-full">
@@ -122,7 +122,7 @@ export default async function VerifyEmailPage({
             </ul>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2 px-6 pt-2">
+        <CardFooter>
           <Link
             className={cn(buttonVariants({ variant: 'default' }), 'w-full')}
             href="/app/sign-in"

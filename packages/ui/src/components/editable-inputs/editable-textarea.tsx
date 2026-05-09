@@ -38,7 +38,7 @@ export default function EditableTextarea({
         }
       }}
       rows={4}
-      className="w-full min-h-25 p-2 -ml-2"
+      className="w-full min-h-25"
     />
   );
 }

@@ -21,7 +21,7 @@ export function CompanyCard({ company }: CompanyCardProps) {
 
   return (
     <Card
-      className="cursor-pointer hover:ring-2"
+      className="cursor-pointer hover:shadow-md transition-shadow"
       onClick={() => selectCompany(company.id)}
     >
       <CardHeader className="flex flex-row items-center gap-3 pb-2">

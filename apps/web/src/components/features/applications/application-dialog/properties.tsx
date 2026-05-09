@@ -35,7 +35,7 @@ export function ApplicationDialogProperties({
   onSave,
 }: ApplicationDialogPropertiesProps) {
   return (
-    <div className="px-8 py-4 flex flex-col gap-1">
+    <div className="flex flex-col gap-1">
       <Property icon={<RiListUnordered className="size-4" />} label="Status">
         <Select
           value={application.status}

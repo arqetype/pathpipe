@@ -25,12 +25,11 @@ export function CreateApplicationDialog() {
       <DialogTrigger
         render={
           <Button
-            size="sm"
             onClick={() => openCreateDialog(ApplicationStatus.WISHLIST)}
           />
         }
       >
-        <RiAddLine className="size-4" />
+        <RiAddLine />
         New application
       </DialogTrigger>
 

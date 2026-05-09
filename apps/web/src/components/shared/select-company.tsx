@@ -11,7 +11,7 @@ import {
   AutocompleteInput,
   AutocompleteItem,
   AutocompleteList,
-} from '@repo/ui/components/autocomplete';
+} from '@repo/ui/components/customs/autocomplete';
 
 type CompanyOption = { id: string; name: string; logoUrl?: string };
 
@@ -82,7 +82,6 @@ export default function SelectCompany({
     >
       <AutocompleteInput
         placeholder={placeholder}
-        loading={loading}
         onChange={handleInputChange}
         onFocus={handleFocus}
         onBlur={handleBlur}

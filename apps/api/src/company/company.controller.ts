@@ -9,8 +9,13 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CompanyService } from './company.service';
+import { CompanyCsvService } from './company-csv.service';
+import { CsvImportResult } from '@repo/db/dto/company/csv-import-result.dto';
 import {
   CompanySearchResult,
   PaginatedCompanies,
@@ -22,7 +27,10 @@ import { UpdateCompanyStatusDto } from '@repo/db/dto/company/update-company-stat
 
 @Controller('companies')
 export class CompanyController {
-  constructor(private readonly companyService: CompanyService) {}
+  constructor(
+    private readonly companyService: CompanyService,
+    private readonly companyCsvService: CompanyCsvService,
+  ) {}
 
   @HttpCode(HttpStatus.OK)
   @Get()
@@ -70,5 +78,21 @@ export class CompanyController {
   @Delete(':id')
   remove(@Param('id') id: string): Promise<void> {
     return this.companyService.remove(id);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('export')
+  async exportToCSV(@Query() query: CompaniesQuery): Promise<{ data: string }> {
+    const csv = await this.companyCsvService.exportToCSV(query);
+    return { data: csv };
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  async importFromCSV(
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<CsvImportResult> {
+    return this.companyCsvService.importFromCSV(file.buffer);
   }
 }

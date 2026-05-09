@@ -25,11 +25,11 @@ export default async function AuthenticationFormLayout({
     <Card className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid lg:grid-cols-2 gap-0">
         <div>
-          <CardHeader className="space-x-0 space-y-4 px-6 mb-4">
+          <CardHeader className="space-y-2">
             <CardTitle className="scroll-m-20 text-4xl font-extrabold tracking-tight text-balance">
               👋 It&apos;s nice to see you!
             </CardTitle>
-            <CardDescription className="leading-7 [&:not(:first-child)]:mt-6 text-left">
+            <CardDescription className="leading-7 text-left mb-2">
               Join our application to access your personalized dashboard, manage
               your preferences, and enjoy a seamless experience.
             </CardDescription>
@@ -45,9 +45,9 @@ export default async function AuthenticationFormLayout({
               </div>
             </div>
           </CardHeader>
-          <div>{children}</div>
+          {children}
         </div>
-        <div className="hidden lg:block mx-6">
+        <div className="hidden lg:block mx-4 pb-4">
           <div className="bg-accent h-full rounded-lg px-6 py-4">
             <div className="flex flex-col items-center justify-center h-full"></div>
           </div>

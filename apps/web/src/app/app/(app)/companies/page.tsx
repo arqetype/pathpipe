@@ -32,7 +32,7 @@ export default async function CompaniesPage({
   const industry = str(params.industry);
   const status = (str(params.status) as CompanyStatus) || CompanyStatus.PENDING;
   const page = Number(str(params.page)) || 1;
-  const limit = 12;
+  const limit = 20;
 
   const query = new URLSearchParams();
   query.set('status', status);

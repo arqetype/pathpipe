@@ -1,6 +1,7 @@
 import type { Company } from '@repo/db/entities/company';
 import { CompanyLogo } from '@/components/shared/company-logo';
 import EditableText from '@repo/ui/components/editable-inputs/editable-text';
+import { DialogHeader } from '@repo/ui/components/dialog';
 
 type CompanyDialogHeaderProps = {
   company: Company;
@@ -12,7 +13,7 @@ export function CompanyDialogHeader({
   onSave,
 }: CompanyDialogHeaderProps) {
   return (
-    <div className="px-8 pt-8 pb-6 flex items-center gap-5">
+    <DialogHeader className="flex-row items-center gap-4">
       <CompanyLogo
         key={company.id}
         name={company.name}
@@ -30,6 +31,6 @@ export function CompanyDialogHeader({
           inputClassName="text-3xl md:text-3xl font-bold leading-snug"
         />
       </div>
-    </div>
+    </DialogHeader>
   );
 }

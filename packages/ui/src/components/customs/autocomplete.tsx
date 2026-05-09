@@ -5,21 +5,17 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@repo/ui/lib/utils';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
-import {
-  RiCloseLine,
-  RiArrowUpDownLine,
-  RiLoader5Line,
-} from '@remixicon/react';
+import { RiCloseLine, RiExpandUpDownLine } from '@remixicon/react';
 
 const inputVariants = cva(
-  'outline-none flex w-full text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 [[readonly]]:bg-muted/80 [[readonly]]:cursor-not-allowed border border-input focus-visible:border-ring aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 rounded-4xl bg-input/30 text-sm whitespace-nowrap transition-colors focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-[3px] data-placeholder:text-muted-foreground',
+  'outline-none flex w-full text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 [[readonly]]:bg-muted/80 [[readonly]]:cursor-not-allowed border border-input focus-visible:border-ring aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 rounded-lg bg-transparent dark:bg-input/30 text-sm transition-colors focus-visible:ring-ring/50 focus-visible:ring-3 aria-invalid:ring-3',
   {
     variants: {
       size: {
-        sm: 'h-8 px-3 [&~[data-slot=autocomplete-clear]]:end-2.5 [&~[data-slot=autocomplete-trigger]]:end-2.5',
+        sm: 'h-7 px-2 [&~[data-slot=autocomplete-clear]]:end-1.5 [&~[data-slot=autocomplete-trigger]]:end-1.5',
         default:
-          'h-9 px-3 [&~[data-slot=autocomplete-clear]]:end-2.5 [&~[data-slot=autocomplete-trigger]]:end-2.5',
-        lg: 'h-10 px-4 [&~[data-slot=autocomplete-clear]]:end-3 [&~[data-slot=autocomplete-trigger]]:end-3',
+          'h-8 px-2.5 [&~[data-slot=autocomplete-clear]]:end-1.75 [&~[data-slot=autocomplete-trigger]]:end-1.75',
+        lg: 'h-9 px-2.5 [&~[data-slot=autocomplete-clear]]:end-2 [&~[data-slot=autocomplete-trigger]]:end-2',
       },
     },
     defaultVariants: {
@@ -41,13 +37,11 @@ function AutocompleteInput({
   size = 'default',
   showClear = false,
   showTrigger = false,
-  loading = false,
   ...props
 }: Omit<AutocompletePrimitive.Input.Props, 'size'> &
   VariantProps<typeof inputVariants> & {
     showClear?: boolean;
     showTrigger?: boolean;
-    loading?: boolean;
   }) {
   return (
     <div className="relative w-full">
@@ -57,16 +51,8 @@ function AutocompleteInput({
         className={cn(inputVariants({ size }), className)}
         {...props}
       />
-      {loading ? (
-        <span className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2">
-          <RiLoader5Line className="size-4 animate-spin text-muted-foreground" />
-        </span>
-      ) : (
-        <>
-          {showTrigger && <AutocompleteTrigger />}
-          {showClear && <AutocompleteClear />}
-        </>
-      )}
+      {showTrigger && <AutocompleteTrigger />}
+      {showClear && <AutocompleteClear />}
     </div>
   );
 }
@@ -79,7 +65,7 @@ function AutocompleteStatus({
     <AutocompletePrimitive.Status
       data-slot="autocomplete-status"
       className={cn(
-        'text-muted-foreground px-3 py-2 text-sm empty:m-0 empty:p-0',
+        'text-muted-foreground px-2 py-1.5 text-sm empty:m-0 empty:p-0',
         className,
       )}
       {...props}
@@ -111,7 +97,7 @@ function AutocompletePositioner({
   return (
     <AutocompletePrimitive.Positioner
       data-slot="autocomplete-positioner"
-      className={cn('z-50 outline-none pointer-events-auto', className)}
+      className={cn('z-50 outline-none', className)}
       {...props}
     />
   );
@@ -129,11 +115,9 @@ function AutocompleteList({
   return (
     <ScrollArea
       className={cn(
-        'w-full h-full overflow-auto pointer-events-auto overscroll-auto',
+        'size-full min-h-0 **:data-[slot=scroll-area-viewport]:h-full **:data-[slot=scroll-area-viewport]:overscroll-contain',
         scrollAreaClassName,
       )}
-      onWheel={(e) => e.stopPropagation()}
-      onTouchMove={(e) => e.stopPropagation()}
     >
       <AutocompletePrimitive.List
         data-slot="autocomplete-list"
@@ -174,12 +158,12 @@ function AutocompleteRow({
 function AutocompleteItem({
   className,
   ...props
-}: AutocompletePrimitive.Item.Props) {
+}: React.ComponentProps<typeof AutocompletePrimitive.Item>) {
   return (
     <AutocompletePrimitive.Item
       data-slot="autocomplete-item"
       className={cn(
-        "text-foreground data-highlighted:text-foreground data-highlighted:before:bg-accent gap-2.5 rounded-xl pr-8 pl-3 py-2 text-sm data-highlighted:before:rounded-lg [&_svg:not([class*='size-'])]:size-4 relative flex cursor-default items-center outline-hidden transition-colors select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:relative data-highlighted:z-0 data-highlighted:before:absolute data-highlighted:before:inset-x-0 data-highlighted:before:inset-y-0 data-highlighted:before:z-[-1] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([role=img]):not([class*=text-])]:opacity-60",
+        "text-foreground data-highlighted:text-foreground data-highlighted:before:bg-accent gap-1.5 rounded-md px-1.5 py-1 text-sm data-highlighted:before:rounded-sm [&_svg:not([class*='size-'])]:size-4 relative flex cursor-default items-center outline-hidden transition-colors select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:relative data-highlighted:z-0 data-highlighted:before:absolute data-highlighted:before:inset-x-0 data-highlighted:before:inset-y-0 data-highlighted:before:z-[-1] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([role=img]):not([class*=text-])]:opacity-60",
         className,
       )}
       {...props}
@@ -223,7 +207,7 @@ function AutocompleteContent({
           <AutocompletePrimitive.Popup
             data-slot="autocomplete-popup"
             className={cn(
-              'bg-popover/70 text-popover-foreground rounded-2xl shadow-2xl ring-foreground/5 ring-1 flex max-h-[min(var(--available-height),24rem)] w-(--anchor-width) max-w-(--available-width) origin-(--transform-origin) scroll-pt-2 scroll-pb-2 flex-col overscroll-contain py-0.5 transition-[scale,opacity] has-data-starting-style:scale-98 has-data-starting-style:opacity-0 has-data-[side=none]:scale-100 has-data-[side=none]:transition-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 before:pointer-events-none before:absolute before:inset-0 before:-z-1 before:rounded-[inherit] before:backdrop-blur-2xl before:backdrop-saturate-150',
+              'bg-popover text-popover-foreground rounded-lg shadow-md ring-foreground/10 flex max-h-[min(var(--available-height),24rem)] w-(--anchor-width) max-w-(--available-width) origin-(--transform-origin) scroll-pt-2 scroll-pb-2 flex-col overscroll-contain py-0.5 ring-1 transition-[scale,opacity] has-data-starting-style:scale-98 has-data-starting-style:opacity-0 has-data-[side=none]:scale-100 has-data-[side=none]:transition-none',
               className,
             )}
             {...props}
@@ -252,7 +236,7 @@ function AutocompleteGroupLabel({
     <AutocompletePrimitive.GroupLabel
       data-slot="autocomplete-group-label"
       className={cn(
-        'text-muted-foreground px-3 py-2.5 text-xs font-medium',
+        'text-muted-foreground px-1.5 py-1 text-xs font-medium',
         className,
       )}
       {...props}
@@ -268,7 +252,7 @@ function AutocompleteEmpty({
     <AutocompletePrimitive.Empty
       data-slot="autocomplete-empty"
       className={cn(
-        'text-muted-foreground px-3 py-2 text-sm text-center empty:m-0 empty:p-0',
+        'text-muted-foreground px-2 py-1.5 text-sm text-center empty:m-0 empty:p-0',
         className,
       )}
       {...props}
@@ -307,7 +291,7 @@ function AutocompleteTrigger({
       )}
       {...props}
     >
-      <RiArrowUpDownLine className="size-4 opacity-70" />
+      <RiExpandUpDownLine className="size-4 opacity-70" />
     </AutocompletePrimitive.Trigger>
   );
 }
@@ -327,7 +311,7 @@ function AutocompleteSeparator({
   return (
     <AutocompletePrimitive.Separator
       data-slot="autocomplete-separator"
-      className={cn('bg-border/50 my-1.5 h-px', className)}
+      className={cn('bg-border my-1.5 h-px', className)}
       {...props}
     />
   );

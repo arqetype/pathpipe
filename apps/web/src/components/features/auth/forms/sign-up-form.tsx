@@ -96,44 +96,45 @@ export function SignUpForm() {
 
   return (
     <>
-      <div className="mb-4 px-6 w-full">
-        <div className="bg-muted text-muted-foreground w-full flex items-center justify-between rounded-full p-1 gap-2">
+      <div className="mb-4 mt-3 px-4 w-full">
+        <div className="bg-muted w-full flex rounded-lg items-center justify-between p-1 gap-2">
           <Link href="/app/sign-in" className="flex-1">
             <Button variant="ghost" className="w-full">
               Sign In
             </Button>
           </Link>
-          <Button
-            variant="outline"
-            className="flex-1 hover:bg-[var(--background)] cursor-default bg-background/70"
-          >
+          <Button variant="outline" className="flex-1 cursor-default">
             Sign Up
           </Button>
         </div>
       </div>
 
       {isVerificationSent ? (
-        <div className="px-6">
-          <AuthVerificationAlert
-            icon={RiMailLine}
-            title="Email Verification Required"
-            description={
-              <>
-                We&apos;ve sent a verification email to
-                <span className="font-medium"> {form.getValues('email')}</span>.
-                Please check your inbox and click the verification link to
-                activate your account.
-              </>
-            }
-          />
-          <div className="space-y-3">
+        <>
+          <CardContent className="space-y-4">
+            <AuthVerificationAlert
+              icon={RiMailLine}
+              title="Email Verification Required"
+              description={
+                <>
+                  We&apos;ve sent a verification email to
+                  <span className="font-medium">
+                    {' '}
+                    {form.getValues('email')}
+                  </span>
+                  . Please check your inbox and click the verification link to
+                  activate your account.
+                </>
+              }
+            />
             {resendStatus.message && (
               <AuthVerificationError
                 success={resendStatus.success}
                 message={resendStatus.message}
               />
             )}
-
+          </CardContent>
+          <CardFooter className="bg-transparent border-none">
             <Button
               variant="outline"
               className="w-full"
@@ -149,8 +150,8 @@ export function SignUpForm() {
                 'Resend Verification Email'
               )}
             </Button>
-          </div>
-        </div>
+          </CardFooter>
+        </>
       ) : (
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <CardContent className="space-y-4">
@@ -276,7 +277,7 @@ export function SignUpForm() {
             />
           </CardContent>
 
-          <CardFooter className="space-y-4 flex-col">
+          <CardFooter className="space-y-4 flex-col bg-transparent border-none">
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? (
                 <>

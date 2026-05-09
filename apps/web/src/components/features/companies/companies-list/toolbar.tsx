@@ -1,20 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useTransition } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
-  RiSearchLine,
   RiCloseLine,
   RiArrowUpDownLine,
   RiArrowUpLine,
   RiArrowDownLine,
   RiFilterLine,
+  RiUpload2Line,
+  RiDownloadLine,
+  RiMoreLine,
+  RiTimeLine,
+  RiCheckLine,
+  RiSearchLine,
 } from '@remixicon/react';
+import { toast } from 'sonner';
+import { importCsvAction } from '@/actions/company/import-csv';
+import { exportCsvAction } from '@/actions/company/export-csv';
 
 import { CompanyStatus } from '@repo/db/entities/company';
 import { CompanyIndustry } from '@repo/db/types/company/company-industry';
 import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
+import { ButtonGroup } from '@repo/ui/components/button-group';
+import { Field } from '@repo/ui/components/field';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@repo/ui/components/input-group';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,8 +39,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuGroup,
+  DropdownMenuItem,
 } from '@repo/ui/components/dropdown-menu';
-import type { CompanySortBy } from '@repo/db/query/company';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@repo/ui/components/select';
+import type { CompanySortBy, CompaniesQuery } from '@repo/db/query/company';
 
 const SORT_OPTIONS: { value: CompanySortBy; label: string }[] = [
   { value: 'created_at', label: 'Date added' },
@@ -44,9 +67,9 @@ const INDUSTRY_OPTIONS = Object.entries(CompanyIndustry).map(
 );
 
 const STATUS_TABS = [
-  { value: CompanyStatus.PENDING, label: 'Pending' },
-  { value: CompanyStatus.APPROVED, label: 'Accepted' },
-  { value: CompanyStatus.REJECTED, label: 'Rejected' },
+  { value: CompanyStatus.PENDING, label: 'Pending', icon: RiTimeLine },
+  { value: CompanyStatus.APPROVED, label: 'Accepted', icon: RiCheckLine },
+  { value: CompanyStatus.REJECTED, label: 'Rejected', icon: RiCloseLine },
 ] as const;
 
 interface CompaniesToolbarProps {
@@ -67,6 +90,8 @@ export function CompaniesToolbar({
   const searchParams = useSearchParams();
 
   const [inputValue, setInputValue] = useState('');
+  const [isPending, startTransition] = useTransition();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setInputValue(searchParams?.get('search') ?? '');
@@ -107,6 +132,67 @@ export function CompaniesToolbar({
 
   const activeTab = statusParam || CompanyStatus.PENDING;
 
+  function getCurrentQuery() {
+    return {
+      search: searchParams.get('search') ?? undefined,
+      sortBy: currentSortBy,
+      sortOrder: currentSortOrder,
+      industry: industryParam || undefined,
+      status: statusParam || undefined,
+    } as CompaniesQuery;
+  }
+
+  function handleImportClick() {
+    fileInputRef.current?.click();
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    startTransition(async () => {
+      const result = await importCsvAction(null, formData);
+
+      if (result.success) {
+        const { successCount, errorCount } = result.data!;
+        toast.success(
+          `Import complete: ${successCount} imported, ${errorCount} errors`,
+        );
+        router.refresh();
+      } else {
+        toast.error(result.error || 'Import failed');
+      }
+    });
+
+    e.target.value = '';
+  }
+
+  async function handleExport() {
+    const query = getCurrentQuery();
+
+    startTransition(async () => {
+      const result = await exportCsvAction(query);
+
+      if (result.success) {
+        const blob = new Blob([result.data!.data], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `companies-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success('Export downloaded');
+      } else {
+        toast.error(result.error || 'Export failed');
+      }
+    });
+  }
+
   function setParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams?.toString() ?? '');
     if (value) params.set(key, value);
@@ -132,55 +218,39 @@ export function CompaniesToolbar({
   return (
     <div className="flex items-center justify-between gap-4 shrink-0">
       <div className="flex items-center gap-2">
-        <div className="relative">
-          <RiSearchLine className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Search..."
-            className="pl-7 h-8 w-40 text-sm"
-          />
-          {inputValue && (
-            <button
-              onClick={() => setInputValue('')}
-              className="absolute -translate-y-1/2 ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-2 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-            >
-              <RiCloseLine />
-              <span className="sr-only">Close</span>
-            </button>
-          )}
-        </div>
+        <Field className="max-w-sm">
+          <InputGroup>
+            <InputGroupInput
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Search..."
+            />
+            <InputGroupAddon align="inline-start">
+              <RiSearchLine className="text-muted-foreground" />
+            </InputGroupAddon>
+          </InputGroup>
+        </Field>
 
-        <div className="flex items-center">
+        <ButtonGroup>
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 gap-1.5 text-xs font-normal rounded-r-none border-r-0"
-                >
-                  <RiArrowUpDownLine className="size-3.5" />
+                <Button variant="outline" className="font-normal">
+                  <RiArrowUpDownLine />
                   {sortLabel}
                 </Button>
               }
             />
             <DropdownMenuContent align="start" className="w-44">
               <DropdownMenuGroup>
-                <DropdownMenuLabel className="text-xs">
-                  Sort by
-                </DropdownMenuLabel>
+                <DropdownMenuLabel>Sort by</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup
                   value={currentSortBy}
                   onValueChange={(v) => setParam('sortBy', v)}
                 >
                   {SORT_OPTIONS.map((opt) => (
-                    <DropdownMenuRadioItem
-                      key={opt.value}
-                      value={opt.value}
-                      className="text-xs"
-                    >
+                    <DropdownMenuRadioItem key={opt.value} value={opt.value}>
                       {opt.label}
                     </DropdownMenuRadioItem>
                   ))}
@@ -190,24 +260,19 @@ export function CompaniesToolbar({
           </DropdownMenu>
           <Button
             variant="outline"
-            size="sm"
-            className="h-8 px-2 rounded-l-none text-xs font-normal"
+            className="font-normal"
             onClick={toggleSortOrder}
             title={currentSortOrder === 'asc' ? 'Ascending' : 'Descending'}
           >
-            <SortOrderIcon className="size-3.5" />
+            <SortOrderIcon />
           </Button>
-        </div>
+        </ButtonGroup>
 
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 gap-1.5 text-xs font-normal"
-              >
-                <RiFilterLine className="size-3.5" />
+              <Button variant="outline" className="font-normal">
+                <RiFilterLine />
                 Industry
                 {selectedIndustries.size > 0 && (
                   <span className="ml-0.5 rounded-full bg-primary text-primary-foreground size-4 text-[10px] flex items-center justify-center">
@@ -219,12 +284,10 @@ export function CompaniesToolbar({
           />
           <DropdownMenuContent
             align="start"
-            className="w-44 max-h-64 overflow-y-auto"
+            className="max-h-64 overflow-y-auto w-44"
           >
             <DropdownMenuGroup>
-              <DropdownMenuLabel className="text-xs">
-                Filter by industry
-              </DropdownMenuLabel>
+              <DropdownMenuLabel>Filter by industry</DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
@@ -234,7 +297,6 @@ export function CompaniesToolbar({
                   checked={selectedIndustries.has(s.value)}
                   onCheckedChange={() => toggleIndustry(s.value)}
                   onSelect={(e) => e.preventDefault()}
-                  className="text-xs"
                 >
                   {s.label}
                 </DropdownMenuCheckboxItem>
@@ -243,34 +305,95 @@ export function CompaniesToolbar({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <p className="text-sm text-muted-foreground pl-1">
+        <p className="text-muted-foreground w-60 pl-1">
           {total} compan{total !== 1 ? 'ies' : 'y'}
         </p>
       </div>
 
-      <div className="flex items-center gap-1">
-        {STATUS_TABS.map((tab) => (
-          <Button
-            key={tab.value}
-            variant={activeTab === tab.value ? 'secondary' : 'ghost'}
-            size="sm"
-            className="h-7 text-xs font-normal rounded-full"
-            onClick={() => {
-              const params = new URLSearchParams(
-                searchParams?.toString() ?? '',
-              );
-              params.set('status', tab.value);
-              params.set('page', '1');
-              router.push(`${pathname}?${params.toString()}`);
-            }}
-          >
-            {tab.label}
-            <span className="ml-1.5 text-xs text-muted-foreground">
-              ({tabCounts[tab.value]})
-            </span>
-          </Button>
-        ))}
-      </div>
+      <ButtonGroup>
+        <Select
+          value={activeTab}
+          onValueChange={(value) => {
+            const params = new URLSearchParams(searchParams?.toString() ?? '');
+            params.set('status', value as string);
+            params.set('page', '1');
+            router.push(`${pathname}?${params.toString()}`);
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue
+              className="flex items-center gap-1"
+              render={() => {
+                const activeTabData = STATUS_TABS.find(
+                  (tab) => tab.value === activeTab,
+                );
+                const Icon = activeTabData?.icon;
+                return (
+                  <>
+                    {Icon && <Icon />}
+                    {activeTabData?.label || 'Status'}
+                  </>
+                );
+              }}
+            />
+          </SelectTrigger>
+          <SelectContent className="w-40">
+            <SelectGroup>
+              {STATUS_TABS.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <SelectItem
+                    key={tab.value}
+                    value={tab.value}
+                    className="flex items-center gap-1"
+                  >
+                    <div className="flex items-center gap-1">
+                      <Icon />
+                      {tab.label}
+                      <span className="ml-auto text-muted-foreground">
+                        ({tabCounts[tab.value]})
+                      </span>
+                    </div>
+                  </SelectItem>
+                );
+              })}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="outline" aria-label="More Options">
+                <RiMoreLine className="size-4" />
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleFileChange}
+              className="hidden"
+              aria-hidden="true"
+            />
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onClick={handleImportClick}
+                disabled={isPending}
+              >
+                <RiUpload2Line className="mr-2 size-3.5" />
+                Import
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExport} disabled={isPending}>
+                <RiDownloadLine className="mr-2 size-3.5" />
+                Export
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </ButtonGroup>
     </div>
   );
 }

@@ -2,7 +2,12 @@
 
 import { useEffect, useMemo, useRef, useTransition } from 'react';
 import type { Application } from '@repo/db/entities/application';
-import { Dialog, DialogContent, DialogTitle } from '@repo/ui/components/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogTitle,
+} from '@repo/ui/components/dialog';
 import { Separator } from '@repo/ui/components/separator';
 import { Button } from '@repo/ui/components/button';
 import { updateApplicationAction } from '@/actions/application/update';
@@ -64,28 +69,25 @@ export function ApplicationDialog() {
       open={!!selectedApplicationId}
       onOpenChange={(open) => !open && selectApplication(null)}
     >
-      <DialogContent className="sm:max-w-2xl p-0 gap-0 max-h-[90vh] overflow-y-auto">
-        <DialogTitle className="sr-only">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="sr-only">
           {displayedApplication?.position ?? 'Application details'}
-        </DialogTitle>
+        </div>
         {displayedApplication && (
           <>
             <ApplicationDialogHeader
               application={displayedApplication}
               onSave={save}
             />
-            <Separator />
             <ApplicationDialogProperties
               application={displayedApplication}
               onSave={save}
             />
-            <Separator />
             <ApplicationDialogNotes
               application={displayedApplication}
               onSave={save}
             />
-            <Separator />
-            <div className="px-8 py-4 flex justify-end">
+            <DialogFooter>
               <Button
                 variant="outline"
                 className="text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -94,7 +96,7 @@ export function ApplicationDialog() {
                 <RiDeleteBinLine className="size-4 mr-2" />
                 Delete
               </Button>
-            </div>
+            </DialogFooter>
           </>
         )}
       </DialogContent>

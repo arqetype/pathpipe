@@ -22,7 +22,7 @@ export function CompanyDialogProperties({
   onSave,
 }: CompanyDialogPropertiesProps) {
   return (
-    <div className="px-8 py-4 flex flex-col gap-1">
+    <div className="flex flex-col gap-2 mt-2">
       <Property icon={<RiImageLine className="size-4" />} label="Logo URL">
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
           <InlineInput

@@ -26,6 +26,7 @@ import { ApplicationTier } from '@repo/db/types/application/tier';
 import { TierSelectOptions } from '../shared/tier-select-options';
 import SelectCompany from '@/components/shared/select-company';
 import { APPLICATION_TIER_OPTIONS } from '../constants/tier';
+import { DialogFooter } from '@repo/ui/components/dialog';
 
 type CreateApplicationFormProps = {
   status?: ApplicationStatus;
@@ -268,16 +269,18 @@ export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
           <div className="text-red-500 text-sm">{statusMessage}</div>
         )}
         {renderFormContent()}
-        <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? (
-            <>
-              <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
-              Adding...
-            </>
-          ) : (
-            'Add Application'
-          )}
-        </Button>
+        <DialogFooter>
+          <Button type="submit" disabled={isPending}>
+            {isPending ? (
+              <>
+                <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              'Add Application'
+            )}
+          </Button>
+        </DialogFooter>
       </form>
     </>
   );

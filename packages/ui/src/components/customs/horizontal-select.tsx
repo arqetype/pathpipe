@@ -33,10 +33,10 @@ function HorizontalSelect({
       <div
         data-slot="horizontal-select"
         className={cn(
-          'inline-flex w-fit items-center justify-start gap-1 rounded-4xl border border-input bg-input/30 p-1 flex-wrap',
+          'inline-flex w-fit items-center justify-start gap-1 rounded-lg border border-input bg-input p-1 flex-wrap',
           'transition-colors outline-none',
-          'aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20',
-          'dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
+          'aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20',
+          'dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
           disabled && 'cursor-not-allowed opacity-50',
           className,
         )}
@@ -103,13 +103,12 @@ function HorizontalSelectItem({
         }
       }}
       className={cn(
-        'inline-flex items-center justify-center gap-1.5 rounded-4xl px-3 py-1 text-sm font-medium whitespace-nowrap',
-        'transition-colors outline-none',
-        'text-muted-foreground data-[state=active]:text-foreground',
-        'data-[state=active]:cursor-default data-[state=active]:bg-background',
-        'data-[state=active]:border data-[state=active]:border-input/50',
-        'hover:data-[state=inactive]:bg-input/50 hover:data-[state=inactive]:text-foreground',
-        'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
+        'inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap',
+        'transition-colors outline-none select-none cursor-pointer',
+        'text-muted-foreground data-[state=active]:text-accent-foreground',
+        'data-[state=active]:cursor-default data-[state=active]:bg-accent',
+        'hover:data-[state=inactive]:bg-accent/50 hover:data-[state=inactive]:text-accent-foreground',
+        'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}
@@ -127,7 +126,10 @@ function HorizontalSelectSeparator({
   return (
     <div
       data-slot="horizontal-select-separator"
-      className={cn('mx-1 h-5 w-px bg-border/50', className)}
+      className={cn(
+        'pointer-events-none -mx-1 my-1 h-px w-px bg-border',
+        className,
+      )}
       {...props}
     />
   );

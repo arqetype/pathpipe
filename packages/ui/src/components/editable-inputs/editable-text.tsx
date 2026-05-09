@@ -40,7 +40,7 @@ export default function EditableText({
         }
       }}
       className={cn(
-        'h-auto w-full bg-transparent border-0 hover:bg-accent rounded-full',
+        'h-auto w-full bg-transparent border-0 hover:bg-accent',
         className,
         inputClassName,
       )}

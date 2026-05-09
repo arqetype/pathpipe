@@ -1,6 +1,7 @@
 import type { Application } from '@repo/db/entities/application';
 import { CompanyLogo } from '@/components/shared/company-logo';
 import EditableText from '@repo/ui/components/editable-inputs/editable-text';
+import { DialogTitle } from '@repo/ui/components/dialog';
 
 type ApplicationDialogHeaderProps = {
   application: Application;
@@ -12,7 +13,7 @@ export function ApplicationDialogHeader({
   onSave,
 }: ApplicationDialogHeaderProps) {
   return (
-    <div className="px-8 pt-8 pb-6 flex items-start gap-5">
+    <DialogTitle className=" flex items-start gap-5">
       <CompanyLogo
         key={application.company?.id ?? application.id}
         name={application.company?.name ?? 'Unknown'}
@@ -38,6 +39,6 @@ export function ApplicationDialogHeader({
           inputClassName="text-lg md:text-lg text-muted-foreground"
         />
       </div>
-    </div>
+    </DialogTitle>
   );
 }

@@ -241,17 +241,19 @@ export function SignInForm() {
   };
 
   const renderForgotPasswordView = () => (
-    <div className="px-1">
-      <AuthVerificationAlert
-        icon={RiMailLine}
-        title={
-          forgotPasswordStatus.success
-            ? 'Password Reset Email Sent'
-            : 'Password Reset Failed'
-        }
-        description={forgotPasswordStatus.message}
-      />
-      <div className="space-y-3 mt-4">
+    <>
+      <CardContent className="space-y-4">
+        <AuthVerificationAlert
+          icon={RiMailLine}
+          title={
+            forgotPasswordStatus.success
+              ? 'Password Reset Email Sent'
+              : 'Password Reset Failed'
+          }
+          description={forgotPasswordStatus.message}
+        />
+      </CardContent>
+      <CardFooter className="flex-col bg-transparent border-none">
         <Button
           variant="ghost"
           className="w-full"
@@ -259,46 +261,50 @@ export function SignInForm() {
         >
           Back to Sign In
         </Button>
-      </div>
-    </div>
+      </CardFooter>
+    </>
   );
 
   const renderEmailVerificationView = () => (
-    <div className="px-1">
-      <AuthVerificationAlert
-        icon={RiMailLine}
-        title="Email Verification Required"
-        description={
-          <>
-            We&apos;ve sent a verification email to
-            <span className="font-medium"> {form.getValues('email')}</span>.
-            Please check your inbox and click the verification link to activate
-            your account.
-          </>
-        }
-      />
-      <div className="space-y-3">
-        {resendStatus.message && (
-          <AuthVerificationError
-            success={resendStatus.success}
-            message={resendStatus.message}
-          />
-        )}
-        <Button
-          variant="outline"
-          className="w-full"
-          disabled={isPending}
-          onClick={handleResendVerification}
-        >
-          {isPending ? (
+    <>
+      <CardContent className="space-y-4">
+        <AuthVerificationAlert
+          icon={RiMailLine}
+          title="Email Verification Required"
+          description={
             <>
-              <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
+              We&apos;ve sent a verification email to
+              <span className="font-medium"> {form.getValues('email')}</span>.
+              Please check your inbox and click the verification link to
+              activate your account.
             </>
-          ) : (
-            'Resend Verification Email'
+          }
+        />
+        <div className="space-y-3">
+          {resendStatus.message && (
+            <AuthVerificationError
+              success={resendStatus.success}
+              message={resendStatus.message}
+            />
           )}
-        </Button>
+          <Button
+            variant="outline"
+            className="w-full"
+            disabled={isPending}
+            onClick={handleResendVerification}
+          >
+            {isPending ? (
+              <>
+                <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              'Resend Verification Email'
+            )}
+          </Button>
+        </div>
+      </CardContent>
+      <CardFooter className="space-y-4 flex-col bg-transparent border-none">
         <Button
           variant="ghost"
           className="w-full"
@@ -306,12 +312,12 @@ export function SignInForm() {
         >
           Back to Sign In
         </Button>
-      </div>
-    </div>
+      </CardFooter>
+    </>
   );
 
   const renderSignInView = () => (
-    <>
+    <CardContent className="space-y-4">
       <Controller
         name="email"
         control={form.control}
@@ -366,73 +372,80 @@ export function SignInForm() {
           </Field>
         )}
       />
-    </>
+    </CardContent>
   );
 
   const renderOtpView = () => (
     <>
-      <div className="mb-4">
-        <AuthVerificationAlert
-          icon={RiShieldCheckLine}
-          title="Two-Factor Authentication"
-          description={
-            <>
-              For added security, please enter the 6-digit code sent to
-              <span className="font-medium"> {form.getValues('email')}.</span>
-            </>
-          }
-        />
-      </div>
       <Controller
         name="otp"
         control={form.control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor={field.name}>
-              Enter verification code
-            </FieldLabel>
-            <InputOTP
-              maxLength={6}
-              {...field}
-              id={field.name}
-              className="w-full gap-2"
-              aria-invalid={fieldState.invalid}
-              onComplete={(value) => {
-                if (value.length === 6) {
-                  form.clearErrors('otp');
-                }
-              }}
-            >
-              <InputOTPGroup className="w-full">
-                {[...Array(6)].map((_, index) => (
-                  <InputOTPSlot
-                    key={index}
-                    index={index}
-                    className="w-[15%] md:w-[20%] h-12 text-2xl"
-                  />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
-            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-
-            {otpStatus.message && (
-              <AuthVerificationError
-                success={otpStatus.success}
-                message={otpStatus.message}
-              />
-            )}
-
-            <p className="text-sm text-muted-foreground mt-2">
-              Didn&apos;t receive a code?{' '}
-              <Button
-                variant="link"
-                className="p-0 h-auto text-sm"
-                type="button"
-                onClick={handleResendOtp}
+            <CardContent className="space-y-4">
+              <div className="mb-4">
+                <AuthVerificationAlert
+                  icon={RiShieldCheckLine}
+                  title="Two-Factor Authentication"
+                  description={
+                    <>
+                      For added security, please enter the 6-digit code sent to
+                      <span className="font-medium">
+                        {' '}
+                        {form.getValues('email')}.
+                      </span>
+                    </>
+                  }
+                />
+              </div>
+              <FieldLabel htmlFor={field.name}>
+                Enter verification code
+              </FieldLabel>
+              <InputOTP
+                maxLength={6}
+                {...field}
+                id={field.name}
+                className="w-full gap-2"
+                aria-invalid={fieldState.invalid}
+                onComplete={(value) => {
+                  if (value.length === 6) {
+                    form.clearErrors('otp');
+                  }
+                }}
               >
-                Resend code
-              </Button>
-            </p>
+                <InputOTPGroup className="w-full">
+                  {[...Array(6)].map((_, index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      className="w-[15%] md:w-[20%] h-12 text-2xl"
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+
+              {otpStatus.message && (
+                <AuthVerificationError
+                  success={otpStatus.success}
+                  message={otpStatus.message}
+                />
+              )}
+            </CardContent>
+
+            <CardFooter className="space-y-4 flex-col bg-transparent border-none">
+              <p className="text-sm text-muted-foreground mt-2">
+                Didn&apos;t receive a code?{' '}
+                <Button
+                  variant="link"
+                  className="p-0 h-auto text-sm"
+                  type="button"
+                  onClick={handleResendOtp}
+                >
+                  Resend code
+                </Button>
+              </p>
+            </CardFooter>
           </Field>
         )}
       />
@@ -455,13 +468,10 @@ export function SignInForm() {
     !showEmailVerification && !forgotPasswordStatus.message;
 
   return (
-    <>
-      <div className="mb-4 px-6 w-full">
-        <div className="bg-muted text-muted-foreground w-full flex items-center justify-between rounded-full p-1 gap-2">
-          <Button
-            variant="outline"
-            className="flex-1 hover:bg-[var(--background)] bg-background/70"
-          >
+    <div>
+      <div className="mb-4 mt-3 px-4 w-full">
+        <div className="bg-muted w-full flex items-center justify-between rounded-lg p-1 gap-2">
+          <Button variant="outline" className="flex-1">
             Sign In
           </Button>
           <Link href="/app/sign-up" className="flex-1">
@@ -472,9 +482,9 @@ export function SignInForm() {
         </div>
       </div>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <CardContent className="space-y-4">{renderFormContent()}</CardContent>
+        {renderFormContent()}
         {shouldShowFooter && (
-          <CardFooter className="space-y-4 flex-col">
+          <CardFooter className="space-y-4 flex-col bg-transparent border-none">
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? (
                 <>
@@ -490,6 +500,6 @@ export function SignInForm() {
           </CardFooter>
         )}
       </form>
-    </>
+    </div>
   );
 }

@@ -2,7 +2,12 @@
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import type { Company } from '@repo/db/entities/company';
-import { Dialog, DialogContent, DialogTitle } from '@repo/ui/components/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogTitle,
+} from '@repo/ui/components/dialog';
 import { Separator } from '@repo/ui/components/separator';
 import { Button } from '@repo/ui/components/button';
 import { updateCompanyAction } from '@/actions/company/update';
@@ -72,20 +77,15 @@ export function CompanyDialog() {
 
   return (
     <Dialog open={!!selectedCompanyId} onOpenChange={handleOpenChange}>
-      <DialogContent
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        className="sm:max-w-2xl p-0 gap-0 max-h-[90vh] overflow-y-auto"
-      >
-        <DialogTitle className="sr-only">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="sr-only">
           {displayedCompany?.name ?? 'Company details'}
-        </DialogTitle>
+        </div>
         {displayedCompany && (
           <>
             <CompanyDialogHeader company={displayedCompany} onSave={save} />
-            <Separator />
             <CompanyDialogProperties company={displayedCompany} onSave={save} />
-            <Separator />
-            <div className="px-8 py-4 flex justify-between">
+            <DialogFooter>
               <Button
                 variant="outline"
                 className="text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -98,7 +98,7 @@ export function CompanyDialog() {
                 <RiSaveLine className="size-4 mr-2" />
                 Save changes
               </Button>
-            </div>
+            </DialogFooter>
           </>
         )}
       </DialogContent>

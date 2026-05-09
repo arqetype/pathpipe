@@ -8,6 +8,7 @@ import {
   PaginatedCompanies,
 } from '@repo/db/query/company';
 import { UpdateCompanyDto } from '@repo/db/dto/company/update-company.dto';
+import { CreateCompanyDto } from '@repo/db/dto/company/create-company.dto';
 import { Application } from '@repo/db/entities/application';
 
 @Injectable()
@@ -143,5 +144,49 @@ export class CompanyService {
   async remove(id: string): Promise<void> {
     await this.applicationsRepository.delete({ id });
     await this.companiesRepository.delete({ id });
+  }
+
+  async createFromCsv(data: CreateCompanyDto): Promise<Company> {
+    const company = this.companiesRepository.create({
+      name: data.name,
+      website: data.website,
+      careersUrl: data.careersUrl,
+      industry: data.industry,
+      country: data.country,
+      status: CompanyStatus.PENDING,
+    });
+    return this.companiesRepository.save(company);
+  }
+
+  async findAllForExport(
+    query?: CompaniesQuery,
+  ): Promise<{ data: Company[]; total: number }> {
+    const qb = this.companiesRepository
+      .createQueryBuilder('company')
+      .orderBy('company.created_at', 'DESC');
+
+    if (query?.search) {
+      qb.andWhere(
+        '(company.name ILIKE :search OR company.industry::text ILIKE :search OR company.country ILIKE :search)',
+        { search: `%${query.search}%` },
+      );
+    }
+
+    if (query?.status) {
+      const statuses = Array.isArray(query.status)
+        ? query.status
+        : [query.status];
+      qb.andWhere('company.status IN (:...statuses)', { statuses });
+    }
+
+    if (query?.industry) {
+      const industries = Array.isArray(query.industry)
+        ? query.industry
+        : [query.industry];
+      qb.andWhere('company.industry IN (:...industries)', { industries });
+    }
+
+    const [data, total] = await qb.getManyAndCount();
+    return { data, total };
   }
 }

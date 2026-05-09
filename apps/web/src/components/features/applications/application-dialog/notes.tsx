@@ -12,7 +12,7 @@ export function ApplicationDialogNotes({
   onSave,
 }: ApplicationDialogNotesProps) {
   return (
-    <div className="px-8 py-6">
+    <div className="mt-4">
       <div className="flex items-center gap-2 text-muted-foreground mb-3">
         <RiFileTextLine className="size-4" />
         <span className="text-sm font-medium">Notes</span>
