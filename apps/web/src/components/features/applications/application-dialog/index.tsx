@@ -64,10 +64,7 @@ export function ApplicationDialog() {
       open={!!selectedApplicationId}
       onOpenChange={(open) => !open && selectApplication(null)}
     >
-      <DialogContent
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        className="sm:max-w-2xl p-0 gap-0 max-h-[90vh] overflow-y-auto"
-      >
+      <DialogContent className="sm:max-w-2xl p-0 gap-0 max-h-[90vh] overflow-y-auto">
         <DialogTitle className="sr-only">
           {displayedApplication?.position ?? 'Application details'}
         </DialogTitle>

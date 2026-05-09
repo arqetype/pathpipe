@@ -12,21 +12,14 @@ import {
   AlertDialogTitle,
 } from '@repo/ui/components/alert-dialog';
 import { useState } from 'react';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@repo/ui/components/form';
+import { Controller, useForm } from 'react-hook-form';
+import { Field, FieldLabel, FieldError } from '@repo/ui/components/field';
 import { Button } from '@repo/ui/components/button';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from '@repo/ui/components/input-otp';
-import { useForm } from 'react-hook-form';
 import { EnableOtpDto } from '@repo/db/dto/auth/enable-otp.dto';
 import {
   enableOtpAction,
@@ -127,68 +120,69 @@ export default function EnableOtp({ user }: EnableOtpProps) {
               : 'Enabling OTP will require you to enter a one-time password during sign-in, enhancing the security of your account. To enable OTP, please enter the verification code sent to your registered email.'}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <Form {...form}>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              form.handleSubmit(onSubmit)();
-            }}
-          >
-            <div>
-              <FormField
-                key="otp"
-                control={form.control}
-                name="otp"
-                render={({ field }) => (
-                  <FormItem className="my-4">
-                    <FormLabel>Enter verification code</FormLabel>
-                    <FormControl>
-                      <InputOTP
-                        maxLength={6}
-                        {...field}
-                        className="w-full gap-2"
-                        onComplete={(value) => {
-                          if (value.length === 6) {
-                            form.clearErrors('otp');
-                          }
-                        }}
-                      >
-                        <InputOTPGroup className="w-full">
-                          {[...Array(6)].map((_, index) => (
-                            <InputOTPSlot
-                              key={index}
-                              index={index}
-                              className="w-[15%] md:w-[20%] h-12 text-2xl"
-                            />
-                          ))}
-                        </InputOTPGroup>
-                      </InputOTP>
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit(onSubmit)();
+          }}
+        >
+          <div className="my-4">
+            <Controller
+              name="otp"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>
+                    Enter verification code
+                  </FieldLabel>
+                  <InputOTP
+                    maxLength={6}
+                    {...field}
+                    id={field.name}
+                    className="w-full gap-2"
+                    aria-invalid={fieldState.invalid}
+                    onComplete={(value) => {
+                      if (value.length === 6) {
+                        form.clearErrors('otp');
+                      }
+                    }}
+                  >
+                    <InputOTPGroup className="w-full">
+                      {[...Array(6)].map((_, index) => (
+                        <InputOTPSlot
+                          key={index}
+                          index={index}
+                          className="w-[15%] md:w-[20%] h-12 text-2xl"
+                        />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </div>
+          <AlertDialogFooter>
+            <div className="flex justify-between w-full">
+              <Button
+                variant="secondary"
+                onClick={handleClose}
+                disabled={isConfirming}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isConfirming}>
+                {isConfirming
+                  ? 'Processing...'
+                  : user.need_otp
+                    ? 'Disable OTP'
+                    : 'Enable OTP'}
+              </Button>
             </div>
-            <AlertDialogFooter>
-              <div className="flex justify-between w-full">
-                <Button
-                  variant="secondary"
-                  onClick={handleClose}
-                  disabled={isConfirming}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isConfirming}>
-                  {isConfirming
-                    ? 'Processing...'
-                    : user.need_otp
-                      ? 'Disable OTP'
-                      : 'Enable OTP'}
-                </Button>
-              </div>
-            </AlertDialogFooter>
-          </form>
-        </Form>
+          </AlertDialogFooter>
+        </form>
       </AlertDialogContent>
     </AlertDialog>
   );

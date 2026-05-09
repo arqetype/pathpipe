@@ -23,6 +23,7 @@ import {
 } from '@repo/ui/components/select';
 import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
 import { TierSelectOptions } from '../shared/tier-select-options';
+import { APPLICATION_TIER_OPTIONS } from '../constants/tier';
 
 type ApplicationDialogPropertiesProps = {
   application: Application;
@@ -41,7 +42,13 @@ export function ApplicationDialogProperties({
           onValueChange={(v) => onSave({ status: v as ApplicationStatus })}
         >
           <SelectTrigger className="w-full bg-transparent border-0 hover:bg-accent">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder="Status">
+              {
+                APPLICATION_STATUS_OPTIONS.find(
+                  (opt) => opt.status === application.status,
+                )?.label
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -61,7 +68,13 @@ export function ApplicationDialogProperties({
           onValueChange={(v) => onSave({ tier: v as ApplicationTier })}
         >
           <SelectTrigger className="w-full bg-transparent border-0 hover:bg-accent">
-            <SelectValue placeholder="Tier" />
+            <SelectValue placeholder="Tier">
+              {
+                APPLICATION_TIER_OPTIONS.find(
+                  (opt) => opt.value === application.tier,
+                )?.label
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>

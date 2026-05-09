@@ -3,14 +3,13 @@
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { Button } from '@repo/ui/components/button';
 import { CardContent, CardFooter } from '@repo/ui/components/card';
+import { Controller } from 'react-hook-form';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@repo/ui/components/form';
+  Field,
+  FieldLabel,
+  FieldError,
+  FieldContent,
+} from '@repo/ui/components/field';
 import { Input } from '@repo/ui/components/input';
 import { Checkbox } from '@repo/ui/components/checkbox';
 import { RiLoader5Line, RiMailLine } from '@remixicon/react';
@@ -96,7 +95,7 @@ export function SignUpForm() {
   };
 
   return (
-    <Form {...form}>
+    <>
       <div className="mb-4 px-6 w-full">
         <div className="bg-muted text-muted-foreground w-full flex items-center justify-between rounded-full p-1 gap-2">
           <Link href="/app/sign-in" className="flex-1">
@@ -155,107 +154,124 @@ export function SignUpForm() {
       ) : (
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
+            <Controller
               name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="John Doe"
-                      {...field}
-                      disabled={isPending}
-                      autoComplete="name"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    placeholder="John Doe"
+                    disabled={isPending}
+                    autoComplete="name"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
-            <FormField
-              control={form.control}
+            <Controller
               name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="name@example.com"
-                      {...field}
-                      disabled={isPending}
-                      autoComplete="email"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    placeholder="name@example.com"
+                    disabled={isPending}
+                    autoComplete="email"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
-            <FormField
-              control={form.control}
+            <Controller
               name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center justify-between">
-                    <FormLabel>Password</FormLabel>
-                  </div>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      {...field}
-                      disabled={isPending}
-                      autoComplete="password"
-                      placeholder="••••••••••••••••"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldContent>
+                    <div className="flex items-center justify-between">
+                      <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                    </div>
+                  </FieldContent>
+                  <Input
+                    type="password"
+                    {...field}
+                    id={field.name}
+                    disabled={isPending}
+                    autoComplete="password"
+                    placeholder="••••••••••••••••"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
-            <FormField
-              control={form.control}
+            <Controller
               name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center justify-between">
-                    <FormLabel>Confirm Password</FormLabel>
-                  </div>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      {...field}
-                      disabled={isPending}
-                      autoComplete="confirm-password"
-                      placeholder="••••••••••••••••"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldContent>
+                    <div className="flex items-center justify-between">
+                      <FieldLabel htmlFor={field.name}>
+                        Confirm Password
+                      </FieldLabel>
+                    </div>
+                  </FieldContent>
+                  <Input
+                    type="password"
+                    {...field}
+                    id={field.name}
+                    disabled={isPending}
+                    autoComplete="confirm-password"
+                    placeholder="••••••••••••••••"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
-            <FormField
-              control={form.control}
+            <Controller
               name="terms"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center space-x-2">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={(checked: boolean) => {
-                          return field.onChange(checked);
-                        }}
-                      />
-                    </FormControl>
-                    <FormLabel className="text-sm">
-                      I accept the{' '}
-                      <Link href="" className="text-primary underline">
-                        terms and conditions
-                      </Link>
-                    </FormLabel>
-                  </div>
-                  <FormMessage />
-                </FormItem>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  orientation="horizontal"
+                  data-invalid={fieldState.invalid}
+                >
+                  <Checkbox
+                    id={field.name}
+                    checked={field.value}
+                    onCheckedChange={(checked: boolean) => {
+                      return field.onChange(checked);
+                    }}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  <FieldLabel
+                    htmlFor={field.name}
+                    className="text-sm font-normal"
+                  >
+                    I accept the{' '}
+                    <Link href="" className="text-primary underline">
+                      terms and conditions
+                    </Link>
+                  </FieldLabel>
+                </Field>
               )}
             />
           </CardContent>
@@ -274,6 +290,6 @@ export function SignUpForm() {
           </CardFooter>
         </form>
       )}
-    </Form>
+    </>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from '@repo/ui/hooks/use-debounce';
 import { fetchCompanies } from '@/actions/application/fetch-companies';
+import { CompanyLogo } from './company-logo';
 import {
   Autocomplete,
   AutocompleteContent,
@@ -11,13 +12,12 @@ import {
   AutocompleteItem,
   AutocompleteList,
 } from '@repo/ui/components/autocomplete';
-import { CompanyLogo } from './company-logo';
 
 type CompanyOption = { id: string; name: string; logoUrl?: string };
 
 type SelectCompanyProps = {
   value: string;
-  onChange: (value: string) => void;
+  onValueChange: (value: string) => void;
   placeholder?: string;
 };
 
@@ -25,7 +25,7 @@ const DEBOUNCE_MS = 300;
 
 export default function SelectCompany({
   value,
-  onChange,
+  onValueChange,
   placeholder = 'Select a company',
 }: SelectCompanyProps) {
   const [results, setResults] = useState<CompanyOption[]>([]);
@@ -36,8 +36,6 @@ export default function SelectCompany({
 
   const debouncedSearchQuery = useDebounce(searchQuery, DEBOUNCE_MS);
 
-  console.log('searchQuery:', searchQuery, 'debounced:', debouncedSearchQuery);
-
   useEffect(() => {
     if (!focused) return;
     (async () => {
@@ -46,8 +44,8 @@ export default function SelectCompany({
         const companies = await fetchCompanies(
           debouncedSearchQuery.trim() || undefined,
         );
-        console.log('Setting results:', companies);
         setResults(companies);
+        console.log('Fetched companies:', companies);
       } catch (err) {
         console.error('Failed to fetch companies:', err);
         setResults([]);
@@ -57,13 +55,9 @@ export default function SelectCompany({
     })();
   }, [focused, debouncedSearchQuery]);
 
-  function handleValueChange(selectedValue: string) {
-    onChange(selectedValue);
-  }
-
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newValue = e.target.value;
-    onChange(newValue);
+    onValueChange(newValue);
     setSearchQuery(newValue);
   }
 
@@ -80,15 +74,11 @@ export default function SelectCompany({
   return (
     <Autocomplete
       value={value}
-      onValueChange={handleValueChange}
+      onValueChange={onValueChange}
       open={open}
       onOpenChange={setOpen}
       items={results}
       itemToStringValue={(company: CompanyOption) => company?.name ?? ''}
-      getOptionValue={(company: CompanyOption) => company.id}
-      autoHighlight
-      filterOptions={false}
-      filter={() => true}
     >
       <AutocompleteInput
         placeholder={placeholder}
@@ -101,7 +91,7 @@ export default function SelectCompany({
       <AutocompleteContent>
         <AutocompleteEmpty>No companies found.</AutocompleteEmpty>
         <AutocompleteList>
-          {(item: CompanyOption) => (
+          {(item) => (
             <AutocompleteItem key={item.id} value={item}>
               <CompanyLogo
                 name={item.name}

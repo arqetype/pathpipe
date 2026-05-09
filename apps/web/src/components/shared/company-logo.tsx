@@ -25,7 +25,7 @@ export function CompanyLogo({
     <Image
       src={logoUrl}
       alt={name}
-      className={cn('size-3 shrink-0 rounded-sm object-cover', className)}
+      className={cn('size-3 shrink-0 rounded-xs object-cover', className)}
       width={size}
       height={size}
       unoptimized

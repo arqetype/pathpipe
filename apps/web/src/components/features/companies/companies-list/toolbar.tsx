@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuGroup,
 } from '@repo/ui/components/dropdown-menu';
 import type { CompanySortBy } from '@repo/db/query/company';
 
@@ -152,33 +153,39 @@ export function CompaniesToolbar({
 
         <div className="flex items-center">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 gap-1.5 text-xs font-normal rounded-r-none border-r-0"
-              >
-                <RiArrowUpDownLine className="size-3.5" />
-                {sortLabel}
-              </Button>
-            </DropdownMenuTrigger>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs font-normal rounded-r-none border-r-0"
+                >
+                  <RiArrowUpDownLine className="size-3.5" />
+                  {sortLabel}
+                </Button>
+              }
+            />
             <DropdownMenuContent align="start" className="w-44">
-              <DropdownMenuLabel className="text-xs">Sort by</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={currentSortBy}
-                onValueChange={(v) => setParam('sortBy', v)}
-              >
-                {SORT_OPTIONS.map((opt) => (
-                  <DropdownMenuRadioItem
-                    key={opt.value}
-                    value={opt.value}
-                    className="text-xs"
-                  >
-                    {opt.label}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs">
+                  Sort by
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup
+                  value={currentSortBy}
+                  onValueChange={(v) => setParam('sortBy', v)}
+                >
+                  {SORT_OPTIONS.map((opt) => (
+                    <DropdownMenuRadioItem
+                      key={opt.value}
+                      value={opt.value}
+                      className="text-xs"
+                    >
+                      {opt.label}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button
@@ -193,40 +200,46 @@ export function CompaniesToolbar({
         </div>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1.5 text-xs font-normal"
-            >
-              <RiFilterLine className="size-3.5" />
-              Industry
-              {selectedIndustries.size > 0 && (
-                <span className="ml-0.5 rounded-full bg-primary text-primary-foreground size-4 text-[10px] flex items-center justify-center">
-                  {selectedIndustries.size}
-                </span>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 text-xs font-normal"
+              >
+                <RiFilterLine className="size-3.5" />
+                Industry
+                {selectedIndustries.size > 0 && (
+                  <span className="ml-0.5 rounded-full bg-primary text-primary-foreground size-4 text-[10px] flex items-center justify-center">
+                    {selectedIndustries.size}
+                  </span>
+                )}
+              </Button>
+            }
+          />
           <DropdownMenuContent
             align="start"
             className="w-44 max-h-64 overflow-y-auto"
           >
-            <DropdownMenuLabel className="text-xs">
-              Filter by industry
-            </DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-xs">
+                Filter by industry
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            {INDUSTRY_OPTIONS.map((s) => (
-              <DropdownMenuCheckboxItem
-                key={s.value}
-                checked={selectedIndustries.has(s.value)}
-                onCheckedChange={() => toggleIndustry(s.value)}
-                onSelect={(e) => e.preventDefault()}
-                className="text-xs"
-              >
-                {s.label}
-              </DropdownMenuCheckboxItem>
-            ))}
+            <DropdownMenuGroup>
+              {INDUSTRY_OPTIONS.map((s) => (
+                <DropdownMenuCheckboxItem
+                  key={s.value}
+                  checked={selectedIndustries.has(s.value)}
+                  onCheckedChange={() => toggleIndustry(s.value)}
+                  onSelect={(e) => e.preventDefault()}
+                  className="text-xs"
+                >
+                  {s.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
 

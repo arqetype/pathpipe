@@ -66,18 +66,16 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/app">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <RiBriefcaseLine className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Weaver</span>
-                  <span className="truncate text-xs text-sidebar-foreground/60">
-                    Job tracker
-                  </span>
-                </div>
-              </Link>
+            <SidebarMenuButton render={<Link href="/app" />} size="lg">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <RiBriefcaseLine className="size-4" />
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">Weaver</span>
+                <span className="truncate text-xs text-sidebar-foreground/60">
+                  Job tracker
+                </span>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -95,14 +93,12 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      asChild
+                      render={<Link href={item.href} />}
                       isActive={isActive}
                       tooltip={item.title}
                     >
-                      <Link href={item.href}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
+                      <item.icon />
+                      <span>{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -123,14 +119,12 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                     return (
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton
-                          asChild
+                          render={<Link href={item.href} />}
                           isActive={isActive}
                           tooltip={item.title}
                         >
-                          <Link href={item.href}>
-                            <item.icon />
-                            <span>{item.title}</span>
-                          </Link>
+                          <item.icon />
+                          <span>{item.title}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     );

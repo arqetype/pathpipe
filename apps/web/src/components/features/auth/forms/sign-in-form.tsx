@@ -1,20 +1,19 @@
 'use client';
 
 import { CardContent, CardFooter } from '@repo/ui/components/card';
+import { Input } from '@repo/ui/components/input';
+import { Controller } from 'react-hook-form';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@repo/ui/components/form';
+  Field,
+  FieldLabel,
+  FieldError,
+  FieldContent,
+} from '@repo/ui/components/field';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from '@repo/ui/components/input-otp';
-import { Input } from '@repo/ui/components/input';
 import { SignInDto } from '@repo/db/dto/auth/sign-in.dto';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { useForm } from 'react-hook-form';
@@ -313,58 +312,58 @@ export function SignInForm() {
 
   const renderSignInView = () => (
     <>
-      <FormField
-        key="email"
-        control={form.control}
+      <Controller
         name="email"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Email</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="name@example.com"
-                {...field}
-                disabled={isPending}
-                autoComplete="email"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+            <Input
+              {...field}
+              id={field.name}
+              placeholder="name@example.com"
+              disabled={isPending}
+              autoComplete="email"
+              aria-invalid={fieldState.invalid}
+            />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
         )}
       />
-      <FormField
-        key="password"
-        control={form.control}
+      <Controller
         name="password"
-        render={({ field }) => (
-          <FormItem>
-            <div className="flex items-center justify-between">
-              <FormLabel>Password</FormLabel>
-              <div
-                className="text-sm text-primary hover:underline cursor-pointer"
-                onClick={() => handleForgotPassword(form.getValues('email'))}
-              >
-                {forgotPasswordPending ? (
-                  <span>
-                    <RiLoader5Line className="mr-1 h-3 w-3 inline animate-spin" />
-                    Sending...
-                  </span>
-                ) : (
-                  'Forgot password?'
-                )}
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldContent>
+              <div className="flex items-center justify-between">
+                <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                <div
+                  className="text-sm text-primary hover:underline cursor-pointer"
+                  onClick={() => handleForgotPassword(form.getValues('email'))}
+                >
+                  {forgotPasswordPending ? (
+                    <span>
+                      <RiLoader5Line className="mr-1 h-3 w-3 inline animate-spin" />
+                      Sending...
+                    </span>
+                  ) : (
+                    'Forgot password?'
+                  )}
+                </div>
               </div>
-            </div>
-            <FormControl>
-              <Input
-                type="password"
-                {...field}
-                disabled={isPending}
-                autoComplete="current-password"
-                placeholder="••••••••••••••••"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+            </FieldContent>
+            <Input
+              type="password"
+              {...field}
+              id={field.name}
+              disabled={isPending}
+              autoComplete="current-password"
+              placeholder="••••••••••••••••"
+              aria-invalid={fieldState.invalid}
+            />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
         )}
       />
     </>
@@ -384,36 +383,37 @@ export function SignInForm() {
           }
         />
       </div>
-      <FormField
-        key="otp"
-        control={form.control}
+      <Controller
         name="otp"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Enter verification code</FormLabel>
-            <FormControl>
-              <InputOTP
-                maxLength={6}
-                {...field}
-                className="w-full gap-2"
-                onComplete={(value) => {
-                  if (value.length === 6) {
-                    form.clearErrors('otp');
-                  }
-                }}
-              >
-                <InputOTPGroup className="w-full">
-                  {[...Array(6)].map((_, index) => (
-                    <InputOTPSlot
-                      key={index}
-                      index={index}
-                      className="w-[15%] md:w-[20%] h-12 text-2xl"
-                    />
-                  ))}
-                </InputOTPGroup>
-              </InputOTP>
-            </FormControl>
-            <FormMessage className="text-red-500" />
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={field.name}>
+              Enter verification code
+            </FieldLabel>
+            <InputOTP
+              maxLength={6}
+              {...field}
+              id={field.name}
+              className="w-full gap-2"
+              aria-invalid={fieldState.invalid}
+              onComplete={(value) => {
+                if (value.length === 6) {
+                  form.clearErrors('otp');
+                }
+              }}
+            >
+              <InputOTPGroup className="w-full">
+                {[...Array(6)].map((_, index) => (
+                  <InputOTPSlot
+                    key={index}
+                    index={index}
+                    className="w-[15%] md:w-[20%] h-12 text-2xl"
+                  />
+                ))}
+              </InputOTPGroup>
+            </InputOTP>
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
 
             {otpStatus.message && (
               <AuthVerificationError
@@ -433,7 +433,7 @@ export function SignInForm() {
                 Resend code
               </Button>
             </p>
-          </FormItem>
+          </Field>
         )}
       />
     </>
@@ -455,7 +455,7 @@ export function SignInForm() {
     !showEmailVerification && !forgotPasswordStatus.message;
 
   return (
-    <Form {...form}>
+    <>
       <div className="mb-4 px-6 w-full">
         <div className="bg-muted text-muted-foreground w-full flex items-center justify-between rounded-full p-1 gap-2">
           <Button
@@ -490,6 +490,6 @@ export function SignInForm() {
           </CardFooter>
         )}
       </form>
-    </Form>
+    </>
   );
 }

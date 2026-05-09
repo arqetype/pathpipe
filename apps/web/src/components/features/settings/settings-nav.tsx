@@ -30,9 +30,10 @@ export function SettingsNav() {
         const isActive = normalize(item.href) === normalized;
         return (
           <SidebarMenuItem key={item.href}>
-            <SidebarMenuButton asChild isActive={isActive}>
-              <Link href={item.href}>{item.label}</Link>
-            </SidebarMenuButton>
+            <SidebarMenuButton
+              isActive={isActive}
+              render={<Link href={item.href}>{item.label}</Link>}
+            />
           </SidebarMenuItem>
         );
       })}

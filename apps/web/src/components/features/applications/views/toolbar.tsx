@@ -17,6 +17,7 @@ import { Input } from '@repo/ui/components/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuCheckboxItem,
@@ -123,33 +124,39 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
         {/* Sort */}
         <div className="flex items-center">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 gap-1.5 text-xs font-normal rounded-r-none border-r-0"
-              >
-                <RiArrowUpDownLine className="size-3.5" />
-                {sortLabel}
-              </Button>
-            </DropdownMenuTrigger>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs font-normal rounded-r-none border-r-0"
+                >
+                  <RiArrowUpDownLine className="size-3.5" />
+                  {sortLabel}
+                </Button>
+              }
+            />
             <DropdownMenuContent align="start" className="w-44">
-              <DropdownMenuLabel className="text-xs">Sort by</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={currentSortBy}
-                onValueChange={(v) => setParam('sortBy', v)}
-              >
-                {SORT_OPTIONS.map((opt) => (
-                  <DropdownMenuRadioItem
-                    key={opt.value}
-                    value={opt.value}
-                    className="text-xs"
-                  >
-                    {opt.label}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs">
+                  Sort by
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup
+                  value={currentSortBy}
+                  onValueChange={(v) => setParam('sortBy', v)}
+                >
+                  {SORT_OPTIONS.map((opt) => (
+                    <DropdownMenuRadioItem
+                      key={opt.value}
+                      value={opt.value}
+                      className="text-xs"
+                    >
+                      {opt.label}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button
@@ -165,40 +172,46 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
 
         {/* Status filter */}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1.5 text-xs font-normal"
-            >
-              <RiFilterLine className="size-3.5" />
-              Status
-              {hiddenStatuses.size > 0 && (
-                <span className="ml-0.5 rounded-full bg-primary text-primary-foreground size-4 text-[10px] flex items-center justify-center">
-                  {hiddenStatuses.size}
-                </span>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-44">
-            <DropdownMenuLabel className="text-xs">
-              Filter by status
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {APPLICATION_STATUS_OPTIONS.map((s) => (
-              <DropdownMenuCheckboxItem
-                key={s.status}
-                checked={!hiddenStatuses.has(s.status)}
-                onCheckedChange={() => toggleStatus(s.status)}
-                onSelect={(e) => e.preventDefault()}
-                className="text-xs"
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 text-xs font-normal"
               >
-                <span
-                  className={`size-2 rounded-full inline-block mr-1.5 ${s.dotClass}`}
-                />
-                {s.label}
-              </DropdownMenuCheckboxItem>
-            ))}
+                <RiFilterLine className="size-3.5" />
+                Status
+                {hiddenStatuses.size > 0 && (
+                  <span className="ml-0.5 rounded-full bg-primary text-primary-foreground size-4 text-[10px] flex items-center justify-center">
+                    {hiddenStatuses.size}
+                  </span>
+                )}
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="start" className="w-44">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-xs">
+                Filter by status
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {APPLICATION_STATUS_OPTIONS.map((s) => (
+                <DropdownMenuCheckboxItem
+                  key={s.status}
+                  checked={!hiddenStatuses.has(s.status)}
+                  onCheckedChange={() => toggleStatus(s.status)}
+                  onSelect={(e) => e.preventDefault()}
+                  className="text-xs"
+                >
+                  <span
+                    className={`size-2 rounded-full inline-block mr-1.5 ${s.dotClass}`}
+                  />
+                  {s.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
 

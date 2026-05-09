@@ -22,14 +22,16 @@ export function CreateApplicationDialog() {
       open={isCreateDialogOpen}
       onOpenChange={(open) => (open ? undefined : closeCreateDialog())}
     >
-      <DialogTrigger asChild>
-        <Button
-          size="sm"
-          onClick={() => openCreateDialog(ApplicationStatus.WISHLIST)}
-        >
-          <RiAddLine className="size-4" />
-          New application
-        </Button>
+      <DialogTrigger
+        render={
+          <Button
+            size="sm"
+            onClick={() => openCreateDialog(ApplicationStatus.WISHLIST)}
+          />
+        }
+      >
+        <RiAddLine className="size-4" />
+        New application
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-2xl">

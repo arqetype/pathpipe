@@ -26,8 +26,8 @@ export function AppBreadcrumb() {
           <Fragment key={index}>
             <BreadcrumbItem key={index}>
               {item.href ? (
-                <BreadcrumbLink asChild>
-                  <Link href={item.href}>{item.label}</Link>
+                <BreadcrumbLink render={<Link href={item.href} />}>
+                  {item.label}
                 </BreadcrumbLink>
               ) : (
                 <BreadcrumbPage>{item.label}</BreadcrumbPage>

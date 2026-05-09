@@ -7,7 +7,7 @@ import {
   RiInformationLine,
   RiErrorWarningLine,
   RiCloseCircleLine,
-  RiLoader5Line,
+  RiLoaderLine,
 } from '@remixicon/react';
 
 const Toaster = ({ ...props }: ToasterProps) => {
@@ -22,7 +22,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         info: <RiInformationLine className="size-4" />,
         warning: <RiErrorWarningLine className="size-4" />,
         error: <RiCloseCircleLine className="size-4" />,
-        loading: <RiLoader5Line className="size-4 animate-spin" />,
+        loading: <RiLoaderLine className="size-4 animate-spin" />,
       }}
       style={
         {

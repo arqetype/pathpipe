@@ -18,9 +18,9 @@ function ThemeSwitcher() {
   const { setTheme, theme } = useTheme();
 
   return (
-    <Select value={theme} onValueChange={setTheme}>
+    <Select value={theme} onValueChange={(value) => value && setTheme(value)}>
       <SelectTrigger className="w-32">
-        <SelectValue />
+        <SelectValue>{themes.find((t) => t.value === theme)?.name}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
