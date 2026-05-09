@@ -40,7 +40,9 @@ const fetchWithAuth = cache(
     const authToken = cookieStore.get('auth-token');
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      ...(!(options.body instanceof FormData) && {
+        'Content-Type': 'application/json',
+      }),
       ...(options.headers as Record<string, string>),
     };
 
@@ -114,6 +116,23 @@ export const get = cache(
   },
 );
 
+export const getRaw = cache(async (path: string): Promise<Response | null> => {
+  const cookieStore = await cookies();
+  const authToken = cookieStore.get('auth-token');
+
+  const headers: Record<string, string> = {};
+  if (authToken) {
+    headers['Cookie'] = `auth-token=${authToken.value}`;
+  }
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
+    headers,
+    credentials: 'include',
+  });
+
+  return response.ok ? response : null;
+});
+
 export const post = cache(
   async <T = object>(path: string, body: unknown): Promise<FetchResult<T>> => {
     return fetchWithAuth<T>(path, {
@@ -146,6 +165,15 @@ export const patch = cache(
     return fetchWithAuth<T>(path, {
       method: 'PATCH',
       body: JSON.stringify(body),
+    });
+  },
+);
+
+export const postForm = cache(
+  async <T = object>(path: string, body: FormData): Promise<FetchResult<T>> => {
+    return fetchWithAuth<T>(path, {
+      method: 'POST',
+      body,
     });
   },
 );

@@ -1,17 +1,16 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-import { CsvImportResult } from '@repo/db/dto/company/csv-import-result.dto';
 import { postForm } from '@/lib/fetch';
 
 interface ImportResult {
   success: boolean;
-  data?: CsvImportResult;
+  updated_at?: string;
   error?: string;
 }
 
-export const importCsvAction = async (
+export const importCompanyLogoAction = async (
   formData: FormData,
+  id: string,
 ): Promise<ImportResult> => {
   const file = formData.get('file');
 
@@ -24,17 +23,22 @@ export const importCsvAction = async (
   }
 
   if (
-    !file.name.endsWith('.csv') &&
-    file.type !== 'text/csv' &&
-    file.type !== 'application/vnd.ms-excel'
+    !file.name.endsWith('.png') &&
+    file.type !== 'image/png' &&
+    file.type !== 'image/jpeg' &&
+    file.type !== 'image/webp' &&
+    file.type !== 'image/svg+xml'
   ) {
-    return { success: false, error: 'Only CSV files are supported' };
+    return { success: false, error: 'Only images are supported' };
   }
 
   const body = new FormData();
   body.append('file', file);
 
-  const result = await postForm<CsvImportResult>('/companies/import', body);
+  const result = await postForm<{ success: boolean; updated_at: string }>(
+    `/companies/${id}/logo`,
+    body,
+  );
 
   if (!result.ok) {
     return {
@@ -43,7 +47,5 @@ export const importCsvAction = async (
     };
   }
 
-  revalidatePath('/app/companies');
-
-  return { success: true, data: result.data };
+  return { success: true, updated_at: result.data.updated_at };
 };

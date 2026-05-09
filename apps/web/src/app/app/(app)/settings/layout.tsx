@@ -13,7 +13,7 @@ export default async function SettingsLayout({
   await getCurrentUser();
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-hidden md:flex-row">
+    <div className="flex flex-col flex-1 min-h-[calc(100vh-theme(space.12))] overflow-hidden md:flex-row">
       {/* Left sidebar: user info + vertical nav */}
       <aside className="w-full shrink-0 flex flex-col gap-4 border-b p-6 overflow-y-auto md:w-60 md:border-b-0 md:border-r">
         <Suspense

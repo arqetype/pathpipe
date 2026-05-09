@@ -16,8 +16,8 @@ export function ApplicationDialogHeader({
     <DialogTitle className=" flex items-start gap-5">
       <CompanyLogo
         key={application.company?.id ?? application.id}
+        companyId={application.company?.id}
         name={application.company?.name ?? 'Unknown'}
-        logoUrl={application.company?.logoUrl}
         size={80}
         className="size-20 rounded-xl object-contain shrink-0"
       />

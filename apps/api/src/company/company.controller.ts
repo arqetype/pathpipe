@@ -9,11 +9,14 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { type Response } from 'express';
 import { CompanyService } from './company.service';
+import { CompanyImageService } from './company-image.service';
 import { CompanyCsvService } from './company-csv.service';
 import { CsvImportResult } from '@repo/db/dto/company/csv-import-result.dto';
 import {
@@ -29,6 +32,7 @@ import { UpdateCompanyStatusDto } from '@repo/db/dto/company/update-company-stat
 export class CompanyController {
   constructor(
     private readonly companyService: CompanyService,
+    private readonly companyImageService: CompanyImageService,
     private readonly companyCsvService: CompanyCsvService,
   ) {}
 
@@ -54,6 +58,33 @@ export class CompanyController {
   @Post()
   create(@Body() data: { name: string }): Promise<Company> {
     return this.companyService.create(data.name);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post(':id/logo')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadLogo(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<{ success: boolean; updated_at: Date }> {
+    const updated_at = await this.companyImageService.uploadLogo(
+      id,
+      file.buffer,
+      file.mimetype,
+    );
+    return { success: true, updated_at };
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get(':id/logo')
+  async getLogo(@Param('id') id: string, @Res() res: Response): Promise<void> {
+    const logo = await this.companyImageService.getLogo(id);
+    res.set({
+      'Content-Type': logo.mimeType,
+      'Cache-Control': 'max-age=31536000, immutable',
+      'Content-Length': logo.buffer.length.toString(),
+    });
+    res.end(logo.buffer);
   }
 
   @HttpCode(HttpStatus.OK)

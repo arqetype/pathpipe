@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Application } from '@repo/db/entities/application';
@@ -10,6 +15,7 @@ import {
 import { User } from '@repo/db/entities/user';
 import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
 import { Company, CompanyStatus } from '@repo/db/entities/company';
+import { CompanyImageService } from '../company/company-image.service';
 
 @Injectable()
 export class ApplicationService {
@@ -18,6 +24,8 @@ export class ApplicationService {
     private readonly applicationsRepository: Repository<Application>,
     @InjectRepository(Company)
     private readonly companiesRepository: Repository<Company>,
+    @Inject(forwardRef(() => CompanyImageService))
+    private readonly companyImageService: CompanyImageService,
   ) {}
 
   async findMany(
@@ -97,24 +105,6 @@ export class ApplicationService {
     return application;
   }
 
-  private async resolveCompanyLogoUrl(
-    name: string,
-    type: 'icon' | 'logo' | 'symbol' = 'icon',
-  ): Promise<string | null> {
-    try {
-      const response = await fetch(
-        `https://api.brandfetch.io/v2/search/${encodeURIComponent(name)}`,
-      );
-      if (!response.ok) return null;
-      const results = (await response.json()) as Array<{ brandId?: string }>;
-      const brandId = results?.[0]?.brandId;
-      if (!brandId) return null;
-      return `https://cdn.brandfetch.io/${brandId}/fallback/404/${type}.svg?`;
-    } catch {
-      return null;
-    }
-  }
-
   async create(user: User, dto: CreateApplicationDto): Promise<Application> {
     const companyName = dto.company?.trim();
     let companyId: string | undefined;
@@ -125,13 +115,17 @@ export class ApplicationService {
       });
 
       if (!existingCompany) {
-        const logoUrl = await this.resolveCompanyLogoUrl(companyName);
         const created = await this.companiesRepository.save({
           name: companyName,
-          logoUrl: logoUrl ?? null,
           status: CompanyStatus.PENDING,
         });
         existingCompany = created;
+
+        // auto-fetch logo from Brandfetch and store as blob
+        await this.companyImageService.fetchAndSaveLogo(
+          existingCompany.id,
+          companyName,
+        );
       }
 
       companyId = existingCompany.id;

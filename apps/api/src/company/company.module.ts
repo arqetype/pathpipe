@@ -5,6 +5,7 @@ import { Application } from '@repo/db/entities/application';
 import { CompanyController } from './company.controller';
 import { CompanyService } from './company.service';
 import { CompanyCsvService } from './company-csv.service';
+import { CompanyImageService } from './company-image.service';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 
@@ -18,8 +19,8 @@ import { memoryStorage } from 'multer';
       },
     }),
   ],
-  providers: [CompanyService, CompanyCsvService],
+  providers: [CompanyService, CompanyCsvService, CompanyImageService],
   controllers: [CompanyController],
-  exports: [CompanyService],
+  exports: [CompanyService, CompanyImageService],
 })
 export class CompanyModule {}

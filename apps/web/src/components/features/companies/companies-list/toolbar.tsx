@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useTransition } from 'react';
+import { useDebounce } from '@repo/ui/hooks/use-debounce';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   RiCloseLine,
@@ -92,22 +93,20 @@ export function CompaniesToolbar({
   const [inputValue, setInputValue] = useState('');
   const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const debouncedSearch = useDebounce(inputValue, 300);
 
   useEffect(() => {
     setInputValue(searchParams?.get('search') ?? '');
   }, [searchParams]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!searchParams) return;
-      const params = new URLSearchParams(searchParams?.toString() ?? '');
-      const current = inputValue;
-      if (current) params.set('search', current);
-      else params.delete('search');
-      router.push(`${pathname}?${params.toString()}`);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [inputValue, pathname, router, searchParams]);
+    if (!searchParams) return;
+    const params = new URLSearchParams(searchParams.toString());
+    if (debouncedSearch) params.set('search', debouncedSearch);
+    else params.delete('search');
+    router.push(`${pathname}?${params.toString()}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
 
   if (!searchParams) {
     return null;
@@ -154,7 +153,7 @@ export function CompaniesToolbar({
     formData.append('file', file);
 
     startTransition(async () => {
-      const result = await importCsvAction(null, formData);
+      const result = await importCsvAction(formData);
 
       if (result.success) {
         const { successCount, errorCount } = result.data!;

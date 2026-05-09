@@ -26,7 +26,7 @@ export class CompanyService {
 
     const qb = this.companiesRepository
       .createQueryBuilder('company')
-      .select(['company.id', 'company.name', 'company.logoUrl'])
+      .select(['company.id', 'company.name'])
       .addSelect('similarity(company.name, :query)', 'similarity')
       .orderBy('similarity', 'DESC')
       .addOrderBy('company.name', 'ASC')
@@ -42,7 +42,8 @@ export class CompanyService {
     return companies.map((company) => ({
       id: company.id,
       name: company.name,
-      logoUrl: company.logoUrl,
+      // Frontend will request /api/companies/:id/logo to retrieve the blob
+      logoUrl: `/api/companies/${company.id}/logo`,
     }));
   }
 
@@ -142,7 +143,7 @@ export class CompanyService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.applicationsRepository.delete({ id });
+    await this.applicationsRepository.delete({ company: { id } });
     await this.companiesRepository.delete({ id });
   }
 

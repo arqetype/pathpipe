@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, type ReactNode } from 'react';
+import { useDebounce } from '@repo/ui/hooks/use-debounce';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   RiSearchLine,
@@ -64,22 +65,19 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
   );
 
   const [inputValue, setInputValue] = useState(currentSearch);
+  const debouncedSearch = useDebounce(inputValue, 300);
 
   useEffect(() => {
     setInputValue(currentSearch);
   }, [currentSearch]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      const current = inputValue;
-      if (current) params.set('search', current);
-      else params.delete('search');
-      router.push(`${pathname}?${params.toString()}`);
-    }, 300);
-    return () => clearTimeout(timer);
+    const params = new URLSearchParams(searchParams.toString());
+    if (debouncedSearch) params.set('search', debouncedSearch);
+    else params.delete('search');
+    router.push(`${pathname}?${params.toString()}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputValue]);
+  }, [debouncedSearch]);
 
   function setParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());

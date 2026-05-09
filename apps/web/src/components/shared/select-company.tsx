@@ -89,8 +89,8 @@ export default function SelectCompany({
           {(item) => (
             <AutocompleteItem key={item.id} value={item}>
               <CompanyLogo
+                companyId={item.id}
                 name={item.name}
-                logoUrl={item.logoUrl ?? ''}
                 size={14}
                 className="size-4 shrink-0 rounded-xs"
               />

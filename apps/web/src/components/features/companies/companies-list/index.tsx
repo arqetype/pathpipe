@@ -30,7 +30,6 @@ export function CompaniesList({
   const searchParams = useSearchParams();
   const setCompanies = useCompanyStore((state) => state.setCompanies);
 
-  // Sync initial data to store for dialog to work (matches applications pattern)
   useEffect(() => {
     setCompanies(companies);
   }, [companies, setCompanies]);

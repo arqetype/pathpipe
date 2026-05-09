@@ -15,10 +15,14 @@ export function CompanyDialogHeader({
   return (
     <DialogHeader className="flex-row items-center gap-4">
       <CompanyLogo
-        key={company.id}
+        companyId={company.id}
         name={company.name}
-        logoUrl={company.logoUrl}
         size={80}
+        cacheKey={
+          company.updated_at
+            ? new Date(company.updated_at).getTime()
+            : undefined
+        }
         className="size-20 rounded-xl object-contain shrink-0"
       />
 

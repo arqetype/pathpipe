@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Application } from '@repo/db/entities/application';
 import {
   Dialog,
@@ -29,6 +30,7 @@ export function ApplicationDialog() {
   const { selectApplication, patchApplication, removeApplication } =
     useApplicationStore();
   const [, startTransition] = useTransition();
+  const router = useRouter();
 
   const lastApplicationRef = useRef<Application | null>(null);
   useEffect(() => {
@@ -59,7 +61,10 @@ export function ApplicationDialog() {
     if (!displayedApplication) return;
     selectApplication(null);
     removeApplication(displayedApplication.id);
-    deleteApplicationAction({ id: displayedApplication.id });
+    startTransition(async () => {
+      await deleteApplicationAction({ id: displayedApplication.id });
+      router.refresh();
+    });
   }
 
   return (

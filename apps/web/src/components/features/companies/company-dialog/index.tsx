@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Company } from '@repo/db/entities/company';
 import {
   Dialog,
@@ -10,6 +11,7 @@ import {
 import { Button } from '@repo/ui/components/button';
 import { updateCompanyAction } from '@/actions/company/update';
 import { deleteCompanyAction } from '@/actions/company/delete';
+import { importCompanyLogoAction } from '@/actions/company/import-company-logo';
 import { toast } from 'sonner';
 import { RiDeleteBinLine, RiSaveLine } from '@remixicon/react';
 import { CompanyDialogHeader } from './header';
@@ -24,11 +26,14 @@ export function CompanyDialog() {
   );
   const { selectCompany, patchCompany, removeCompany } = useCompanyStore();
   const [, startTransition] = useTransition();
+  const router = useRouter();
 
   const [pendingChanges, setPendingChanges] = useState<Partial<Company>>({});
+  const [pendingLogoFile, setPendingLogoFile] = useState<File | null>(null);
 
   useEffect(() => {
     setPendingChanges({});
+    setPendingLogoFile(null);
   }, [selectedCompanyId]);
 
   const displayedCompany = useMemo(() => {
@@ -40,21 +45,45 @@ export function CompanyDialog() {
   }
 
   function handleSaveAll() {
-    if (!displayedCompany || Object.keys(pendingChanges).length === 0) return;
+    if (!displayedCompany) return;
+    const hasChanges = Object.keys(pendingChanges).length > 0;
+    if (!hasChanges && !pendingLogoFile) return;
 
-    const previous = patchCompany(displayedCompany.id, pendingChanges);
     startTransition(async () => {
-      const result = await updateCompanyAction({
-        id: displayedCompany.id,
-        ...pendingChanges,
-      });
-      if (!result.success) {
-        if (previous) patchCompany(displayedCompany.id, previous);
-        toast.error('Failed to save changes.');
-      } else {
-        toast.success('Changes saved.');
+      if (pendingLogoFile) {
+        const formData = new FormData();
+        formData.append('file', pendingLogoFile);
+        const logoResult = await importCompanyLogoAction(
+          formData,
+          displayedCompany.id,
+        );
+        if (!logoResult.success) {
+          toast.error(logoResult.error || 'Logo upload failed.');
+          return;
+        }
+        setPendingLogoFile(null);
+        if (logoResult.updated_at) {
+          patchCompany(displayedCompany.id, {
+            updated_at: new Date(logoResult.updated_at),
+          });
+        }
+      }
+
+      if (hasChanges) {
+        const previous = patchCompany(displayedCompany.id, pendingChanges);
+        const result = await updateCompanyAction({
+          id: displayedCompany.id,
+          ...pendingChanges,
+        });
+        if (!result.success) {
+          if (previous) patchCompany(displayedCompany.id, previous);
+          toast.error('Failed to save changes.');
+          return;
+        }
         setPendingChanges({});
       }
+
+      toast.success('Changes saved.');
     });
   }
 
@@ -62,10 +91,14 @@ export function CompanyDialog() {
     if (!displayedCompany) return;
     selectCompany(null);
     removeCompany(displayedCompany.id);
-    deleteCompanyAction({ id: displayedCompany.id });
+    startTransition(async () => {
+      await deleteCompanyAction({ id: displayedCompany.id });
+      router.refresh();
+    });
   }
 
-  const hasPendingChanges = Object.keys(pendingChanges).length > 0;
+  const hasPendingChanges =
+    Object.keys(pendingChanges).length > 0 || pendingLogoFile !== null;
 
   function handleOpenChange(open: boolean) {
     if (!open) {
@@ -82,7 +115,12 @@ export function CompanyDialog() {
         {displayedCompany && (
           <>
             <CompanyDialogHeader company={displayedCompany} onSave={save} />
-            <CompanyDialogProperties company={displayedCompany} onSave={save} />
+            <CompanyDialogProperties
+              company={displayedCompany}
+              pendingLogoFile={pendingLogoFile}
+              onSave={save}
+              onLogoSelect={setPendingLogoFile}
+            />
             <DialogFooter>
               <Button
                 variant="outline"

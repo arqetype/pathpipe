@@ -6,6 +6,7 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
   Unique,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user';
 import { CompanyIndustry } from '../types/company/industry';
@@ -27,6 +28,12 @@ export class Company {
 
   @Column({ nullable: true })
   logoUrl: string;
+
+  @Column({ type: 'bytea', nullable: true })
+  logoBlob: Buffer;
+
+  @Column({ nullable: true })
+  logoMimeType: string;
 
   @Column({ nullable: true })
   website: string;
@@ -58,6 +65,9 @@ export class Company {
 
   @CreateDateColumn()
   created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
 
   @DeleteDateColumn()
   deleted_at: Date;

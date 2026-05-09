@@ -16,8 +16,12 @@ interface CompanyCardProps {
   company: Company;
 }
 
-export function CompanyCard({ company }: CompanyCardProps) {
+export function CompanyCard({ company: initial }: CompanyCardProps) {
   const selectCompany = useCompanyStore((state) => state.selectCompany);
+  const company =
+    useCompanyStore((state) =>
+      state.companies.find((c) => c.id === initial.id),
+    ) ?? initial;
 
   return (
     <Card
@@ -26,9 +30,14 @@ export function CompanyCard({ company }: CompanyCardProps) {
     >
       <CardHeader className="flex flex-row items-center gap-3 pb-2">
         <CompanyLogo
+          companyId={company.id}
           name={company.name}
-          logoUrl={company.logoUrl}
           size={40}
+          cacheKey={
+            company.updated_at
+              ? new Date(company.updated_at).getTime()
+              : undefined
+          }
           className="size-10 rounded-lg"
         />
         <CardTitle className="text-base line-clamp-1">{company.name}</CardTitle>
