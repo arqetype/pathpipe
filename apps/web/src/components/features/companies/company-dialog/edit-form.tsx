@@ -63,13 +63,29 @@ export function EditCompanyForm({ company, onClose }: EditCompanyFormProps) {
     },
   });
 
+  const ALLOWED_LOGO_TYPES = new Set([
+    'image/png',
+    'image/jpeg',
+    'image/webp',
+    'image/gif',
+  ]);
+  const MAX_LOGO_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
+    if (!ALLOWED_LOGO_TYPES.has(file.type)) {
+      toast.error('Only PNG, JPEG, WebP, and GIF images are allowed.');
+      return;
+    }
+    if (file.size > MAX_LOGO_SIZE_BYTES) {
+      toast.error('Logo must be smaller than 10 MB.');
+      return;
+    }
     if (logoPreviewUrl) URL.revokeObjectURL(logoPreviewUrl);
     setPendingLogoFile(file);
     setLogoPreviewUrl(URL.createObjectURL(file));
-    e.target.value = '';
   }
 
   function onSubmit(data: FormValues) {
@@ -158,7 +174,7 @@ export function EditCompanyForm({ company, onClose }: EditCompanyFormProps) {
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/webp,image/gif"
                 className="hidden"
                 onChange={handleFileChange}
               />
