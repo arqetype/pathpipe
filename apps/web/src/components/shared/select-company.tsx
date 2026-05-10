@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useDebounce } from '@repo/ui/hooks/use-debounce';
-import { fetchCompanies } from '@/actions/application/fetch-companies';
+import { fetchCompaniesSuggestionsAction } from '@/actions/company/fetch-suggestions';
 import { CompanyLogo } from './company-logo';
 import {
   Autocomplete,
@@ -39,7 +39,7 @@ export default function SelectCompany({
     if (!focused) return;
     (async () => {
       try {
-        const companies = await fetchCompanies(
+        const companies = await fetchCompaniesSuggestionsAction(
           debouncedSearchQuery.trim() || undefined,
         );
         setResults(companies);

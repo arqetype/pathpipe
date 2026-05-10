@@ -1,142 +1,43 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import type { Company } from '@repo/db/entities/company';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-} from '@repo/ui/components/dialog';
-import { Button } from '@repo/ui/components/button';
-import { updateCompanyAction } from '@/actions/company/update';
-import { deleteCompanyAction } from '@/actions/company/delete';
-import { importCompanyLogoAction } from '@/actions/company/import-company-logo';
-import { toast } from 'sonner';
-import { RiDeleteBinLine, RiSaveLine } from '@remixicon/react';
-import { CompanyDialogHeader } from './header';
-import { CompanyDialogProperties } from './properties';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { Dialog, DialogContent } from '@repo/ui/components/dialog';
 import { useCompanyStore } from '../store';
+import { EditCompanyForm } from './edit-form';
 
-export function CompanyDialog() {
-  const selectedCompanyId = useCompanyStore((state) => state.selectedCompanyId);
-  const selectedCompany = useCompanyStore(
-    (state) =>
-      state.companies.find((c) => c.id === state.selectedCompanyId) ?? null,
-  );
-  const { selectCompany, patchCompany, removeCompany } = useCompanyStore();
-  const [, startTransition] = useTransition();
+export function CompanyDialog({ id }: { id: string | null }) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const router = useRouter();
-
-  const [pendingChanges, setPendingChanges] = useState<Partial<Company>>({});
-  const [pendingLogoFile, setPendingLogoFile] = useState<File | null>(null);
+  const [open, setOpen] = useState(!!id);
 
   useEffect(() => {
-    setPendingChanges({});
-    setPendingLogoFile(null);
-  }, [selectedCompanyId]);
+    setOpen(!!id);
+  }, [id]);
 
-  const displayedCompany = useMemo(() => {
-    return selectedCompany ?? null;
-  }, [selectedCompany]);
+  const company = useCompanyStore(
+    (state) => state.companies.find((c) => c.id === id) ?? null,
+  );
 
-  function save(data: Partial<Company>) {
-    setPendingChanges((prev) => ({ ...prev, ...data }));
-  }
-
-  function handleSaveAll() {
-    if (!displayedCompany) return;
-    const hasChanges = Object.keys(pendingChanges).length > 0;
-    if (!hasChanges && !pendingLogoFile) return;
-
-    startTransition(async () => {
-      if (pendingLogoFile) {
-        const formData = new FormData();
-        formData.append('file', pendingLogoFile);
-        const logoResult = await importCompanyLogoAction(
-          formData,
-          displayedCompany.id,
-        );
-        if (!logoResult.success) {
-          toast.error(logoResult.error || 'Logo upload failed.');
-          return;
-        }
-        setPendingLogoFile(null);
-        if (logoResult.updated_at) {
-          patchCompany(displayedCompany.id, {
-            updated_at: new Date(logoResult.updated_at),
-          });
-        }
-      }
-
-      if (hasChanges) {
-        const previous = patchCompany(displayedCompany.id, pendingChanges);
-        const result = await updateCompanyAction({
-          id: displayedCompany.id,
-          ...pendingChanges,
-        });
-        if (!result.success) {
-          if (previous) patchCompany(displayedCompany.id, previous);
-          toast.error('Failed to save changes.');
-          return;
-        }
-        setPendingChanges({});
-      }
-
-      toast.success('Changes saved.');
-    });
-  }
-
-  function handleDelete() {
-    if (!displayedCompany) return;
-    selectCompany(null);
-    removeCompany(displayedCompany.id);
-    startTransition(async () => {
-      await deleteCompanyAction({ id: displayedCompany.id });
-      router.refresh();
-    });
-  }
-
-  const hasPendingChanges =
-    Object.keys(pendingChanges).length > 0 || pendingLogoFile !== null;
-
-  function handleOpenChange(open: boolean) {
-    if (!open) {
-      selectCompany(null);
-    }
+  function close() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('id');
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname);
+    setOpen(false);
   }
 
   return (
-    <Dialog open={!!selectedCompanyId} onOpenChange={handleOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen) close();
+      }}
+    >
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="sr-only">
-          {displayedCompany?.name ?? 'Company details'}
-        </div>
-        {displayedCompany && (
-          <>
-            <CompanyDialogHeader company={displayedCompany} onSave={save} />
-            <CompanyDialogProperties
-              company={displayedCompany}
-              pendingLogoFile={pendingLogoFile}
-              onSave={save}
-              onLogoSelect={setPendingLogoFile}
-            />
-            <DialogFooter>
-              <Button
-                variant="outline"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={handleDelete}
-              >
-                <RiDeleteBinLine className="size-4 mr-2" />
-                Delete
-              </Button>
-              <Button onClick={handleSaveAll} disabled={!hasPendingChanges}>
-                <RiSaveLine className="size-4 mr-2" />
-                Save changes
-              </Button>
-            </DialogFooter>
-          </>
-        )}
+        {company && <EditCompanyForm company={company} onClose={close} />}
       </DialogContent>
     </Dialog>
   );

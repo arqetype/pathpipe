@@ -1,106 +1,43 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import type { Application } from '@repo/db/entities/application';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-} from '@repo/ui/components/dialog';
-import { Button } from '@repo/ui/components/button';
-import { updateApplicationAction } from '@/actions/application/update';
-import { deleteApplicationAction } from '@/actions/application/delete';
-import { toast } from 'sonner';
-import { RiDeleteBinLine } from '@remixicon/react';
-import { ApplicationDialogHeader } from './header';
-import { ApplicationDialogProperties } from './properties';
-import { ApplicationDialogNotes } from './notes';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { Dialog, DialogContent } from '@repo/ui/components/dialog';
 import { useApplicationStore } from '../store';
+import { EditApplicationForm } from './edit-form';
 
-export function ApplicationDialog() {
-  const selectedApplicationId = useApplicationStore(
-    (state) => state.selectedApplicationId,
-  );
-  const selectedApplication = useApplicationStore(
-    (state) =>
-      state.applications.find((a) => a.id === state.selectedApplicationId) ??
-      null,
-  );
-  const { selectApplication, patchApplication, removeApplication } =
-    useApplicationStore();
-  const [, startTransition] = useTransition();
+export function ApplicationDialog({ id }: { id: string | null }) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const router = useRouter();
+  const [open, setOpen] = useState(!!id);
 
-  const lastApplicationRef = useRef<Application | null>(null);
   useEffect(() => {
-    if (selectedApplication) {
-      lastApplicationRef.current = selectedApplication;
-    }
-  }, [selectedApplication]);
-  const displayedApplication = useMemo(() => {
-    return selectedApplication ?? null;
-  }, [selectedApplication]);
+    setOpen(!!id);
+  }, [id]);
 
-  function save(data: Partial<Application>) {
-    if (!displayedApplication) return;
-    const previous = patchApplication(displayedApplication.id, data);
-    startTransition(async () => {
-      const result = await updateApplicationAction({
-        id: displayedApplication.id,
-        ...data,
-      });
-      if (!result.success) {
-        if (previous) patchApplication(displayedApplication.id, previous);
-        toast.error('Failed to save changes.');
-      }
-    });
+  const application = useApplicationStore(
+    (state) => state.applications.find((a) => a.id === id) ?? null,
+  );
+
+  function close() {
+    setOpen(false);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('id');
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname);
   }
 
-  function handleDelete() {
-    if (!displayedApplication) return;
-    selectApplication(null);
-    removeApplication(displayedApplication.id);
-    startTransition(async () => {
-      await deleteApplicationAction({ id: displayedApplication.id });
-      router.refresh();
-    });
-  }
+  const onOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) close();
+  };
 
   return (
-    <Dialog
-      open={!!selectedApplicationId}
-      onOpenChange={(open) => !open && selectApplication(null)}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="sr-only">
-          {displayedApplication?.position ?? 'Application details'}
-        </div>
-        {displayedApplication && (
-          <>
-            <ApplicationDialogHeader
-              application={displayedApplication}
-              onSave={save}
-            />
-            <ApplicationDialogProperties
-              application={displayedApplication}
-              onSave={save}
-            />
-            <ApplicationDialogNotes
-              application={displayedApplication}
-              onSave={save}
-            />
-            <DialogFooter>
-              <Button
-                variant="outline"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={handleDelete}
-              >
-                <RiDeleteBinLine className="size-4 mr-2" />
-                Delete
-              </Button>
-            </DialogFooter>
-          </>
+        {application && (
+          <EditApplicationForm application={application} onClose={close} />
         )}
       </DialogContent>
     </Dialog>

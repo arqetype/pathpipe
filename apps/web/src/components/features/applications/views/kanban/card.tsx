@@ -14,7 +14,7 @@ import { ApplicationTier } from '@repo/db/types/application/tier';
 type KanbanCardProps = {
   application: Application;
   overlay?: boolean;
-  onClick?: () => void;
+  onClick?: (id: string) => void;
 };
 
 export function KanbanCard({
@@ -37,7 +37,7 @@ export function KanbanCard({
   return (
     <Card
       ref={ref as React.Ref<HTMLDivElement>}
-      onClick={overlay ? undefined : onClick}
+      onClick={overlay ? undefined : () => onClick?.(application.id)}
       className={cn(
         'py-3 cursor-grab active:cursor-grabbing select-none transition-shadow',
         !overlay && 'hover:shadow-md',

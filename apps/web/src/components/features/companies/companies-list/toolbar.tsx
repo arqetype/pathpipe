@@ -21,7 +21,7 @@ import { importCsvAction } from '@/actions/company/import-csv';
 import { exportCsvAction } from '@/actions/company/export-csv';
 
 import { CompanyStatus } from '@repo/db/entities/company';
-import { CompanyIndustry } from '@repo/db/types/company/company-industry';
+import { CompanyIndustry } from '@repo/db/types/company/industry';
 import { Button } from '@repo/ui/components/button';
 import { ButtonGroup } from '@repo/ui/components/button-group';
 import { Field } from '@repo/ui/components/field';

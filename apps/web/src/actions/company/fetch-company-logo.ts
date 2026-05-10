@@ -3,7 +3,7 @@
 import { getRaw } from '@/lib/fetch';
 import { cache } from 'react';
 
-export const fetchCompanyLogo = cache(
+export const fetchCompanyLogoAction = cache(
   async (id: string): Promise<string | void> => {
     const response = await getRaw(`/companies/${id}/logo`);
     if (!response) return;

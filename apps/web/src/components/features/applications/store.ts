@@ -8,7 +8,6 @@ type ApplicationStore = {
   isCreateDialogOpen: boolean;
   status: ApplicationStatus | null;
   setApplications: (applications: Application[]) => void;
-  selectApplication: (id: string | null) => void;
   openCreateDialog: (columnId: ApplicationStatus | null) => void;
   closeCreateDialog: () => void;
   addApplication: (application: Application) => void;
@@ -26,8 +25,6 @@ export const useApplicationStore = create<ApplicationStore>((set, get) => ({
   status: null,
 
   setApplications: (applications) => set({ applications }),
-
-  selectApplication: (id) => set({ selectedApplicationId: id }),
 
   openCreateDialog: (columnId) =>
     set({ isCreateDialogOpen: true, status: columnId || null }),

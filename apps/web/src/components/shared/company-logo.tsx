@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { RiBuildingLine } from '@remixicon/react';
 import { cn } from '@repo/ui/lib/utils';
 import { Skeleton } from '@repo/ui/components/skeleton';
-import { fetchCompanyLogo } from '@/actions/company/fetch-company-logo';
+import { fetchCompanyLogoAction } from '@/actions/company/fetch-company-logo';
 
 const logoCache = new Map<string, string>();
 
@@ -37,7 +37,7 @@ export function CompanyLogo({
     }
     let cancelled = false;
     setLoading(true);
-    fetchCompanyLogo(companyId)
+    fetchCompanyLogoAction(companyId)
       .then((url) => {
         if (!cancelled) {
           if (url) logoCache.set(mapKey, url);

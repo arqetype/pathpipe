@@ -8,6 +8,7 @@ import {
   CsvImportError,
 } from '@repo/db/dto/company/csv-import-result.dto';
 import { CompaniesQuery } from '@repo/db/query/company';
+import { CompanyIndustry } from '@repo/db/types/company/industry';
 
 @Injectable()
 export class CompanyCsvService {
@@ -91,21 +92,16 @@ export class CompanyCsvService {
       };
     }
 
-    const allowedIndustries = [
-      'TECHNOLOGY',
-      'FINANCE',
-      'HEALTHCARE',
-      'RETAIL',
-      'EDUCATION',
-      'OTHER',
-    ];
     const industry = row['industry']?.trim().toUpperCase();
 
-    if (industry && !allowedIndustries.includes(industry)) {
+    if (
+      industry &&
+      !Object.values(CompanyIndustry).includes(industry as CompanyIndustry)
+    ) {
       return {
         error: {
           row: rowIndex,
-          message: `Invalid industry. Allowed values: ${allowedIndustries.join(', ')}`,
+          message: `Invalid industry. Allowed values: ${Object.values(CompanyIndustry).join(', ')}`,
           data: row,
         },
       };

@@ -42,8 +42,6 @@ export class CompanyService {
     return companies.map((company) => ({
       id: company.id,
       name: company.name,
-      // Frontend will request /api/companies/:id/logo to retrieve the blob
-      logoUrl: `/api/companies/${company.id}/logo`,
     }));
   }
 

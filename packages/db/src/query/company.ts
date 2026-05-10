@@ -29,5 +29,4 @@ export interface PaginatedCompanies {
 export interface CompanySearchResult {
   id: string;
   name: string;
-  logoUrl?: string;
 }

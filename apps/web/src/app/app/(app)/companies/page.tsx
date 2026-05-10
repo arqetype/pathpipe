@@ -1,23 +1,11 @@
-import { get } from '@/lib/fetch';
-import type { PaginatedCompanies } from '@repo/db/query/company';
 import { CompanyStatus } from '@repo/db/entities/company';
 import { CompaniesToolbar } from '@/components/features/companies/companies-list/toolbar';
 import { CompaniesList } from '@/components/features/companies/companies-list';
 import { CompanyDialog } from '@/components/features/companies/company-dialog';
 import { str } from '@/utils/utils';
+import { fetchCompaniesAction } from '@/actions/company/fetch';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
-
-async function getStatusCounts(): Promise<Record<CompanyStatus, number>> {
-  const result = await get<PaginatedCompanies>('/companies?limit=1');
-  return result.ok
-    ? result.data.totalCounts
-    : {
-        [CompanyStatus.PENDING]: 0,
-        [CompanyStatus.APPROVED]: 0,
-        [CompanyStatus.REJECTED]: 0,
-      };
-}
 
 export default async function CompaniesPage({
   searchParams,
@@ -32,21 +20,18 @@ export default async function CompaniesPage({
   const industry = str(params.industry);
   const status = (str(params.status) as CompanyStatus) || CompanyStatus.PENDING;
   const page = Number(str(params.page)) || 1;
+  const id = str(params.id) ?? null;
   const limit = 20;
 
-  const query = new URLSearchParams();
-  query.set('status', status);
-  query.set('page', String(page));
-  query.set('limit', String(limit));
-  if (search) query.set('search', search);
-  if (sortBy) query.set('sortBy', sortBy);
-  if (sortOrder) query.set('sortOrder', sortOrder);
-  if (industry) query.set('industry', industry);
-
-  const [result, statusCounts] = await Promise.all([
-    get<PaginatedCompanies>(`/companies?${query.toString()}`),
-    getStatusCounts(),
-  ]);
+  const { result, statusCounts } = await fetchCompaniesAction({
+    status,
+    page,
+    limit,
+    search,
+    sortBy,
+    sortOrder,
+    industry,
+  });
 
   const companies = result.ok ? result.data.data : [];
   const total = result.ok ? result.data.total : 0;
@@ -65,7 +50,7 @@ export default async function CompaniesPage({
         currentPage={page}
         totalPages={totalPages}
       />
-      <CompanyDialog />
+      <CompanyDialog id={id} />
     </div>
   );
 }

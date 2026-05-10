@@ -1,6 +1,7 @@
 'use client';
 
 import { Company } from '@repo/db/entities/company';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -9,7 +10,7 @@ import {
 } from '@repo/ui/components/card';
 import { CompanyLogo } from '@/components/shared/company-logo';
 import { COMPANY_INDUSTRY_OPTIONS } from '../constants/industry';
-import { CompanyCardActions } from '../company-dialog/actions';
+import { CompanyCardActions } from './actions';
 import { useCompanyStore } from '../store';
 
 interface CompanyCardProps {
@@ -17,16 +18,24 @@ interface CompanyCardProps {
 }
 
 export function CompanyCard({ company: initial }: CompanyCardProps) {
-  const selectCompany = useCompanyStore((state) => state.selectCompany);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const company =
     useCompanyStore((state) =>
       state.companies.find((c) => c.id === initial.id),
     ) ?? initial;
 
+  function openDialog() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('id', company.id);
+    router.push(`${pathname}?${params.toString()}`);
+  }
+
   return (
     <Card
       className="cursor-pointer hover:shadow-md transition-shadow"
-      onClick={() => selectCompany(company.id)}
+      onClick={openDialog}
     >
       <CardHeader className="flex flex-row items-center gap-3 pb-2">
         <CompanyLogo
