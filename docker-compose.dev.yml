@@ -8,14 +8,28 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./infra/db-init:/docker-entrypoint-initdb.d
     environment:
-      POSTGRES_USER: ${NEST_DATABASE_USER}
-      POSTGRES_PASSWORD: ${NEST_DATABASE_PASS}
-      POSTGRES_DB: ${NEST_DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASS}
+      POSTGRES_DB: ${DATABASE_NAME}
+    networks:
+      - dev-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: pathpipe-dev-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     networks:
       - dev-network
 
 volumes:
   pgdata:
+  redisdata:
 
 networks:
   dev-network:

@@ -29,6 +29,27 @@ services:
       start_period: 5s
       timeout: 10s
 
+  # Redis (BullMQ)
+  redis:
+    image: redis:7-alpine
+    restart: always
+    container_name: pathpipe-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redisdata:/data
+    networks:
+      - app-network
+    ports:
+      - '6379:6379'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping']
+      interval: 60s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+
   # API (Nest.js)
   api:
     container_name: pathpipe-api
@@ -45,8 +66,12 @@ services:
       NEST_EMAIL_PORT: ${NEST_EMAIL_PORT}
       NEST_EMAIL_USER: ${NEST_EMAIL_USER}
       NEST_EMAIL_PASS: ${NEST_EMAIL_PASS}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     depends_on:
       - db
+      - redis
     restart: always
     ports:
       - '4000:4000'
@@ -87,6 +112,7 @@ services:
 
 volumes:
   pgdata:
+  redisdata:
 
 networks:
   app-network:
