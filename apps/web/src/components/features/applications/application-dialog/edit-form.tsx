@@ -41,9 +41,11 @@ import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
 import { APPLICATION_TIER_OPTIONS } from '../constants/tier';
 import { TierSelectOptions } from '../shared/tier-select-options';
 import { useApplicationStore } from '../store';
+import SelectCompany from '@/components/shared/select-company';
 
 type FormValues = {
   position: string;
+  companyName: string;
   status: ApplicationStatus;
   tier: ApplicationTier;
   appliedAt: string;
@@ -71,6 +73,7 @@ export function EditApplicationForm({
   const { handleSubmit, control } = useForm<FormValues>({
     defaultValues: {
       position: application.position ?? '',
+      companyName: application.company?.name ?? '',
       status: application.status,
       tier: application.tier,
       appliedAt: application.appliedAt
@@ -90,6 +93,7 @@ export function EditApplicationForm({
       const result = await updateApplicationAction({
         id: application.id,
         position: data.position || undefined,
+        companyName: data.companyName || undefined,
         status: data.status,
         tier: data.tier,
         appliedAt: data.appliedAt
@@ -145,12 +149,18 @@ export function EditApplicationForm({
               />
             )}
           />
-          <EditableText
-            value={application.company?.name ?? ''}
-            placeholder="Company name"
-            onSave={() => {}}
-            className="block text-lg md:text-lg text-muted-foreground"
-            inputClassName="text-lg md:text-lg text-muted-foreground"
+          <Controller
+            name="companyName"
+            control={control}
+            render={({ field }) => (
+              <SelectCompany
+                value={field.value}
+                onValueChange={field.onChange}
+                onSelect={(company) => field.onChange(company.name)}
+                placeholder="Company name"
+                inputClassName="text-lg !px-2.5 hover:bg-accent border-none bg-transparent h-auto py-1 px-1"
+              />
+            )}
           />
         </div>
       </DialogTitle>

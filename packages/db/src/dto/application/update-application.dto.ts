@@ -4,7 +4,6 @@ import {
   IsString,
   IsNumber,
   IsDate,
-  IsUUID,
 } from 'class-validator';
 import { ApplicationStatus } from '../../types/application/status';
 import { ApplicationTier } from '../../types/application/tier';
@@ -19,8 +18,8 @@ export class UpdateApplicationDto {
   position?: string;
 
   @IsOptional()
-  @IsUUID()
-  companyId?: string;
+  @IsString()
+  companyName?: string;
 
   @IsOptional()
   @IsString()

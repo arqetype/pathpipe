@@ -18,7 +18,9 @@ type CompanyOption = { id: string; name: string; logoUrl?: string };
 type SelectCompanyProps = {
   value: string;
   onValueChange: (value: string) => void;
+  onSelect?: (company: CompanyOption) => void;
   placeholder?: string;
+  inputClassName?: string;
 };
 
 const DEBOUNCE_MS = 300;
@@ -26,12 +28,19 @@ const DEBOUNCE_MS = 300;
 export default function SelectCompany({
   value,
   onValueChange,
+  onSelect,
   placeholder = 'Select a company',
+  inputClassName,
 }: SelectCompanyProps) {
   const [results, setResults] = useState<CompanyOption[]>([]);
   const [focused, setFocused] = useState(false);
   const [open, setOpen] = useState(false);
+  const [displayValue, setDisplayValue] = useState(value);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    setDisplayValue(value);
+  }, [value]);
 
   const debouncedSearchQuery = useDebounce(searchQuery, DEBOUNCE_MS);
 
@@ -43,7 +52,6 @@ export default function SelectCompany({
           debouncedSearchQuery.trim() || undefined,
         );
         setResults(companies);
-        console.log('Fetched companies:', companies);
       } catch (err) {
         console.error('Failed to fetch companies:', err);
         setResults([]);
@@ -53,6 +61,7 @@ export default function SelectCompany({
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newValue = e.target.value;
+    setDisplayValue(newValue);
     onValueChange(newValue);
     setSearchQuery(newValue);
   }
@@ -60,7 +69,7 @@ export default function SelectCompany({
   function handleFocus() {
     setFocused(true);
     setOpen(true);
-    setSearchQuery(value);
+    setSearchQuery(displayValue);
   }
 
   function handleBlur() {
@@ -69,8 +78,11 @@ export default function SelectCompany({
 
   return (
     <Autocomplete
-      value={value}
-      onValueChange={onValueChange}
+      value={displayValue}
+      onValueChange={(v) => {
+        setDisplayValue(v);
+        onValueChange(v);
+      }}
       open={open}
       onOpenChange={setOpen}
       items={results}
@@ -82,12 +94,17 @@ export default function SelectCompany({
         onFocus={handleFocus}
         onBlur={handleBlur}
         showClear
+        className={inputClassName}
       />
       <AutocompleteContent>
         <AutocompleteEmpty>No companies found.</AutocompleteEmpty>
         <AutocompleteList>
           {(item) => (
-            <AutocompleteItem key={item.id} value={item}>
+            <AutocompleteItem
+              key={item.id}
+              value={item}
+              onClick={() => onSelect?.(item)}
+            >
               <CompanyLogo
                 companyId={item.id}
                 name={item.name}
