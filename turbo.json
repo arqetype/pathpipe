@@ -49,6 +49,16 @@
       "cache": false,
       "persistent": true
     },
+    "workers#dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["@repo/db#build", "@repo/email#build"]
+    },
+    "api#dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["@repo/db#build", "@repo/email#build"]
+    },
     "start": {
       "persistent": false,
       "cache": false
