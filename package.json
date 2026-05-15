@@ -1,5 +1,5 @@
 {
-  "name": "weaver",
+  "name": "pathpipe",
   "private": true,
   "scripts": {
     "build": "turbo run build",

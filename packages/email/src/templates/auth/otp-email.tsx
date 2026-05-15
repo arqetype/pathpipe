@@ -12,7 +12,7 @@ type OTPEmailProps = {
 
 export function OTPEmail({ otp, user }: OTPEmailProps) {
   const previewMessage =
-    '👋 Welcome to Weaver! Use the OTP below to securely log in.';
+    '👋 Welcome to Pathpipe! Use the OTP below to securely log in.';
 
   return (
     <Layout previewMessage={previewMessage}>
@@ -25,7 +25,7 @@ export function OTPEmail({ otp, user }: OTPEmailProps) {
           className="mx-auto mb-4 rounded-full"
         />
         <Text className="text-3xl font-bold text-primary">
-          Welcome to Weaver!
+          Welcome to Pathpipe!
         </Text>
         <Text className="text-foreground mt-2">
           We're excited to have you on board. Use the one-time password below to

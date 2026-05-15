@@ -2,16 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useTransition } from 'react';
-import { Loader2Icon } from 'lucide-react';
+import { RiLoader5Line } from '@remixicon/react';
 import { Button } from '@repo/ui/components/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@repo/ui/components/form';
+import { Controller, useForm } from 'react-hook-form';
+import { Field, FieldLabel, FieldError } from '@repo/ui/components/field';
 import { Input } from '@repo/ui/components/input';
 import {
   Select,
@@ -24,7 +18,6 @@ import {
 import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
 import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
-import { useForm } from 'react-hook-form';
 import { createApplicationAction } from '@/actions/application/create';
 import { toast } from 'sonner';
 import { useApplicationStore } from '../store';
@@ -32,6 +25,8 @@ import { ApplicationStatus } from '@repo/db/types/application/status';
 import { ApplicationTier } from '@repo/db/types/application/tier';
 import { TierSelectOptions } from '../shared/tier-select-options';
 import SelectCompany from '@/components/shared/select-company';
+import { APPLICATION_TIER_OPTIONS } from '../constants/tier';
+import { DialogFooter } from '@repo/ui/components/dialog';
 
 type CreateApplicationFormProps = {
   status?: ApplicationStatus;
@@ -84,44 +79,58 @@ export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
   const renderFormContent = () => (
     <>
       <div className="flex gap-3">
-        <FormField
-          control={form.control}
+        <Controller
           name="company"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Company</FormLabel>
-              <FormControl>
-                <SelectCompany value={field.value} onChange={field.onChange} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field className="flex-1" data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Company</FieldLabel>
+              <SelectCompany
+                value={field.value ?? ''}
+                onValueChange={field.onChange}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
           )}
         />
-        <FormField
-          control={form.control}
+        <Controller
           name="position"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Position</FormLabel>
-              <FormControl>
-                <Input placeholder="Software Engineer" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field className="flex-1" data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Position</FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                placeholder="Software Engineer"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
           )}
         />
       </div>
 
       <div className="flex gap-3">
-        <FormField
-          control={form.control}
+        <Controller
           name="status"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Status</FormLabel>
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field className="flex-1" data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Status</FieldLabel>
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
+                <SelectTrigger
+                  id={field.name}
+                  className="w-full"
+                  aria-invalid={fieldState.invalid}
+                >
+                  <SelectValue>
+                    {
+                      APPLICATION_STATUS_OPTIONS.find(
+                        (opt) => opt.status === field.value,
+                      )?.label
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -133,19 +142,29 @@ export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
                   </SelectGroup>
                 </SelectContent>
               </Select>
-              <FormMessage />
-            </FormItem>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
           )}
         />
-        <FormField
-          control={form.control}
+        <Controller
           name="tier"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Tier</FormLabel>
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field className="flex-1" data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Tier</FieldLabel>
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
+                <SelectTrigger
+                  id={field.name}
+                  className="w-full"
+                  aria-invalid={fieldState.invalid}
+                >
+                  <SelectValue>
+                    {
+                      APPLICATION_TIER_OPTIONS.find(
+                        (opt) => opt.value === field.value,
+                      )?.label
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -153,84 +172,90 @@ export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
                   </SelectGroup>
                 </SelectContent>
               </Select>
-              <FormMessage />
-            </FormItem>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
           )}
         />
-        <FormField
-          control={form.control}
+        <Controller
           name="appliedAt"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Applied Date</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field className="flex-1" data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Applied Date</FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                type="date"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
           )}
         />
       </div>
 
-      <FormField
-        control={form.control}
+      <Controller
         name="url"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Job URL</FormLabel>
-            <FormControl>
-              <Input placeholder="https://jobs.example.com/..." {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={field.name}>Job URL</FieldLabel>
+            <Input
+              {...field}
+              id={field.name}
+              placeholder="https://jobs.example.com/..."
+              aria-invalid={fieldState.invalid}
+            />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
         )}
       />
 
       <div className="flex gap-3">
-        <FormField
-          control={form.control}
+        <Controller
           name="salaryMin"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Salary Min</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="50000"
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value ? Number(e.target.value) : undefined,
-                    )
-                  }
-                  value={field.value ?? ''}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field className="flex-1" data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Salary Min</FieldLabel>
+              <Input
+                type="number"
+                placeholder="50000"
+                {...field}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                onChange={(e) =>
+                  field.onChange(
+                    e.target.value ? Number(e.target.value) : undefined,
+                  )
+                }
+                value={field.value ?? ''}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
           )}
         />
-        <FormField
-          control={form.control}
+        <Controller
           name="salaryMax"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>Salary Max</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="80000"
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value ? Number(e.target.value) : undefined,
-                    )
-                  }
-                  value={field.value ?? ''}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field className="flex-1" data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Salary Max</FieldLabel>
+              <Input
+                type="number"
+                placeholder="80000"
+                {...field}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                onChange={(e) =>
+                  field.onChange(
+                    e.target.value ? Number(e.target.value) : undefined,
+                  )
+                }
+                value={field.value ?? ''}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
           )}
         />
       </div>
@@ -238,23 +263,25 @@ export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
   );
 
   return (
-    <Form {...form}>
+    <>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         {statusMessage && (
           <div className="text-red-500 text-sm">{statusMessage}</div>
         )}
         {renderFormContent()}
-        <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? (
-            <>
-              <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-              Adding...
-            </>
-          ) : (
-            'Add Application'
-          )}
-        </Button>
+        <DialogFooter>
+          <Button type="submit" disabled={isPending}>
+            {isPending ? (
+              <>
+                <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              'Add Application'
+            )}
+          </Button>
+        </DialogFooter>
       </form>
-    </Form>
+    </>
   );
 }

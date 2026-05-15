@@ -16,7 +16,7 @@ export class MailerService {
         user: process.env.NEST_EMAIL_USER,
         pass: process.env.NEST_EMAIL_PASS,
       },
-      from: '"Weaver" <no-reply@weareweaver.org>',
+      from: '"Pathpipe" <no-reply@pathpipe.com>',
     });
   }
 

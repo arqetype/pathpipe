@@ -40,7 +40,7 @@ export class Mailer {
       await this.transporter.sendMail({
         to,
         from: this.from,
-        subject: 'Weaver : Verify your email address',
+        subject: 'Pathpipe : Verify your email address',
         html,
       });
     } catch {
@@ -59,7 +59,7 @@ export class Mailer {
       await this.transporter.sendMail({
         to,
         from: this.from,
-        subject: 'Weaver : Your OTP code',
+        subject: 'Pathpipe : Your OTP code',
         html,
       });
     } catch {
@@ -78,7 +78,7 @@ export class Mailer {
       await this.transporter.sendMail({
         to,
         from: this.from,
-        subject: 'Weaver : Reset your password',
+        subject: 'Pathpipe : Reset your password',
         html,
       });
     } catch {

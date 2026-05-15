@@ -1,0 +1,18 @@
+info:
+  name: suggestions
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://localhost:4000/companies/suggestions?query=gogle
+  params:
+    - name: query
+      value: gogle
+      type: query
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

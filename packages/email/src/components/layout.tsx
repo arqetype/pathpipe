@@ -40,8 +40,8 @@ export function Layout({ children, previewMessage }: EmailLayoutProps) {
             {/* Header Section */}
             <Section className="bg-primary text-primary-foreground py-6 text-center">
               <Img
-                src="https://weareweaver.org/logo.png"
-                alt="Weaver Logo"
+                src="https://pathpipe.com/logo.png"
+                alt="Pathpipe Logo"
                 width="130"
                 height="50"
                 className="mx-auto"
@@ -57,17 +57,17 @@ export function Layout({ children, previewMessage }: EmailLayoutProps) {
               <Text className="text-sm text-muted-foreground">
                 Need help? Contact our support team at{' '}
                 <Link
-                  href="mailto:support@weareweaver.org"
+                  href="mailto:support@pathpipe.cpù"
                   className="underline text-primary"
                 >
-                  support@weareweaver.org
+                  support@pathpipe.com
                 </Link>
                 .
               </Text>
               <Text className="text-sm text-muted-foreground mt-2">
                 Visit our{' '}
                 <Link
-                  href="https://weareweaver.org/help"
+                  href="https://pathpipe.com/help"
                   className="underline text-primary"
                 >
                   Help Center
@@ -76,10 +76,10 @@ export function Layout({ children, previewMessage }: EmailLayoutProps) {
               </Text>
               <Text className="text-sm text-muted-foreground mt-4">
                 <Link
-                  href="https://weareweaver.org"
+                  href="https://pathpipe.com"
                   className="underline text-primary"
                 >
-                  Weaver
+                  Pathpipe
                 </Link>{' '}
                 - Your job tracker excel substitute.
               </Text>

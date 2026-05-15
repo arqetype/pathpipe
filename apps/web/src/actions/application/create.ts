@@ -6,13 +6,13 @@ import { CreateApplicationDto } from '@repo/db/dto/application/create-applicatio
 import { IsEnum, IsString } from 'class-validator';
 import { ApplicationStatus } from '@repo/db/types/application/status';
 import { revalidatePath } from 'next/cache';
+import { Company } from '@repo/db/entities/company';
 
 class CreateApplicationResponse {
   @IsString()
   id: string;
 
-  @IsString()
-  company: string;
+  company: Company;
 
   @IsString()
   position: string;

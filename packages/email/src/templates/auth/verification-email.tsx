@@ -12,7 +12,7 @@ interface VerificationEmailProps {
 
 export function VerificationEmail({ token, user }: VerificationEmailProps) {
   const previewMessage =
-    '👋 Welcome to Weaver! Verify your email to complete your registration.';
+    '👋 Welcome to Pathpipe! Verify your email to complete your registration.';
   const verificationUrl = `http://localhost:3000/app/verify-email?token=${token}`;
   return (
     <Layout previewMessage={previewMessage}>
@@ -25,7 +25,7 @@ export function VerificationEmail({ token, user }: VerificationEmailProps) {
           className="mx-auto mb-4 rounded-full"
         />
         <Text className="text-3xl font-bold text-primary">
-          Welcome to Weaver!
+          Welcome to Pathpipe!
         </Text>
         <Text className="text-foreground mt-2">
           We're excited to have you on board. Please verify your email address

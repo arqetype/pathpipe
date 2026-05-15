@@ -1,4 +1,4 @@
-# Weaver
+# Pathpipe
 
 Job seeker tracking application built with a modern tech stack, designed for developers to manage their job applications, track progress, and receive suggestions based on their profiles.
 
@@ -88,8 +88,8 @@ All services start and stop automatically via `pnpm run dev`.
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/arqetype/weaver.git
-   cd weaver
+   git clone https://github.com/arqetype/pathpipe.git
+   cd pathpipe
    ```
 
 2. **Install dependencies**

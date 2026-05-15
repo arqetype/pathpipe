@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { ApplicationStatus } from '../types/application/status';
 import { User } from './user';
+import { Company } from './company';
 import { ApplicationTier } from '../types/application/tier';
 
 @Entity()
@@ -18,10 +19,11 @@ export class Application {
   id: string;
 
   @Column()
-  company: string;
-
-  @Column()
   position: string;
+
+  @ManyToOne(() => Company, { nullable: true, eager: true })
+  @JoinColumn({ name: 'companyId' })
+  company: Company;
 
   @Column({ nullable: true })
   url: string;

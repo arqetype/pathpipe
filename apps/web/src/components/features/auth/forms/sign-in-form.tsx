@@ -1,27 +1,26 @@
 'use client';
 
 import { CardContent, CardFooter } from '@repo/ui/components/card';
+import { Input } from '@repo/ui/components/input';
+import { Controller } from 'react-hook-form';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@repo/ui/components/form';
+  Field,
+  FieldLabel,
+  FieldError,
+  FieldContent,
+} from '@repo/ui/components/field';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from '@repo/ui/components/input-otp';
-import { Input } from '@repo/ui/components/input';
 import { SignInDto } from '@repo/db/dto/auth/sign-in.dto';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { useForm } from 'react-hook-form';
 import { useTransition } from 'react';
 import Link from 'next/link';
 import { Button } from '@repo/ui/components/button';
-import { Loader2Icon, ShieldCheckIcon, MailIcon } from 'lucide-react';
+import { RiLoader5Line, RiShieldCheckLine, RiMailLine } from '@remixicon/react';
 import { redirect } from 'next/navigation';
 import { signInAction } from '@/actions/auth/sign-in';
 import { resendEmailAction } from '@/actions/auth/resend-email';
@@ -242,17 +241,19 @@ export function SignInForm() {
   };
 
   const renderForgotPasswordView = () => (
-    <div className="px-1">
-      <AuthVerificationAlert
-        icon={MailIcon}
-        title={
-          forgotPasswordStatus.success
-            ? 'Password Reset Email Sent'
-            : 'Password Reset Failed'
-        }
-        description={forgotPasswordStatus.message}
-      />
-      <div className="space-y-3 mt-4">
+    <>
+      <CardContent className="space-y-4">
+        <AuthVerificationAlert
+          icon={RiMailLine}
+          title={
+            forgotPasswordStatus.success
+              ? 'Password Reset Email Sent'
+              : 'Password Reset Failed'
+          }
+          description={forgotPasswordStatus.message}
+        />
+      </CardContent>
+      <CardFooter className="flex-col bg-transparent border-none">
         <Button
           variant="ghost"
           className="w-full"
@@ -260,46 +261,50 @@ export function SignInForm() {
         >
           Back to Sign In
         </Button>
-      </div>
-    </div>
+      </CardFooter>
+    </>
   );
 
   const renderEmailVerificationView = () => (
-    <div className="px-1">
-      <AuthVerificationAlert
-        icon={MailIcon}
-        title="Email Verification Required"
-        description={
-          <>
-            We&apos;ve sent a verification email to
-            <span className="font-medium"> {form.getValues('email')}</span>.
-            Please check your inbox and click the verification link to activate
-            your account.
-          </>
-        }
-      />
-      <div className="space-y-3">
-        {resendStatus.message && (
-          <AuthVerificationError
-            success={resendStatus.success}
-            message={resendStatus.message}
-          />
-        )}
-        <Button
-          variant="outline"
-          className="w-full"
-          disabled={isPending}
-          onClick={handleResendVerification}
-        >
-          {isPending ? (
+    <>
+      <CardContent className="space-y-4">
+        <AuthVerificationAlert
+          icon={RiMailLine}
+          title="Email Verification Required"
+          description={
             <>
-              <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
+              We&apos;ve sent a verification email to
+              <span className="font-medium"> {form.getValues('email')}</span>.
+              Please check your inbox and click the verification link to
+              activate your account.
             </>
-          ) : (
-            'Resend Verification Email'
+          }
+        />
+        <div className="space-y-3">
+          {resendStatus.message && (
+            <AuthVerificationError
+              success={resendStatus.success}
+              message={resendStatus.message}
+            />
           )}
-        </Button>
+          <Button
+            variant="outline"
+            className="w-full"
+            disabled={isPending}
+            onClick={handleResendVerification}
+          >
+            {isPending ? (
+              <>
+                <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              'Resend Verification Email'
+            )}
+          </Button>
+        </div>
+      </CardContent>
+      <CardFooter className="space-y-4 flex-col bg-transparent border-none">
         <Button
           variant="ghost"
           className="w-full"
@@ -307,95 +312,101 @@ export function SignInForm() {
         >
           Back to Sign In
         </Button>
-      </div>
-    </div>
+      </CardFooter>
+    </>
   );
 
   const renderSignInView = () => (
-    <>
-      <FormField
-        key="email"
-        control={form.control}
+    <CardContent className="space-y-4">
+      <Controller
         name="email"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Email</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="name@example.com"
-                {...field}
-                disabled={isPending}
-                autoComplete="email"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField
-        key="password"
         control={form.control}
-        name="password"
-        render={({ field }) => (
-          <FormItem>
-            <div className="flex items-center justify-between">
-              <FormLabel>Password</FormLabel>
-              <div
-                className="text-sm text-primary hover:underline cursor-pointer"
-                onClick={() => handleForgotPassword(form.getValues('email'))}
-              >
-                {forgotPasswordPending ? (
-                  <span>
-                    <Loader2Icon className="mr-1 h-3 w-3 inline animate-spin" />
-                    Sending...
-                  </span>
-                ) : (
-                  'Forgot password?'
-                )}
-              </div>
-            </div>
-            <FormControl>
-              <Input
-                type="password"
-                {...field}
-                disabled={isPending}
-                autoComplete="current-password"
-                placeholder="••••••••••••••••"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+            <Input
+              {...field}
+              id={field.name}
+              placeholder="name@example.com"
+              disabled={isPending}
+              autoComplete="email"
+              aria-invalid={fieldState.invalid}
+            />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
         )}
       />
-    </>
+      <Controller
+        name="password"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldContent>
+              <div className="flex items-center justify-between">
+                <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                <div
+                  className="text-sm text-primary hover:underline cursor-pointer"
+                  onClick={() => handleForgotPassword(form.getValues('email'))}
+                >
+                  {forgotPasswordPending ? (
+                    <span>
+                      <RiLoader5Line className="mr-1 h-3 w-3 inline animate-spin" />
+                      Sending...
+                    </span>
+                  ) : (
+                    'Forgot password?'
+                  )}
+                </div>
+              </div>
+            </FieldContent>
+            <Input
+              type="password"
+              {...field}
+              id={field.name}
+              disabled={isPending}
+              autoComplete="current-password"
+              placeholder="••••••••••••••••"
+              aria-invalid={fieldState.invalid}
+            />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
+    </CardContent>
   );
 
   const renderOtpView = () => (
     <>
-      <div className="mb-4">
-        <AuthVerificationAlert
-          icon={ShieldCheckIcon}
-          title="Two-Factor Authentication"
-          description={
-            <>
-              For added security, please enter the 6-digit code sent to
-              <span className="font-medium"> {form.getValues('email')}.</span>
-            </>
-          }
-        />
-      </div>
-      <FormField
-        key="otp"
-        control={form.control}
+      <Controller
         name="otp"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Enter verification code</FormLabel>
-            <FormControl>
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <CardContent className="space-y-4">
+              <div className="mb-4">
+                <AuthVerificationAlert
+                  icon={RiShieldCheckLine}
+                  title="Two-Factor Authentication"
+                  description={
+                    <>
+                      For added security, please enter the 6-digit code sent to
+                      <span className="font-medium">
+                        {' '}
+                        {form.getValues('email')}.
+                      </span>
+                    </>
+                  }
+                />
+              </div>
+              <FieldLabel htmlFor={field.name}>
+                Enter verification code
+              </FieldLabel>
               <InputOTP
                 maxLength={6}
                 {...field}
+                id={field.name}
                 className="w-full gap-2"
+                aria-invalid={fieldState.invalid}
                 onComplete={(value) => {
                   if (value.length === 6) {
                     form.clearErrors('otp');
@@ -412,28 +423,30 @@ export function SignInForm() {
                   ))}
                 </InputOTPGroup>
               </InputOTP>
-            </FormControl>
-            <FormMessage className="text-red-500" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
 
-            {otpStatus.message && (
-              <AuthVerificationError
-                success={otpStatus.success}
-                message={otpStatus.message}
-              />
-            )}
+              {otpStatus.message && (
+                <AuthVerificationError
+                  success={otpStatus.success}
+                  message={otpStatus.message}
+                />
+              )}
+            </CardContent>
 
-            <p className="text-sm text-muted-foreground mt-2">
-              Didn&apos;t receive a code?{' '}
-              <Button
-                variant="link"
-                className="p-0 h-auto text-sm"
-                type="button"
-                onClick={handleResendOtp}
-              >
-                Resend code
-              </Button>
-            </p>
-          </FormItem>
+            <CardFooter className="space-y-4 flex-col bg-transparent border-none">
+              <p className="text-sm text-muted-foreground mt-2">
+                Didn&apos;t receive a code?{' '}
+                <Button
+                  variant="link"
+                  className="p-0 h-auto text-sm"
+                  type="button"
+                  onClick={handleResendOtp}
+                >
+                  Resend code
+                </Button>
+              </p>
+            </CardFooter>
+          </Field>
         )}
       />
     </>
@@ -455,13 +468,10 @@ export function SignInForm() {
     !showEmailVerification && !forgotPasswordStatus.message;
 
   return (
-    <Form {...form}>
-      <div className="mb-4 px-6 w-full">
-        <div className="bg-muted text-muted-foreground w-full flex items-center justify-between rounded-full p-1 gap-2">
-          <Button
-            variant="outline"
-            className="flex-1 hover:bg-[var(--background)] bg-background/70"
-          >
+    <div>
+      <div className="mb-4 mt-3 px-4 w-full">
+        <div className="bg-muted w-full flex items-center justify-between rounded-lg p-1 gap-2">
+          <Button variant="outline" className="flex-1">
             Sign In
           </Button>
           <Link href="/app/sign-up" className="flex-1">
@@ -472,13 +482,13 @@ export function SignInForm() {
         </div>
       </div>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <CardContent className="space-y-4">{renderFormContent()}</CardContent>
+        {renderFormContent()}
         {shouldShowFooter && (
-          <CardFooter className="space-y-4 flex-col">
+          <CardFooter className="space-y-4 flex-col bg-transparent border-none">
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? (
                 <>
-                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                  <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
                   {showOtp ? 'Verifying code...' : 'Sign in'}
                 </>
               ) : showOtp ? (
@@ -490,6 +500,6 @@ export function SignInForm() {
           </CardFooter>
         )}
       </form>
-    </Form>
+    </div>
   );
 }

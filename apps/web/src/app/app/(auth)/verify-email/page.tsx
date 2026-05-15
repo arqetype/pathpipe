@@ -10,8 +10,8 @@ import {
 } from '@repo/ui/components/card';
 import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
-import { AlertCircleIcon, CheckCircleIcon } from 'lucide-react';
 import { cn } from '@repo/ui/lib/utils';
+import { RiCheckboxCircleLine, RiErrorWarningLine } from '@remixicon/react';
 
 type VerifyEmailPageProps = {
   searchParams: Promise<{
@@ -26,11 +26,11 @@ export default async function VerifyEmailPage({
 
   if (!token) {
     return (
-      <Card className="border shadow-md max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <Card className="max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-2 bg-destructive/10 rounded-full">
-              <AlertCircleIcon className="h-10 w-10 text-destructive" />
+              <RiErrorWarningLine className="h-10 w-10 text-destructive" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">
@@ -48,7 +48,7 @@ export default async function VerifyEmailPage({
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2 px-6 pt-2">
+        <CardFooter>
           <Link
             href="/app/sign-in"
             className={cn(buttonVariants({ variant: 'default' }), 'w-full')}
@@ -64,11 +64,11 @@ export default async function VerifyEmailPage({
 
   if (response.success) {
     return (
-      <Card className="border shadow-md max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <Card className="max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-2 bg-primary/10 rounded-full">
-              <CheckCircleIcon className="h-10 w-10 text-primary" />
+              <RiCheckboxCircleLine className="h-10 w-10 text-primary" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">
@@ -86,7 +86,7 @@ export default async function VerifyEmailPage({
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2 px-6 pt-2">
+        <CardFooter>
           <Link
             className={cn(buttonVariants({ variant: 'default' }), 'w-full')}
             href="/app/sign-in"
@@ -98,11 +98,11 @@ export default async function VerifyEmailPage({
     );
   } else {
     return (
-      <Card className="border shadow-md max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <Card className="max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-2 bg-destructive/10 rounded-full">
-              <AlertCircleIcon className="h-10 w-10 text-destructive" />
+              <RiErrorWarningLine className="h-10 w-10 text-destructive" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">
@@ -122,7 +122,7 @@ export default async function VerifyEmailPage({
             </ul>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2 px-6 pt-2">
+        <CardFooter>
           <Link
             className={cn(buttonVariants({ variant: 'default' }), 'w-full')}
             href="/app/sign-in"

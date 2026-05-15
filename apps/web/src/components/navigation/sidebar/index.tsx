@@ -1,11 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { Briefcase } from 'lucide-react';
+import { RiBriefcaseLine, RiBuildingLine } from '@remixicon/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { startTransition } from 'react';
-
 import { NavUser } from '@/components/navigation/sidebar/nav-user';
 import {
   Sidebar,
@@ -13,16 +12,24 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from '@repo/ui/components/sidebar';
 import { signOutAction } from '@/actions/auth/sign-out';
+import { UserRole } from '@repo/db/types/user/roles';
 import type { User } from '@repo/db/entities/user';
+import { Logo } from '@repo/ui/branding/logo';
 
-const navItems = [
-  { title: 'Applications', href: '/app/applications', icon: Briefcase },
+const userNavItems = [
+  { title: 'Applications', href: '/app/applications', icon: RiBriefcaseLine },
+];
+
+const adminNavItems = [
+  { title: 'Companies', href: '/app/companies', icon: RiBuildingLine },
 ];
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
@@ -31,6 +38,7 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
 
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
   const pathname = usePathname();
+  const isAdmin = user.role === UserRole.ADMIN;
 
   const handleSignOut = () => {
     startTransition(async () => {
@@ -59,18 +67,14 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/app">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Briefcase className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Weaver</span>
-                  <span className="truncate text-xs text-sidebar-foreground/60">
-                    Job tracker
-                  </span>
-                </div>
-              </Link>
+            <SidebarMenuButton render={<Link href="/app" />} size="lg">
+              <Logo
+                className="aspect-square !size-8"
+                aria-label="Pathpipe logo"
+              />
+              <div className="grid flex-1 text-left text-lg leading-tight">
+                <span className="truncate font-semibold">Pathpipe</span>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -80,7 +84,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => {
+              {userNavItems.map((item) => {
                 const isActive =
                   item.href === '/app'
                     ? pathname === '/app'
@@ -88,14 +92,12 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      asChild
+                      render={<Link href={item.href} />}
                       isActive={isActive}
                       tooltip={item.title}
                     >
-                      <Link href={item.href}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
+                      <item.icon />
+                      <span>{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -103,6 +105,34 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isAdmin && (
+          <>
+            <SidebarSeparator className="my-2" />
+            <SidebarGroup>
+              <SidebarGroupLabel>Administration</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {adminNavItems.map((item) => {
+                    const isActive = pathname.startsWith(item.href);
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          render={<Link href={item.href} />}
+                          isActive={isActive}
+                          tooltip={item.title}
+                        >
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
       </SidebarContent>
 
       <SidebarFooter>

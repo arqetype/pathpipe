@@ -3,17 +3,16 @@
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { Button } from '@repo/ui/components/button';
 import { CardContent, CardFooter } from '@repo/ui/components/card';
+import { Controller } from 'react-hook-form';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@repo/ui/components/form';
+  Field,
+  FieldLabel,
+  FieldError,
+  FieldContent,
+} from '@repo/ui/components/field';
 import { Input } from '@repo/ui/components/input';
 import { Checkbox } from '@repo/ui/components/checkbox';
-import { Loader2Icon, MailIcon } from 'lucide-react';
+import { RiLoader5Line, RiMailLine } from '@remixicon/react';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { SignUpDto } from '@repo/db/dto/auth/sign-up.dto';
@@ -96,45 +95,46 @@ export function SignUpForm() {
   };
 
   return (
-    <Form {...form}>
-      <div className="mb-4 px-6 w-full">
-        <div className="bg-muted text-muted-foreground w-full flex items-center justify-between rounded-full p-1 gap-2">
+    <>
+      <div className="mb-4 mt-3 px-4 w-full">
+        <div className="bg-muted w-full flex rounded-lg items-center justify-between p-1 gap-2">
           <Link href="/app/sign-in" className="flex-1">
             <Button variant="ghost" className="w-full">
               Sign In
             </Button>
           </Link>
-          <Button
-            variant="outline"
-            className="flex-1 hover:bg-[var(--background)] cursor-default bg-background/70"
-          >
+          <Button variant="outline" className="flex-1 cursor-default">
             Sign Up
           </Button>
         </div>
       </div>
 
       {isVerificationSent ? (
-        <div className="px-6">
-          <AuthVerificationAlert
-            icon={MailIcon}
-            title="Email Verification Required"
-            description={
-              <>
-                We&apos;ve sent a verification email to
-                <span className="font-medium"> {form.getValues('email')}</span>.
-                Please check your inbox and click the verification link to
-                activate your account.
-              </>
-            }
-          />
-          <div className="space-y-3">
+        <>
+          <CardContent className="space-y-4">
+            <AuthVerificationAlert
+              icon={RiMailLine}
+              title="Email Verification Required"
+              description={
+                <>
+                  We&apos;ve sent a verification email to
+                  <span className="font-medium">
+                    {' '}
+                    {form.getValues('email')}
+                  </span>
+                  . Please check your inbox and click the verification link to
+                  activate your account.
+                </>
+              }
+            />
             {resendStatus.message && (
               <AuthVerificationError
                 success={resendStatus.success}
                 message={resendStatus.message}
               />
             )}
-
+          </CardContent>
+          <CardFooter className="bg-transparent border-none">
             <Button
               variant="outline"
               className="w-full"
@@ -143,128 +143,145 @@ export function SignUpForm() {
             >
               {isPending ? (
                 <>
-                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                  <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
                   Sending...
                 </>
               ) : (
                 'Resend Verification Email'
               )}
             </Button>
-          </div>
-        </div>
+          </CardFooter>
+        </>
       ) : (
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
+            <Controller
               name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="John Doe"
-                      {...field}
-                      disabled={isPending}
-                      autoComplete="name"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    placeholder="John Doe"
+                    disabled={isPending}
+                    autoComplete="name"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
-            <FormField
-              control={form.control}
+            <Controller
               name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="name@example.com"
-                      {...field}
-                      disabled={isPending}
-                      autoComplete="email"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    placeholder="name@example.com"
+                    disabled={isPending}
+                    autoComplete="email"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
-            <FormField
-              control={form.control}
+            <Controller
               name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center justify-between">
-                    <FormLabel>Password</FormLabel>
-                  </div>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      {...field}
-                      disabled={isPending}
-                      autoComplete="password"
-                      placeholder="••••••••••••••••"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldContent>
+                    <div className="flex items-center justify-between">
+                      <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                    </div>
+                  </FieldContent>
+                  <Input
+                    type="password"
+                    {...field}
+                    id={field.name}
+                    disabled={isPending}
+                    autoComplete="password"
+                    placeholder="••••••••••••••••"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
-            <FormField
-              control={form.control}
+            <Controller
               name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center justify-between">
-                    <FormLabel>Confirm Password</FormLabel>
-                  </div>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      {...field}
-                      disabled={isPending}
-                      autoComplete="confirm-password"
-                      placeholder="••••••••••••••••"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldContent>
+                    <div className="flex items-center justify-between">
+                      <FieldLabel htmlFor={field.name}>
+                        Confirm Password
+                      </FieldLabel>
+                    </div>
+                  </FieldContent>
+                  <Input
+                    type="password"
+                    {...field}
+                    id={field.name}
+                    disabled={isPending}
+                    autoComplete="confirm-password"
+                    placeholder="••••••••••••••••"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
-            <FormField
-              control={form.control}
+            <Controller
               name="terms"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center space-x-2">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={(checked: boolean) => {
-                          return field.onChange(checked);
-                        }}
-                      />
-                    </FormControl>
-                    <FormLabel className="text-sm">
-                      I accept the{' '}
-                      <Link href="" className="text-primary underline">
-                        terms and conditions
-                      </Link>
-                    </FormLabel>
-                  </div>
-                  <FormMessage />
-                </FormItem>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  orientation="horizontal"
+                  data-invalid={fieldState.invalid}
+                >
+                  <Checkbox
+                    id={field.name}
+                    checked={field.value}
+                    onCheckedChange={(checked: boolean) => {
+                      return field.onChange(checked);
+                    }}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  <FieldLabel
+                    htmlFor={field.name}
+                    className="text-sm font-normal"
+                  >
+                    I accept the{' '}
+                    <Link href="" className="text-primary underline">
+                      terms and conditions
+                    </Link>
+                  </FieldLabel>
+                </Field>
               )}
             />
           </CardContent>
 
-          <CardFooter className="space-y-4 flex-col">
+          <CardFooter className="space-y-4 flex-col bg-transparent border-none">
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? (
                 <>
-                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                  <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
                   Registering...
                 </>
               ) : (
@@ -274,6 +291,6 @@ export function SignUpForm() {
           </CardFooter>
         </form>
       )}
-    </Form>
+    </>
   );
 }

@@ -1,7 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { fetchCompanies } from '@/actions/application/fetch-companies';
+import { useEffect, useState } from 'react';
+import { useDebounce } from '@repo/ui/hooks/use-debounce';
+import { fetchCompaniesSuggestionsAction } from '@/actions/company/fetch-suggestions';
+import { CompanyLogo } from './company-logo';
 import {
   Autocomplete,
   AutocompleteContent,
@@ -9,75 +11,102 @@ import {
   AutocompleteInput,
   AutocompleteItem,
   AutocompleteList,
-} from '@repo/ui/components/autocomplete';
-import { CompanyLogo } from './company-logo';
+} from '@repo/ui/components/customs/autocomplete';
 
 type CompanyOption = { id: string; name: string; logoUrl?: string };
 
 type SelectCompanyProps = {
   value: string;
-  onChange: (value: string) => void;
+  onValueChange: (value: string) => void;
+  onSelect?: (company: CompanyOption) => void;
   placeholder?: string;
+  inputClassName?: string;
 };
 
 const DEBOUNCE_MS = 300;
 
 export default function SelectCompany({
   value,
-  onChange,
-  placeholder = 'Acme Corp',
+  onValueChange,
+  onSelect,
+  placeholder = 'Select a company',
+  inputClassName,
 }: SelectCompanyProps) {
   const [results, setResults] = useState<CompanyOption[]>([]);
-  const [loading, setLoading] = useState(false);
   const [focused, setFocused] = useState(false);
   const [open, setOpen] = useState(false);
-
-  const search = useCallback(async (query: string) => {
-    setLoading(true);
-
-    try {
-      const companies = await fetchCompanies(query);
-      setResults(companies);
-    } catch (err) {
-      console.error('Failed to fetch companies:', err);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [displayValue, setDisplayValue] = useState(value);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    if (!focused || !value.trim()) return;
-    const timeout = setTimeout(() => search(value), DEBOUNCE_MS);
-    return () => clearTimeout(timeout);
-  }, [value, focused, search]);
+    setDisplayValue(value);
+  }, [value]);
+
+  const debouncedSearchQuery = useDebounce(searchQuery, DEBOUNCE_MS);
+
+  useEffect(() => {
+    if (!focused) return;
+    (async () => {
+      try {
+        const companies = await fetchCompaniesSuggestionsAction(
+          debouncedSearchQuery.trim() || undefined,
+        );
+        setResults(companies);
+      } catch (err) {
+        console.error('Failed to fetch companies:', err);
+        setResults([]);
+      }
+    })();
+  }, [focused, debouncedSearchQuery]);
+
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const newValue = e.target.value;
+    setDisplayValue(newValue);
+    onValueChange(newValue);
+    setSearchQuery(newValue);
+  }
+
+  function handleFocus() {
+    setFocused(true);
+    setOpen(true);
+    setSearchQuery(displayValue);
+  }
+
+  function handleBlur() {
+    setFocused(false);
+  }
 
   return (
     <Autocomplete
-      value={value}
-      onValueChange={onChange}
+      value={displayValue}
+      onValueChange={(v) => {
+        setDisplayValue(v);
+        onValueChange(v);
+      }}
       open={open}
       onOpenChange={setOpen}
       items={results}
-      itemToStringValue={(company: CompanyOption) => company.name}
-      autoHighlight
+      itemToStringValue={(company: CompanyOption) => company?.name ?? ''}
     >
       <AutocompleteInput
         placeholder={placeholder}
-        loading={loading}
-        onFocus={() => {
-          setFocused(true);
-          setOpen(true);
-          search(value);
-        }}
-        onBlur={() => setFocused(false)}
+        onChange={handleInputChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        showClear
+        className={inputClassName}
       />
       <AutocompleteContent>
         <AutocompleteEmpty>No companies found.</AutocompleteEmpty>
         <AutocompleteList>
-          {(item: CompanyOption) => (
-            <AutocompleteItem key={item.id} value={item}>
+          {(item) => (
+            <AutocompleteItem
+              key={item.id}
+              value={item}
+              onClick={() => onSelect?.(item)}
+            >
               <CompanyLogo
+                companyId={item.id}
                 name={item.name}
                 size={14}
                 className="size-4 shrink-0 rounded-xs"

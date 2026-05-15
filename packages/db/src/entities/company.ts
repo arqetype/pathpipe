@@ -1,17 +1,20 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   ManyToMany,
   PrimaryGeneratedColumn,
   Unique,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user';
+import { CompanyIndustry } from '../types/company/industry';
 
 export enum CompanyStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
 }
 
 @Entity()
@@ -26,14 +29,20 @@ export class Company {
   @Column({ nullable: true })
   logoUrl: string;
 
+  @Column({ type: 'bytea', nullable: true })
+  logoBlob: Buffer;
+
+  @Column({ nullable: true })
+  logoMimeType: string;
+
   @Column({ nullable: true })
   website: string;
 
   @Column({ nullable: true })
   careersUrl: string;
 
-  @Column({ nullable: true })
-  industry: string;
+  @Column({ type: 'enum', enum: CompanyIndustry, nullable: true })
+  industry: CompanyIndustry;
 
   @Column({ nullable: true })
   country: string;
@@ -56,4 +65,10 @@ export class Company {
 
   @CreateDateColumn()
   created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
+
+  @DeleteDateColumn()
+  deleted_at: Date;
 }

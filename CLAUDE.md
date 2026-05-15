@@ -31,7 +31,7 @@ pnpm test:coverage
 
 ## Architecture
 
-**Weaver** is a job application tracker. Monorepo managed by Turborepo + pnpm workspaces.
+**Pathpipe** is a job application tracker. Monorepo managed by Turborepo + pnpm workspaces.
 
 ### Apps
 
@@ -49,11 +49,13 @@ pnpm test:coverage
 Every feature is a NestJS module under `apps/api/src/`. Current modules: `auth`, `user`, `health`, `mailer`, `application`.
 
 **Global setup (`app.module.ts`):**
+
 - `JwtAuthGuard` is registered as a global `APP_GUARD` — all routes are protected by default.
 - Use `@Public()` decorator to opt out of JWT protection.
 - TypeORM entities must be registered in the `entities` array in `app.module.ts` to be active.
 
 **Common decorators (`apps/api/src/common/decorators/`):**
+
 - `@Public()` — marks a route as unauthenticated
 - `@CurrentUser()` — injects the authenticated `User` entity from the JWT payload
 - `@Roles()` — role-based access (used alongside role guards)

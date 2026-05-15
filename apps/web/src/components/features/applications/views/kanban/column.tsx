@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import type { ApplicationStatus } from '@repo/db/types/application/status';
 import { cn } from '@repo/ui/lib/utils';
 import { Card, CardContent } from '@repo/ui/components/card';
-import { PlusIcon } from 'lucide-react';
+import { RiAddLine } from '@remixicon/react';
 import { useApplicationStore } from '../../store';
 
 type ColumnConfig = {
@@ -56,7 +56,7 @@ export function KanbanColumn({
           aria-label={`Add new card to ${config.label}`}
         >
           <CardContent className="flex items-center justify-center">
-            <PlusIcon className="h-4 w-4 text-muted-foreground" />
+            <RiAddLine className="h-4 w-4 text-muted-foreground" />
           </CardContent>
         </Card>
       </div>

@@ -1,93 +1,73 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Building2 } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { RiBuildingLine } from '@remixicon/react';
+import { cn } from '@repo/ui/lib/utils';
+import { Skeleton } from '@repo/ui/components/skeleton';
+import { fetchCompanyLogoAction } from '@/actions/company/fetch-company-logo';
 
-type LogoType = 'icon' | 'logo' | 'symbol';
+const logoCache = new Map<string, string>();
 
 type CompanyLogoProps = {
   name: string;
-  logoUrl?: string;
-  type?: LogoType;
+  companyId?: string;
+  cacheKey?: string | number;
   size?: number;
   className?: string;
 };
 
-const brandIdCache = new Map<string, string | null>();
-
 export function CompanyLogo({
   name,
-  logoUrl,
-  type = 'icon',
+  companyId,
+  cacheKey,
   size = 12,
   className,
 }: CompanyLogoProps) {
-  const [brandId, setBrandId] = useState<string | null>(
-    () => brandIdCache.get(name) ?? null,
-  );
-  const [error, setError] = useState(
-    () => brandIdCache.has(name) && !brandIdCache.get(name),
-  );
-  const { resolvedTheme } = useTheme();
+  const [src, setSrc] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!name || brandIdCache.has(name) || logoUrl) return;
-
+    if (!companyId) return;
+    const mapKey = `${companyId}:${cacheKey ?? ''}`;
+    const cached = logoCache.get(mapKey);
+    if (cached) {
+      setSrc(cached);
+      return;
+    }
     let cancelled = false;
-
-    fetch(`https://api.brandfetch.io/v2/search/${encodeURIComponent(name)}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((results) => {
-        if (cancelled) return;
-        const id = results?.[0]?.brandId ?? null;
-        brandIdCache.set(name, id);
-        if (id) {
-          setBrandId(id);
-        } else {
-          setError(true);
+    setLoading(true);
+    fetchCompanyLogoAction(companyId)
+      .then((url) => {
+        if (!cancelled) {
+          if (url) logoCache.set(mapKey, url);
+          setSrc(url ?? null);
         }
       })
-      .catch(() => {
-        brandIdCache.set(name, null);
-        if (!cancelled) setError(true);
+      .catch(console.error)
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
-
     return () => {
       cancelled = true;
     };
-  }, [name, logoUrl]);
+  }, [companyId, cacheKey]);
 
-  if (error || (!brandId && !logoUrl)) {
-    return <Building2 className={className ?? 'size-3 shrink-0'} />;
+  if (loading) {
+    return <Skeleton className={cn('size-5 shrink-0 rounded-sm', className)} />;
   }
 
-  if (logoUrl) {
-    return (
-      <Image
-        src={logoUrl}
-        alt=""
-        className={className ?? 'size-3 shrink-0 rounded-sm object-contain'}
-        width={size}
-        height={size}
-        unoptimized
-      />
-    );
+  if (!src) {
+    return <RiBuildingLine className={cn('size-5 shrink-0', className)} />;
   }
-
-  const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
-  const src = `https://cdn.brandfetch.io/${brandId}/fallback/404/${type}.svg?theme=${theme}`;
 
   return (
     <Image
       src={src}
-      alt=""
-      className={className ?? 'size-3 shrink-0 rounded-sm object-contain'}
+      alt={name}
+      className={cn('size-5 shrink-0 rounded-sm object-cover', className)}
       width={size}
       height={size}
-      onError={() => setError(true)}
-      unoptimized
     />
   );
 }

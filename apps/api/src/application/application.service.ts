@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Application } from '@repo/db/entities/application';
@@ -9,7 +14,8 @@ import {
 } from '@repo/db/query/application';
 import { User } from '@repo/db/entities/user';
 import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
-import { Company } from '@repo/db/entities/company';
+import { Company, CompanyStatus } from '@repo/db/entities/company';
+import { CompanyImageService } from '../company/company-image.service';
 
 @Injectable()
 export class ApplicationService {
@@ -18,6 +24,8 @@ export class ApplicationService {
     private readonly applicationsRepository: Repository<Application>,
     @InjectRepository(Company)
     private readonly companiesRepository: Repository<Company>,
+    @Inject(forwardRef(() => CompanyImageService))
+    private readonly companyImageService: CompanyImageService,
   ) {}
 
   async findMany(
@@ -47,7 +55,8 @@ export class ApplicationService {
 
     const qb = this.applicationsRepository
       .createQueryBuilder('application')
-      .leftJoin('application.user', 'user');
+      .leftJoin('application.user', 'user')
+      .leftJoinAndSelect('application.company', 'company');
 
     if (userId) qb.where('user.id = :userId', { userId });
 
@@ -58,7 +67,7 @@ export class ApplicationService {
 
     if (search) {
       qb.andWhere(
-        '(application.company ILIKE :search OR application.position ILIKE :search)',
+        '(company.name ILIKE :search OR application.position ILIKE :search)',
         { search: `%${search}%` },
       );
     }
@@ -83,6 +92,7 @@ export class ApplicationService {
   async findById(id: string): Promise<Application> {
     const application = await this.applicationsRepository.findOne({
       where: { id },
+      relations: ['company'],
     });
     if (!application) throw new NotFoundException();
     return application;
@@ -96,41 +106,73 @@ export class ApplicationService {
     return application;
   }
 
+  private async resolveOrCreateCompany(name: string): Promise<Company> {
+    const trimmed = name.trim();
+    let company = await this.companiesRepository.findOne({
+      where: { name: trimmed },
+    });
+    if (!company) {
+      company = await this.companiesRepository.save({
+        name: trimmed,
+        status: CompanyStatus.PENDING,
+      });
+      await this.companyImageService.fetchAndSaveLogo(company.id, trimmed);
+    }
+    return company;
+  }
+
   async create(user: User, dto: CreateApplicationDto): Promise<Application> {
     const companyName = dto.company?.trim();
-
-    if (companyName) {
-      await this.companiesRepository
-        .createQueryBuilder()
-        .insert()
-        .into(Company)
-        .values({ name: companyName })
-        .orIgnore()
-        .execute();
-    }
+    const company = companyName
+      ? await this.resolveOrCreateCompany(companyName)
+      : undefined;
 
     const newApplication = this.applicationsRepository.create({
       ...dto,
-      company: companyName ?? dto.company,
+      company,
       appliedAt: dto.appliedAt ? new Date(dto.appliedAt) : undefined,
       user,
     });
     return this.applicationsRepository.save(newApplication);
   }
 
-  async update(id: string, data: Partial<Application>): Promise<Application> {
+  private async buildUpdatePayload(
+    data: Partial<Application> & { companyName?: string },
+  ) {
+    const { companyName, ...rest } = data as Partial<Application> & {
+      companyName?: string;
+    };
+    const payload: Record<string, unknown> = { ...rest };
+    if (companyName !== undefined) {
+      payload.company = companyName
+        ? await this.resolveOrCreateCompany(companyName)
+        : null;
+    }
+    return payload;
+  }
+
+  async update(
+    id: string,
+    data: Partial<Application> & { companyName?: string },
+  ): Promise<Application> {
     await this.findById(id);
-    await this.applicationsRepository.update(id, data);
+    await this.applicationsRepository.update(
+      id,
+      await this.buildUpdatePayload(data),
+    );
     return this.findById(id);
   }
 
   async updateByUser(
     id: string,
     userId: string,
-    data: Partial<Application>,
+    data: Partial<Application> & { companyName?: string },
   ): Promise<Application> {
     await this.findByIdAndUser(id, userId);
-    await this.applicationsRepository.update(id, data);
+    await this.applicationsRepository.update(
+      id,
+      await this.buildUpdatePayload(data),
+    );
     return this.findById(id);
   }
 

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
-import { useForm, type Control } from 'react-hook-form';
+import { useForm, type Control, Controller } from 'react-hook-form';
 import { AvatarMoods, AvatarHairStyles } from '@repo/db/types/user/avatar';
 import {
   HorizontalSelect,
@@ -8,14 +8,7 @@ import {
 } from '@repo/ui/components/customs/horizontal-select';
 import { AvatarCustomizationDto } from '@repo/db/dto/settings/avatar-customization.dto';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@repo/ui/components/form';
+import { Field, FieldLabel, FieldError } from '@repo/ui/components/field';
 import {
   HexColorPicker,
   SkinColorPicker,
@@ -28,7 +21,7 @@ import { previewAvatarCustomizationAction } from '@/actions/user/preview-avatar'
 import { saveAvatarCustomizationAction } from '@/actions/user/save-avatar';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { DicesIcon, Loader2Icon, SaveIcon } from 'lucide-react';
+import { RiLoader5Line, RiSaveLine, RiDice5Line } from '@remixicon/react';
 import Link from 'next/link';
 
 const moodsOptions = AvatarMoods.map((mood) => ({
@@ -53,20 +46,21 @@ const generateRandomColor = () => {
 };
 
 const ColorField = ({ name, label, control }: ColorFieldProps) => (
-  <FormField
+  <Controller
     name={name}
     control={control}
-    render={({ field }) => (
-      <FormItem className="flex flex-col gap-2 flex-1">
-        <FormLabel>{label}</FormLabel>
-        <FormControl>
-          <HexColorPicker
-            color={'#' + field.value}
-            onChange={(color) => field.onChange(color.replace('#', ''))}
-          />
-        </FormControl>
-        <FormMessage />
-      </FormItem>
+    render={({ field, fieldState }) => (
+      <Field
+        className="flex flex-col gap-2 flex-1"
+        data-invalid={fieldState.invalid}
+      >
+        <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+        <HexColorPicker
+          color={'#' + field.value}
+          onChange={(color) => field.onChange(color.replace('#', ''))}
+        />
+        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+      </Field>
     )}
   />
 );
@@ -170,14 +164,14 @@ export default function ProfilePictureEditor() {
   return (
     <div className="bg-muted w-full min-h-96 rounded-lg p-4">
       <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-        Create your Weaver Avatar !
+        Create your Pathpipe Avatar !
       </h2>
 
-      <Form {...form}>
+      <>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1">
           <div className="flex flex-col gap-4 py-4 sm:flex-row">
             <div className="flex flex-col gap-2">
-              <div className="relative size-56 mx-auto rounded-[20%] overflow-hidden">
+              <div className="relative size-56 mx-auto rounded-full overflow-hidden">
                 {avatarPreview && (
                   <Image
                     src={avatarPreview}
@@ -189,77 +183,84 @@ export default function ProfilePictureEditor() {
                 )}
                 {formData !== debouncedAndThrottledFormData && (
                   <div className="absolute inset-0 flex items-center justify-center bg-background/70 text-white text-sm">
-                    <Loader2Icon className="animate-spin text-primary" />
+                    <RiLoader5Line className="animate-spin text-primary" />
                   </div>
                 )}
               </div>
             </div>
 
             <div className="flex-1 space-y-4">
-              <FormField
+              <Controller
                 name="mood"
                 control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>How do you feel today?</FormLabel>
-                    <FormControl className="p-0">
-                      <HorizontalSelect
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        {moodsOptions.map((o) => (
-                          <HorizontalSelectItem key={o.value} value={o.value}>
-                            {o.label}
-                          </HorizontalSelectItem>
-                        ))}
-                      </HorizontalSelect>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      How do you feel today?
+                    </FieldLabel>
+                    <HorizontalSelect
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      {moodsOptions.map((o) => (
+                        <HorizontalSelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </HorizontalSelectItem>
+                      ))}
+                    </HorizontalSelect>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
                 )}
               />
-              <FormField
+              <Controller
                 name="hairStyle"
                 control={form.control}
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormLabel>What is your hair style?</FormLabel>
-                    <FormControl className="p-0">
-                      <HorizontalSelect
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        {hairStylesOptions.map((o) => (
-                          <HorizontalSelectItem key={o.value} value={o.value}>
-                            {o.label}
-                          </HorizontalSelectItem>
-                        ))}
-                      </HorizontalSelect>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                render={({ field, fieldState }) => (
+                  <Field className="flex-1" data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      What is your hair style?
+                    </FieldLabel>
+                    <HorizontalSelect
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      {hairStylesOptions.map((o) => (
+                        <HorizontalSelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </HorizontalSelectItem>
+                      ))}
+                    </HorizontalSelect>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
                 )}
               />
             </div>
           </div>
           <div className="flex gap-4 flex-wrap justify-center">
-            <FormField
+            <Controller
               name="skinColor"
               control={form.control}
-              render={({ field }) => (
-                <FormItem className="flex flex-col gap-2 flex-1">
-                  <FormLabel>What is your skin color?</FormLabel>
-                  <FormControl>
-                    <SkinColorPicker
-                      color={`#${field.value}`}
-                      onChange={(color) =>
-                        field.onChange(color.replace('#', ''))
-                      }
-                      swatchSize="md"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <Field
+                  className="flex flex-col gap-2 flex-1"
+                  data-invalid={fieldState.invalid}
+                >
+                  <FieldLabel htmlFor={field.name}>
+                    What is your skin color?
+                  </FieldLabel>
+                  <SkinColorPicker
+                    color={`#${field.value}`}
+                    onChange={(color) => field.onChange(color.replace('#', ''))}
+                    swatchSize="md"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
             <ColorField
@@ -312,15 +313,15 @@ export default function ProfilePictureEditor() {
               size="icon"
               onClick={handleRandomValue}
             >
-              <DicesIcon />
+              <RiDice5Line />
             </Button>
             <Button type="submit" className="flex-1 mt-4">
-              <SaveIcon />
+              <RiSaveLine />
               Update my profile avatar
             </Button>
           </div>
         </form>
-      </Form>
+      </>
     </div>
   );
 }

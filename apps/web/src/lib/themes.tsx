@@ -1,4 +1,4 @@
-import { ComputerIcon, MoonIcon, SunIcon } from 'lucide-react';
+import { RiComputerLine, RiMoonLine, RiSunLine } from '@remixicon/react';
 import type { ReactNode } from 'react';
 
 export enum ThemeEnum {
@@ -16,17 +16,17 @@ export type Theme = {
 export const themes: Theme[] = [
   {
     name: 'Light',
-    icon: <SunIcon />,
+    icon: <RiSunLine />,
     value: ThemeEnum.Light,
   },
   {
     name: 'Dark',
-    icon: <MoonIcon />,
+    icon: <RiMoonLine />,
     value: ThemeEnum.Dark,
   },
   {
     name: 'System',
-    icon: <ComputerIcon />,
+    icon: <RiComputerLine />,
     value: ThemeEnum.System,
   },
 ];

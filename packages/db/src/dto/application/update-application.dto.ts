@@ -15,11 +15,11 @@ export class UpdateApplicationDto {
 
   @IsOptional()
   @IsString()
-  company?: string;
+  position?: string;
 
   @IsOptional()
   @IsString()
-  position?: string;
+  companyName?: string;
 
   @IsOptional()
   @IsString()

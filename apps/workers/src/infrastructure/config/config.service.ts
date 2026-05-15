@@ -14,7 +14,7 @@ export class ConfigServiceImpl implements ConfigService {
         port: this.requireEnvAsInt('WORKERS_DATABASE_PORT', 5432),
         username: this.requireEnv('WORKERS_DATABASE_USER', 'your_db_user'),
         password: this.requireEnv('WORKERS_DATABASE_PASS', 'your_db_password'),
-        name: this.requireEnv('WORKERS_DATABASE_NAME', 'weaver'),
+        name: this.requireEnv('WORKERS_DATABASE_NAME', 'pathpipe'),
       },
       workers: {
         port: this.requireEnvAsInt('WORKERS_PORT', 4100),
@@ -25,7 +25,7 @@ export class ConfigServiceImpl implements ConfigService {
         port: this.requireEnvAsInt('WORKERS_EMAIL_PORT', 587),
         user: this.requireEnv('WORKERS_EMAIL_USER', ''),
         pass: this.requireEnv('WORKERS_EMAIL_PASS', ''),
-        from: '"Weaver" <no-reply@weareweaver.org>',
+        from: '"Pathpipe" <no-reply@pathpipe.com>',
       },
     };
   }

@@ -4,7 +4,7 @@ import { Button } from '@repo/ui/components/button';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
-import { TriangleAlertIcon } from 'lucide-react';
+import { RiErrorWarningLine } from '@remixicon/react';
 import GoogleIcon from '@repo/ui/components/icons/google';
 import GitHubIcon from '@repo/ui/components/icons/github';
 
@@ -39,7 +39,7 @@ export function OAuthButtons() {
     <div className="w-full flex flex-col">
       {error && (
         <div className="mb-4 text-red-600 text-center flex items-center justify-center text-xs sm:text-sm">
-          <TriangleAlertIcon className="inline mr-1" size={16} />
+          <RiErrorWarningLine className="inline mr-1" size={16} />
           {error === 'google_auth_failed' &&
             'Google authentication failed. Please try again.'}
           {error === 'github_auth_failed' &&

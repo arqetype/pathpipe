@@ -1,11 +1,12 @@
 services:
   db:
     image: postgres:17
-    container_name: weaver-dev-database
+    container_name: pathpipe-dev-database
     ports:
       - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./infra/db-init:/docker-entrypoint-initdb.d
     environment:
       POSTGRES_USER: ${NEST_DATABASE_USER}
       POSTGRES_PASSWORD: ${NEST_DATABASE_PASS}

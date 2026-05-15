@@ -1,82 +1,43 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useTransition } from 'react';
-import type { Application } from '@repo/db/entities/application';
-import { Dialog, DialogContent, DialogTitle } from '@repo/ui/components/dialog';
-import { Separator } from '@repo/ui/components/separator';
-import { updateApplicationAction } from '@/actions/application/update';
-import { toast } from 'sonner';
-import { ApplicationDialogHeader } from './header';
-import { ApplicationDialogProperties } from './properties';
-import { ApplicationDialogNotes } from './notes';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { Dialog, DialogContent } from '@repo/ui/components/dialog';
 import { useApplicationStore } from '../store';
+import { EditApplicationForm } from './edit-form';
 
-export function ApplicationDialog() {
-  const selectedApplicationId = useApplicationStore(
-    (state) => state.selectedApplicationId,
-  );
-  const selectedApplication = useApplicationStore(
-    (state) =>
-      state.applications.find((a) => a.id === state.selectedApplicationId) ??
-      null,
-  );
-  const { selectApplication, patchApplication } = useApplicationStore();
-  const [, startTransition] = useTransition();
+export function ApplicationDialog({ id }: { id: string | null }) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  const [open, setOpen] = useState(!!id);
 
-  const lastApplicationRef = useRef<Application | null>(null);
   useEffect(() => {
-    if (selectedApplication) {
-      lastApplicationRef.current = selectedApplication;
-    }
-  }, [selectedApplication]);
-  const displayedApplication = useMemo(() => {
-    return selectedApplication ?? null;
-  }, [selectedApplication]);
+    setOpen(!!id);
+  }, [id]);
 
-  function save(data: Partial<Application>) {
-    if (!displayedApplication) return;
-    const previous = patchApplication(displayedApplication.id, data);
-    startTransition(async () => {
-      const result = await updateApplicationAction({
-        id: displayedApplication.id,
-        ...data,
-      });
-      if (!result.success) {
-        if (previous) patchApplication(displayedApplication.id, previous);
-        toast.error('Failed to save changes.');
-      }
-    });
+  const application = useApplicationStore(
+    (state) => state.applications.find((a) => a.id === id) ?? null,
+  );
+
+  function close() {
+    setOpen(false);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('id');
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname);
   }
 
+  const onOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) close();
+  };
+
   return (
-    <Dialog
-      open={!!selectedApplicationId}
-      onOpenChange={(open) => !open && selectApplication(null)}
-    >
-      <DialogContent
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        className="sm:max-w-2xl p-0 gap-0 max-h-[90vh] overflow-y-auto"
-      >
-        <DialogTitle className="sr-only">
-          {displayedApplication?.position ?? 'Application details'}
-        </DialogTitle>
-        {displayedApplication && (
-          <>
-            <ApplicationDialogHeader
-              application={displayedApplication}
-              onSave={save}
-            />
-            <Separator />
-            <ApplicationDialogProperties
-              application={displayedApplication}
-              onSave={save}
-            />
-            <Separator />
-            <ApplicationDialogNotes
-              application={displayedApplication}
-              onSave={save}
-            />
-          </>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        {application && (
+          <EditApplicationForm application={application} onClose={close} />
         )}
       </DialogContent>
     </Dialog>

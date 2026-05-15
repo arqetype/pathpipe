@@ -10,23 +10,16 @@ import {
 } from '@repo/ui/components/card';
 import Image from 'next/image';
 import { ResetPasswordDto } from '@repo/db/dto/auth/reset-password.dto';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import type { UUID } from 'node:crypto';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@repo/ui/components/form';
+import { Field, FieldLabel, FieldError } from '@repo/ui/components/field';
 import { Input } from '@repo/ui/components/input';
 import { Button, buttonVariants } from '@repo/ui/components/button';
 import { useState, useTransition } from 'react';
 import { resetPasswordAction } from '@/actions/auth/reset-password';
 import { Alert, AlertDescription, AlertTitle } from '@repo/ui/components/alert';
-import { CheckCircleIcon } from 'lucide-react';
+import { RiCheckboxCircleLine } from '@remixicon/react';
 import Link from 'next/link';
 import { cn } from '@repo/ui/lib/utils';
 import { ResetPasswordUserResponseDto } from '@repo/db/dto/auth/reset-password-user.dto';
@@ -93,63 +86,63 @@ export default function ResetPasswordForm({
       </CardHeader>
       {success === false ? (
         <form onSubmit={form.handleSubmit(handleSubmit)}>
-          <Form {...form}>
-            <CardContent className="space-y-4">
-              <FormField
-                key="newPassword"
-                control={form.control}
-                name="newPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>New Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Enter your new password"
-                        disabled={pending || success !== false}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                key="confirmPassword"
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Confirm your new password"
-                        {...field}
-                        disabled={pending || success !== false}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-            <CardFooter className="mt-4">
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={pending || success !== false}
-              >
-                Reset Password
-              </Button>
-            </CardFooter>
-          </Form>
+          <CardContent className="space-y-4">
+            <Controller
+              name="newPassword"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>New Password</FieldLabel>
+                  <Input
+                    type="password"
+                    placeholder="Enter your new password"
+                    disabled={pending || success !== false}
+                    {...field}
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              name="confirmPassword"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Confirm Password</FieldLabel>
+                  <Input
+                    type="password"
+                    placeholder="Confirm your new password"
+                    {...field}
+                    id={field.name}
+                    disabled={pending || success !== false}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </CardContent>
+          <CardFooter className="mt-4">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={pending || success !== false}
+            >
+              Reset Password
+            </Button>
+          </CardFooter>
         </form>
       ) : (
         <>
           <CardContent>
             <Alert>
-              <CheckCircleIcon />
+              <RiCheckboxCircleLine className="size-4" />
               <AlertTitle>Password reset successfully!</AlertTitle>
               <AlertDescription>
                 You can now log in with your new password.
