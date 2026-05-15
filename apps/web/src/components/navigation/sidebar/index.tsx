@@ -22,6 +22,7 @@ import {
 import { signOutAction } from '@/actions/auth/sign-out';
 import { UserRole } from '@repo/db/types/user/roles';
 import type { User } from '@repo/db/entities/user';
+import { Logo } from '@repo/ui/branding/logo';
 
 const userNavItems = [
   { title: 'Applications', href: '/app/applications', icon: RiBriefcaseLine },
@@ -67,14 +68,12 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton render={<Link href="/app" />} size="lg">
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <RiBriefcaseLine className="size-4" />
-              </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">Weaver</span>
-                <span className="truncate text-xs text-sidebar-foreground/60">
-                  Job tracker
-                </span>
+              <Logo
+                className="aspect-square !size-8"
+                aria-label="Pathpipe logo"
+              />
+              <div className="grid flex-1 text-left text-lg leading-tight">
+                <span className="truncate font-semibold">Pathpipe</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

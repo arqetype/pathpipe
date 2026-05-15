@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:17
-    container_name: weaver-dev-database
+    container_name: pathpipe-dev-database
     ports:
       - '5432:5432'
     volumes:

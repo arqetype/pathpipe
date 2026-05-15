@@ -5,10 +5,11 @@ Thanks for your interest in contributing! Here's how to get started.
 ## 🛠 Setup
 
 ```bash
-git clone git@github.com:arqetype/weaver.git
-cd weaver
+git clone git@github.com:arqetype/pathpipe.git
+cd pathpipe
 pnpm install
 ```
+
 > We use pnpm workspaces to manage monorepo dependencies. If you don't have pnpm installed, install it.
 
 ## 🚧 Development

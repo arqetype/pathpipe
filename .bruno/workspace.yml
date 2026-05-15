@@ -1,6 +1,6 @@
 opencollection: 1.0.0
 info:
-  name: 'Weaver'
+  name: 'Pathpipe'
   type: workspace
 
 collections:

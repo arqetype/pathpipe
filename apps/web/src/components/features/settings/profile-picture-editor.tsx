@@ -164,7 +164,7 @@ export default function ProfilePictureEditor() {
   return (
     <div className="bg-muted w-full min-h-96 rounded-lg p-4">
       <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-        Create your Weaver Avatar !
+        Create your Pathpipe Avatar !
       </h2>
 
       <>

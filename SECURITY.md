@@ -7,7 +7,7 @@ We will not provide security fixes for older versions since we are doing CI/CD a
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in any `weaver` repository, please report it responsibly.
+If you discover a security vulnerability in any `pathpipe` repository, please report it responsibly.
 
 ### 🔒 How to report
 
