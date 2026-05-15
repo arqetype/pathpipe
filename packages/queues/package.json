@@ -1,0 +1,22 @@
+{
+  "name": "@repo/queues",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --max-warnings 0 && tsc --noEmit",
+    "format": "prettier --write . --ignore-unknown"
+  },
+  "dependencies": {
+    "bullmq": "^5.76.8",
+    "ioredis": "^5.10.1"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/prettier-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^6.0.2"
+  },
+  "exports": {
+    "./*": "./src/*.ts"
+  }
+}
