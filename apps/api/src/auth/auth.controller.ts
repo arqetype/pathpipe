@@ -46,12 +46,12 @@ import { LocalAuthGuard } from './guards/local.auth.guard';
 import type { Response, Request } from 'express';
 import { User } from '@repo/db/entities/user';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { UserService } from '../user/user.service';
 import { GoogleCallbackGuard } from './guards/google-callback.guard';
 import { GithubCallbackGuard } from './guards/github-callback.guard';
 import { ApiKeyService } from './api-key.service';
 import { UserRole } from '@repo/db/types/user/roles';
 import { Roles } from '../common/decorators/roles.decorator';
+import { UserService } from '../features/user/user.service';
 
 @Controller('auth')
 export class AuthController {

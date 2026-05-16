@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { UserModule } from './user/user.module';
+import { UserModule } from './features/user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from '@repo/db/entities/user';
 import { EmailVerificationToken } from '@repo/db/entities/email-verification-token';
-import { HealthModule } from './health/health.module';
-import { MailerModule } from './mailer/mailer.module';
+import { HealthModule } from './infrastructure/health/health.module';
+import { MailerModule } from './infrastructure/mailer/mailer.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt.auth.guard';
@@ -13,11 +13,12 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { OTPVerification } from '@repo/db/entities/otp-verification';
 import { ResetPasswordToken } from '@repo/db/entities/reset-password-token';
-import { ApplicationModule } from './application/application.module';
-import { CompanyModule } from './company/company.module';
+import { ApplicationModule } from './features/application/application.module';
+import { CompanyModule } from './features/company/company.module';
 import { Application } from '@repo/db/entities/application';
 import { Company } from '@repo/db/entities/company';
 import { ApiKey } from '@repo/db/entities/api-key';
+import { InternalModule } from './internal/internal.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { ApiKey } from '@repo/db/entities/api-key';
     JwtModule,
     ApplicationModule,
     CompanyModule,
+    InternalModule,
   ],
   providers: [
     {

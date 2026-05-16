@@ -27,8 +27,8 @@ import type { CompaniesQuery } from '@repo/db/query/company';
 import { Company } from '@repo/db/entities/company';
 import { UpdateCompanyDto } from '@repo/db/dto/company/update-company.dto';
 import { UpdateCompanyStatusDto } from '@repo/db/dto/company/update-company-status.dto';
-import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@repo/db/types/user/roles';
+import { Roles } from '../../common/decorators/roles.decorator';
 
 @Controller('companies')
 export class CompanyController {
