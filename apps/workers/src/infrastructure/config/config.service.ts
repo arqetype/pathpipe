@@ -9,13 +9,6 @@ export class ConfigServiceImpl implements ConfigService {
 
   private loadConfig(): AppConfig {
     return {
-      database: {
-        host: this.requireEnv('WORKERS_DATABASE_HOST', 'localhost'),
-        port: this.requireEnvAsInt('WORKERS_DATABASE_PORT', 5432),
-        username: this.requireEnv('WORKERS_DATABASE_USER', 'your_db_user'),
-        password: this.requireEnv('WORKERS_DATABASE_PASS', 'your_db_password'),
-        name: this.requireEnv('WORKERS_DATABASE_NAME', 'pathpipe'),
-      },
       workers: {
         port: this.requireEnvAsInt('WORKERS_PORT', 4100),
         cronTimezone: 'Europe/Paris',
@@ -26,6 +19,15 @@ export class ConfigServiceImpl implements ConfigService {
         user: this.requireEnv('WORKERS_EMAIL_USER', ''),
         pass: this.requireEnv('WORKERS_EMAIL_PASS', ''),
         from: '"Pathpipe" <no-reply@pathpipe.com>',
+      },
+      api: {
+        baseUrl: this.requireEnv('WORKERS_API_URL', 'http://localhost:4000'),
+        apiKey: this.requireEnv('WORKERS_API_KEY', ''),
+      },
+      redis: {
+        host: this.requireEnv('WORKERS_REDIS_HOST', 'localhost'),
+        port: this.requireEnvAsInt('WORKERS_REDIS_PORT', 6379),
+        password: this.optionalEnv('WORKERS_REDIS_PASSWORD'),
       },
     };
   }
@@ -41,7 +43,7 @@ export class ConfigServiceImpl implements ConfigService {
   private requireEnvAsInt(key: string, fallback?: number): number {
     const value = process.env[key] ?? fallback;
     if (value === undefined) {
-      throw new Error(`Missing required environment variable: ${key}`);
+      throw new Error(`Missing integer value for environment variable: ${key}`);
     }
     const parsed = parseInt(value as string, 10);
     if (isNaN(parsed)) {
@@ -50,14 +52,22 @@ export class ConfigServiceImpl implements ConfigService {
     return parsed;
   }
 
+  private optionalEnv(key: string): string | undefined {
+    return process.env[key];
+  }
+
   get<K extends keyof AppConfig>(key: K): AppConfig[K] {
     return this.config[key];
   }
 
   async validate(): Promise<void> {
-    const db = this.config.database;
-    if (!db.host || !db.name) {
-      throw new Error('Database configuration is incomplete');
+    const api = this.config.api;
+    if (!api.baseUrl || !api.apiKey) {
+      throw new Error('API configuration is incomplete');
+    }
+    const redis = this.config.redis;
+    if (!redis.host) {
+      throw new Error('Redis configuration is incomplete');
     }
   }
 }

@@ -47,12 +47,15 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UserService } from '../user/user.service';
 import { GoogleCallbackGuard } from './guards/google-callback.guard';
 import { GithubCallbackGuard } from './guards/github-callback.guard';
+import { ApiKeyService } from './api-key.service';
+import { UserRole } from '@repo/db/types/user/roles';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
+    private readonly apiKeyService: ApiKeyService,
   ) {}
 
   // SIGN IN / SIGN UP FLOW
@@ -244,8 +247,45 @@ export class AuthController {
         `${process.env.NEST_FRONT_URL}/app/google/callback?token=${token}`,
       );
     }
-    return res.redirect(
-      `${process.env.NEST_FRONT_URL}/app/sign-in?error=google_auth_failed`,
-    );
+  }
+
+  // API KEYS MANAGEMENT
+  @HttpCode(HttpStatus.OK)
+  @Get('api-keys')
+  async getApiKeys(@CurrentUser() user: User) {
+    if (user.role !== UserRole.ADMIN) {
+      throw new UnauthorizedException('Admin only');
+    }
+    const keys = await this.apiKeyService.findAll();
+    return keys.map((k) => ({
+      uuid: k.uuid,
+      name: k.name,
+      isActive: k.isActive,
+      createdAt: k.createdAt,
+    }));
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post('api-keys')
+  async createApiKey(@CurrentUser() user: User, @Body('name') name: string) {
+    if (user.role !== UserRole.ADMIN) {
+      throw new UnauthorizedException('Admin only');
+    }
+    const apiKey = await this.apiKeyService.create(name);
+    return {
+      uuid: apiKey.uuid,
+      key: apiKey.key,
+      name: apiKey.name,
+    };
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Post('api-keys/:uuid/revoke')
+  async revokeApiKey(@CurrentUser() user: User, @Req() req: Request) {
+    if (user.role !== UserRole.ADMIN) {
+      throw new UnauthorizedException('Admin only');
+    }
+    const uuid = req.params.uuid as string;
+    await this.apiKeyService.revoke(uuid);
   }
 }

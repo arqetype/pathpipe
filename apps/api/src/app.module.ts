@@ -9,6 +9,7 @@ import { MailerModule } from './mailer/mailer.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt.auth.guard';
+import { RolesGuard } from './common/guards/roles.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { OTPVerification } from '@repo/db/entities/otp-verification';
 import { ResetPasswordToken } from '@repo/db/entities/reset-password-token';
@@ -16,12 +17,14 @@ import { ApplicationModule } from './application/application.module';
 import { CompanyModule } from './company/company.module';
 import { Application } from '@repo/db/entities/application';
 import { Company } from '@repo/db/entities/company';
+import { ApiKey } from '@repo/db/entities/api-key';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: ['./.env'],
     }),
+    TypeOrmModule.forFeature([ApiKey]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -39,6 +42,7 @@ import { Company } from '@repo/db/entities/company';
           ResetPasswordToken,
           Application,
           Company,
+          ApiKey,
         ],
         synchronize: process.env.NODE_ENV !== 'production',
       }),
@@ -55,6 +59,10 @@ import { Company } from '@repo/db/entities/company';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
 })

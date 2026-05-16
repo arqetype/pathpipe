@@ -1,22 +1,30 @@
-import { ConnectionOptions, Queue } from 'bullmq';
-import { QueueName } from './jobs';
+import type { ConnectionOptions } from 'bullmq';
+import { Queue } from 'bullmq';
+import type { QueueName } from './jobs';
 
-const DEFAULT_JOB_OPTIONS = {
+/** Default job options applied to all queues. */
+export const DEFAULT_JOB_OPTIONS = {
   attempts: 3,
   backoff: {
     type: 'exponential' as const,
-    delay: 2_000, // 2s → 10s → 30s
+    delay: 2_000,
   },
-  removeOnComplete: { count: 500 }, // keep last 500 completed jobs
-  removeOnFail: { count: 200 }, // keep last 200 failed jobs
+  removeOnComplete: { count: 500 },
+  removeOnFail: { count: 200 },
 } as const;
 
-type NewType = typeof DEFAULT_JOB_OPTIONS;
+export type { JobsOptions } from 'bullmq';
 
+/**
+ * Create a BullMQ queue instance.
+ * @param name - Queue name (use QUEUES constants)
+ * @param connection - Redis connection config
+ * @param overrides - Override default job options
+ */
 export const createQueue = <TJobData>(
   name: QueueName,
   connection: ConnectionOptions,
-  overrides: Partial<NewType> = {},
+  overrides: Partial<typeof DEFAULT_JOB_OPTIONS> = {},
 ): Queue<TJobData> =>
   new Queue<TJobData>(name, {
     connection,

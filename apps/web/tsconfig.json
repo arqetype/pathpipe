@@ -3,19 +3,22 @@
   "compilerOptions": {
     "plugins": [
       {
-        "name": "next"
-      }
+        "name": "next",
+      },
     ],
     "strictPropertyInitialization": false,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "paths": {
+      "@/*": ["./src/*"],
+    },
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     "next-env.d.ts",
     "next.config.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
 }

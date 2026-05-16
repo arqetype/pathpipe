@@ -17,6 +17,9 @@
     "typescript": "^6.0.2"
   },
   "exports": {
-    "./*": "./src/*.ts"
+    ".": "./src/index.ts",
+    "./jobs": "./src/jobs.ts",
+    "./queue": "./src/queue.ts",
+    "./worker": "./src/worker.ts"
   }
 }
