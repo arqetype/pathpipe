@@ -5,4 +5,4 @@ export { createQueue, DEFAULT_JOB_OPTIONS } from './queue';
 export type { JobsOptions } from './queue';
 
 export { createWorker, DEFAULT_WORKER_OPTIONS } from './worker';
-export type { Processor, RedisConnection } from './worker';
+export type { Processor } from './worker';
