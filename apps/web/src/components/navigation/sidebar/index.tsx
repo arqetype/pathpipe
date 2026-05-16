@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { RiBriefcaseLine, RiBuildingLine } from '@remixicon/react';
+import { RiBriefcaseLine, RiBuildingLine, RiKeyLine } from '@remixicon/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { startTransition } from 'react';
@@ -30,6 +30,7 @@ const userNavItems = [
 
 const adminNavItems = [
   { title: 'Companies', href: '/app/companies', icon: RiBuildingLine },
+  { title: 'API Keys', href: '/app/api-keys', icon: RiKeyLine },
 ];
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {

@@ -18,12 +18,20 @@ export class ApiKeyService {
   }
 
   async findAll(): Promise<ApiKey[]> {
-    return this.apiKeyRepository.find({
-      order: { createdAt: 'DESC' },
-    });
+    return this.apiKeyRepository
+      .find({
+        order: { createdAt: 'DESC' },
+        where: { isActive: true },
+      })
+      .then((apiKeys) => {
+        return apiKeys.map((apiKey) => ({
+          ...apiKey,
+          key: `${apiKey.key.slice(0, 8)}•••••••••`,
+        }));
+      });
   }
 
-  async revoke(uuid: string): Promise<void> {
-    await this.apiKeyRepository.update(uuid, { isActive: false });
+  async revoke(id: string): Promise<void> {
+    await this.apiKeyRepository.update(id, { isActive: false });
   }
 }

@@ -10,7 +10,7 @@ import {
 @Entity()
 export class ApiKey {
   @PrimaryGeneratedColumn('uuid')
-  uuid: string;
+  id: string;
 
   @Column({ type: 'text', unique: true })
   key: string;
