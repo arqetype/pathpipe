@@ -256,15 +256,15 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Roles(UserRole.ADMIN)
   @Get('api-keys')
-  getApiKeys() {
-    return this.apiKeyService.findAll();
+  getApiKeys(@CurrentUser() user: User) {
+    return this.apiKeyService.findAll(user.id);
   }
 
   @HttpCode(HttpStatus.CREATED)
   @Roles(UserRole.ADMIN)
   @Post('api-keys')
-  async createApiKey(@Body('name') name: string) {
-    const apiKey = await this.apiKeyService.create(name);
+  async createApiKey(@CurrentUser() user: User, @Body('name') name: string) {
+    const apiKey = await this.apiKeyService.create(name, user);
 
     return apiKey;
   }

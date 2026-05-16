@@ -71,13 +71,15 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   ): Promise<boolean> {
     const foundKey = await this.apiKeyRepository.findOne({
       where: { key: apiKey, isActive: true },
+      relations: { user: true },
     });
 
-    if (!foundKey) {
+    if (!foundKey || !foundKey.user) {
       throw new UnauthorizedException('Invalid API key');
     }
 
     request.apiKey = foundKey;
+    request.user = foundKey.user;
     return true;
   }
 }

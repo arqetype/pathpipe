@@ -89,17 +89,18 @@ export function ApiKeysList({ apiKeys }: ApiKeysListProps) {
             <TableHead>Key</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Created</TableHead>
+            <TableHead>User</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {apiKeys.map((apiKey) => (
             <TableRow key={apiKey.id}>
-              <TableCell className="font-medium max-w-20 truncate">
+              <TableCell className="font-medium truncate max-w-30">
                 {apiKey.name}
               </TableCell>
-              <TableCell className="font-mono max-w-12">{apiKey.key}</TableCell>
-              <TableCell>
+              <TableCell className="font-mono max-w-14">{apiKey.key}</TableCell>
+              <TableCell className="max-w-10">
                 <Badge
                   variant={apiKey.isActive ? 'default' : 'secondary'}
                   className={apiKey.isActive ? '' : 'text-muted-foreground'}
@@ -107,11 +108,14 @@ export function ApiKeysList({ apiKeys }: ApiKeysListProps) {
                   {apiKey.isActive ? 'Active' : 'Revoked'}
                 </Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="max-w-10">
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <RiTimeLine className="size-4" />
                   {formatDate(apiKey.createdAt)}
                 </div>
+              </TableCell>
+              <TableCell className="max-w-20 truncate">
+                {apiKey.user?.name || 'Unknown'}
               </TableCell>
               <TableCell className="text-right">
                 {apiKey.isActive && (

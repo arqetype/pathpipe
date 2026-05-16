@@ -36,13 +36,15 @@ export class ApiKeyGuard {
 
     const foundKey = await this.apiKeyRepository.findOne({
       where: { key: apiKey, isActive: true },
+      relations: { user: true },
     });
 
-    if (!foundKey) {
+    if (!foundKey || !foundKey.user) {
       return this.reject('Invalid API key');
     }
 
     request.apiKey = foundKey;
+    request.user = foundKey.user;
     return true;
   }
 
