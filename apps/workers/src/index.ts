@@ -1,6 +1,5 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
-import { initializeDataSource } from '@/infrastructure/database/data-source';
 import { configService } from '@/infrastructure/config/config.service';
 import { Mailer } from '@repo/email';
 import pino from 'pino';
@@ -20,9 +19,6 @@ async function start() {
   try {
     await configService.validate();
     logger.info('Configuration validated');
-
-    await initializeDataSource();
-    logger.info('Database connected');
 
     const emailConfig = configService.get('email');
 

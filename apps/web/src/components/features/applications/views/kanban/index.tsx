@@ -102,7 +102,7 @@ export function KanbanBoard({
         });
       }}
     >
-      <div className="grid grid-flow-col gap-4 h-full min-h-0 px-4 py-4 w-full">
+      <div className="flex w-max gap-4 h-full min-h-0 px-4 py-4">
         {APPLICATION_STATUS_OPTIONS.filter(
           (col) => !hiddenColumns.has(col.status),
         ).map((col) => (

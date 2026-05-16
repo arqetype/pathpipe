@@ -2,7 +2,7 @@
   "name": "@repo/email",
   "version": "1.0.0",
   "scripts": {
-    "dev": "tsc -b --clean && concurrently \"tsc --watch\" \"maildev --web 3010 --outgoing-secure --outgoing-user 'dev@pathpipe.com' --outgoing-pass 'specialdevpassword'\" \"email dev --dir=src/templates --port=3011\"",
+    "dev": "concurrently \"maildev --web 3010 --outgoing-secure --outgoing-user 'dev@pathpipe.com' --outgoing-pass 'specialdevpassword'\" \"email dev --dir=src/templates --port=3011\"",
     "build": "tsc -b --clean && tsc"
   },
   "devDependencies": {

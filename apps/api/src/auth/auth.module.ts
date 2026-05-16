@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { ApiKeyService } from './api-key.service';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { MailerModule } from '../mailer/mailer.module';
@@ -11,10 +12,13 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { VerificationModule } from './verification/verification.module';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ApiKey } from '@repo/db/entities/api-key';
 
 @Module({
   imports: [
     ConfigModule,
+    TypeOrmModule.forFeature([ApiKey]),
     UserModule,
     MailerModule,
     VerificationModule,
@@ -33,6 +37,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
   controllers: [AuthController],
   providers: [
     AuthService,
+    ApiKeyService,
     LocalStrategy,
     JwtStrategy,
     GithubStrategy,

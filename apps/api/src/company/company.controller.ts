@@ -27,6 +27,8 @@ import type { CompaniesQuery } from '@repo/db/query/company';
 import { Company } from '@repo/db/entities/company';
 import { UpdateCompanyDto } from '@repo/db/dto/company/update-company.dto';
 import { UpdateCompanyStatusDto } from '@repo/db/dto/company/update-company-status.dto';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '@repo/db/types/user/roles';
 
 @Controller('companies')
 export class CompanyController {
@@ -38,6 +40,7 @@ export class CompanyController {
 
   @HttpCode(HttpStatus.OK)
   @Get()
+  @Roles(UserRole.ADMIN)
   getAll(@Query() query: CompaniesQuery): Promise<PaginatedCompanies> {
     return this.companyService.findAll(query);
   }
@@ -62,6 +65,7 @@ export class CompanyController {
 
   @HttpCode(HttpStatus.OK)
   @Post(':id/logo')
+  @Roles(UserRole.ADMIN)
   @UseInterceptors(FileInterceptor('file'))
   async uploadLogo(
     @Param('id') id: string,
@@ -89,6 +93,7 @@ export class CompanyController {
 
   @HttpCode(HttpStatus.OK)
   @Patch(':id')
+  @Roles(UserRole.ADMIN)
   update(
     @Param('id') id: string,
     @Body() data: UpdateCompanyDto,
@@ -98,6 +103,7 @@ export class CompanyController {
 
   @HttpCode(HttpStatus.OK)
   @Patch(':id/status')
+  @Roles(UserRole.ADMIN)
   updateStatus(
     @Param('id') id: string,
     @Body() data: UpdateCompanyStatusDto,
@@ -107,12 +113,14 @@ export class CompanyController {
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
+  @Roles(UserRole.ADMIN)
   remove(@Param('id') id: string): Promise<void> {
     return this.companyService.remove(id);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('export')
+  @Roles(UserRole.ADMIN)
   async exportToCSV(@Query() query: CompaniesQuery): Promise<{ data: string }> {
     const csv = await this.companyCsvService.exportToCSV(query);
     return { data: csv };
@@ -120,6 +128,7 @@ export class CompanyController {
 
   @HttpCode(HttpStatus.OK)
   @Post('import')
+  @Roles(UserRole.ADMIN)
   @UseInterceptors(FileInterceptor('file'))
   async importFromCSV(
     @UploadedFile() file: Express.Multer.File,

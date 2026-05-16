@@ -7,12 +7,12 @@ config:
     inherit: true
     config:
       protocol: http
-      hostname: ''
-      port: ''
+      hostname: ""
+      port: ""
       auth:
-        username: ''
-        password: ''
-      bypassProxy: ''
+        username: ""
+        password: ""
+      bypassProxy: ""
 
 request:
   scripts:

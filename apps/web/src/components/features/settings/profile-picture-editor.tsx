@@ -9,11 +9,6 @@ import {
 import { AvatarCustomizationDto } from '@repo/db/dto/settings/avatar-customization.dto';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { Field, FieldLabel, FieldError } from '@repo/ui/components/field';
-import {
-  HexColorPicker,
-  SkinColorPicker,
-  SKIN_TONES,
-} from '@repo/ui/components/color-picker';
 import { Button } from '@repo/ui/components/button';
 import { useDebounce } from '@repo/ui/hooks/use-debounce';
 import { useThrottle } from '@repo/ui/hooks/use-throttle';
@@ -23,6 +18,11 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 import { RiLoader5Line, RiSaveLine, RiDice5Line } from '@remixicon/react';
 import Link from 'next/link';
+import {
+  HexColorPicker,
+  SKIN_TONES,
+  SkinColorPicker,
+} from '@repo/ui/components/color-picker/index';
 
 const moodsOptions = AvatarMoods.map((mood) => ({
   label: mood.name,

@@ -9,12 +9,12 @@
     "lint": "turbo run lint",
     "format": "turbo run format",
     "check-types": "turbo run check-types",
-    "docker:dev": "docker-compose -f docker-compose.dev.yml --env-file apps/api/.env up -d",
+    "docker:dev": "docker-compose -f docker-compose.dev.yml --env-file .env up -d",
     "docker:down": "docker-compose -f docker-compose.dev.yml down"
   },
   "devDependencies": {
     "prettier": "^3.8.1",
-    "turbo": "^2.9.3",
+    "turbo": "^2.9.14",
     "typescript": "6.0.2"
   },
   "packageManager": "pnpm@9.0.0",

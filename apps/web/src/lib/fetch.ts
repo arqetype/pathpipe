@@ -31,6 +31,16 @@ type FetchError = {
 
 type FetchResult<T> = FetchSuccess<T> | FetchError;
 
+async function parseResponseBody(response: Response): Promise<unknown> {
+  const text = await response.text();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
 const fetchWithAuth = cache(
   async <T = object>(
     path: string,
@@ -59,18 +69,18 @@ const fetchWithAuth = cache(
       },
     );
 
-    const json = await response.json();
+    const data = await parseResponseBody(response);
 
     return response.ok
       ? {
           ok: true,
           response: response as ResponseOk,
-          data: json as T,
+          data: data as T,
         }
       : {
           ok: false,
           response: response as ResponseError,
-          data: json as BackendErrorDto,
+          data: data as BackendErrorDto,
         };
   },
 );
@@ -94,18 +104,18 @@ const fetchPublic = cache(
       },
     );
 
-    const json = await response.json();
+    const data = await parseResponseBody(response);
 
     return response.ok
       ? {
           ok: true,
           response: response as ResponseOk,
-          data: json as T,
+          data: data as T,
         }
       : {
           ok: false,
           response: response as ResponseError,
-          data: json as BackendErrorDto,
+          data: data as BackendErrorDto,
         };
   },
 );

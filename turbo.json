@@ -1,5 +1,5 @@
 {
-  "$schema": "https://turborepo.com/schema.json",
+  "$schema": "https://v2-9-14.turborepo.dev/schema.json",
   "ui": "tui",
   "globalDependencies": [".env"],
   "globalEnv": [
@@ -19,7 +19,10 @@
     "NEST_EMAIL_PASS",
     "NEST_JWT_SECRET",
     "NEST_JWT_EXPIRATION_TIME",
-    "NEST_FRONT_URL"
+    "NEST_FRONT_URL",
+    "REDIS_HOST",
+    "REDIS_PORT",
+    "REDIS_PASSWORD"
   ],
   "tasks": {
     "build": {
@@ -45,6 +48,16 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "workers#dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["@repo/db#build", "@repo/email#build"]
+    },
+    "api#dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["@repo/db#build", "@repo/email#build"]
     },
     "start": {
       "persistent": false,
