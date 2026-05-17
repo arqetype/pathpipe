@@ -6,6 +6,7 @@ import { User } from '@repo/db/entities/user';
 import { EmailVerificationToken } from '@repo/db/entities/email-verification-token';
 import { HealthModule } from './infrastructure/health/health.module';
 import { MailerModule } from './infrastructure/mailer/mailer.module';
+import { QueueModule } from './infrastructure/queue/queue.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt.auth.guard';
@@ -58,6 +59,7 @@ import { resolve } from 'node:path';
     HealthModule,
     UserModule,
     MailerModule,
+    QueueModule,
     AuthModule,
     JwtModule,
     ApplicationModule,

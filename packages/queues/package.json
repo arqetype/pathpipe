@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "build": "tsc -b --clean && tsc",
     "lint": "eslint . --max-warnings 0 && tsc --noEmit",
     "format": "prettier --write . --ignore-unknown"
   },
@@ -17,9 +18,33 @@
     "typescript": "^6.0.2"
   },
   "exports": {
-    ".": "./src/index.ts",
-    "./jobs": "./src/jobs.ts",
-    "./queue": "./src/queue.ts",
-    "./worker": "./src/worker.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./jobs": {
+      "types": "./src/jobs.ts",
+      "default": "./dist/jobs.js"
+    },
+    "./queue": {
+      "types": "./src/queue.ts",
+      "default": "./dist/queue.js"
+    },
+    "./worker": {
+      "types": "./src/worker.ts",
+      "default": "./dist/worker.js"
+    },
+    "./email": {
+      "types": "./src/email/index.ts",
+      "default": "./dist/email/index.js"
+    },
+    "./scheduler": {
+      "types": "./src/scheduler/index.ts",
+      "default": "./dist/scheduler/index.js"
+    },
+    "./ats": {
+      "types": "./src/ats/index.ts",
+      "default": "./dist/ats/index.js"
+    }
   }
 }
