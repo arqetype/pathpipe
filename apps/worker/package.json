@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "node --watch --import dotenv/config --import tsx --no-warnings src/index.ts",
+    "dev": "DOTENV_CONFIG_PATH=../../.env.development.local node --watch --import dotenv/config --import tsx --no-warnings src/index.ts",
     "build": "tsc -b --clean && tsc",
     "start": "node dist/index.js"
   },

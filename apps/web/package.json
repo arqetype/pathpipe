@@ -4,9 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack --port 3000",
-    "build": "next build",
-    "start": "next start",
+    "dev": "NODE_OPTIONS='' sh -ac 'set -a; . ../../.env.development.local; set +a; exec next dev --turbopack --port 3000'",
+    "build": "NODE_OPTIONS='' sh -ac 'if [ -f ../../.env.production.local ]; then set -a; . ../../.env.production.local; set +a; fi; exec next build'",
+    "start": "NODE_OPTIONS='' sh -ac 'if [ -f ../../.env.production.local ]; then set -a; . ../../.env.production.local; set +a; fi; exec next start'",
     "test": "jest --passWithNoTests",
     "format": "prettier --write . --ignore-unknown",
     "test:watch": "jest --watch",

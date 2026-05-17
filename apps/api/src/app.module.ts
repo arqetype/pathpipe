@@ -19,11 +19,18 @@ import { Application } from '@repo/db/entities/application';
 import { Company } from '@repo/db/entities/company';
 import { ApiKey } from '@repo/db/entities/api-key';
 import { InternalModule } from './internal/internal.module';
+import { resolve } from 'node:path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: ['./.env'],
+      envFilePath: [
+        resolve(
+          process.cwd(),
+          `../../.env.${process.env.NODE_ENV ?? 'development'}.local`,
+        ),
+        resolve(process.cwd(), '.env'),
+      ],
     }),
     TypeOrmModule.forFeature([ApiKey]),
     TypeOrmModule.forRootAsync({

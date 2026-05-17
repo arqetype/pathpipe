@@ -1,40 +1,33 @@
 # Pathpipe
 
+<p align="center">
+  <img src="https://i.imgur.com/pnEcoL9.jpeg" alt="Pathpipe logo" />
+</p>
+
 Job seeker tracking application built with a modern tech stack, designed for developers to manage their job applications, track progress, and receive suggestions based on their profiles.
 
 ## 🏗️ Architecture & Technology Stack
 
-**Monorepo Structure** - Orchestrated by Turborepo for efficient development workflows
+Pathpipe is designed as a production-oriented monorepo where each layer has a clear responsibility and a clear reason to exist.
 
-- **TypeScript** everywhere (frontend, backend, tooling)
-- **pnpm** for package management with workspace support
-- **Docker Compose** for reproducible development environment
-- **Prettier** for consistent code formatting
-- **Node.js >= 20** required
+### Why this architecture
 
-### Backend Stack
+| Choice                                     | Why we chose it                                                                                                                                                                                                                                              |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **NestJS API as the only source of truth** | All database access is centralized in the backend. This keeps business rules, validation, and authorization in one place and avoids duplicated logic between clients.                                                                                        |
+| **Next.js frontend (App Router + React)**  | Gives a modern React developer experience with server-first patterns, nested routing, and strong performance defaults. In this project, all API interactions are done through **Server Actions** to keep credentials and sensitive calls on the server side. |
+| **Hono workers for background jobs**       | Hono is lightweight and fast to boot, which makes it a good fit for focused worker processes and scheduled/background job execution.                                                                                                                         |
+| **Turborepo monorepo**                     | Enables shared packages across apps (`types`, DB entities, DTOs, queue contracts, configs, email templates), reducing drift and enforcing end-to-end type safety.                                                                                            |
+| **PostgreSQL**                             | Reliable relational database with strong consistency guarantees and mature tooling for transactional data.                                                                                                                                                   |
+| **Redis + BullMQ**                         | Redis provides low-latency queue primitives; BullMQ adds robust job orchestration (retries, delayed jobs, concurrency controls).                                                                                                                             |
+| **Docker infrastructure**                  | Standardizes local and production-like environments, making onboarding and deployment behavior more predictable.                                                                                                                                             |
 
-- **NestJS** - Progressive Node.js framework for scalable server-side applications
-- **TypeORM** - Object-relational mapping with TypeScript support
-- **PostgreSQL** - Primary database for production-ready data persistence
-- **JWT Authentication** - Secure token-based authentication system
-- **Nodemailer** - Email service integration for notifications
+### Core stack snapshot
 
-### Frontend Stack
-
-- **Next.js 15** - React framework with App Router and Turbopack
-- **React 19** - Latest React version with concurrent features
-- **Tailwind CSS** - Utility-first CSS framework for rapid UI development
-- **Radix UI** - Unstyled, accessible UI components
-- **React Hook Form** - Performant form handling with validation
-- **PostHog** - Product analytics and feature flags
-
-### Development Tooling
-
-- **ESLint** - Static code analysis and linting
-- **Jest** - JavaScript testing framework with coverage reports
-- **React Email** - Email template development with React components
-- **MailDev** - Local email testing server
+- **Backend**: NestJS + TypeORM + PostgreSQL + JWT + Nodemailer
+- **Frontend**: Next.js + React + Tailwind CSS + Radix UI + React Hook Form
+- **Workers/Queues**: Hono workers + BullMQ + Redis
+- **Monorepo/Tooling**: Turborepo + pnpm workspaces + TypeScript + Docker Compose
 
 ## 🧑‍💻 Development Environment
 
@@ -107,9 +100,13 @@ All services start and stop automatically via `pnpm run dev`.
 3. **Set up environment variables**
 
    ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
+   cp .env.example .env.development.local
+   cp .env.example .env.production.local
+   # Edit each file with your configuration
    ```
+
+   `.env.example` at the repository root is the template source of truth.
+   Development uses root `.env.development.local`, and deployment uses root `.env.production.local`.
 
 4. **Start the development environment**
    ```bash

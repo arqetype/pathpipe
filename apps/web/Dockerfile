@@ -6,7 +6,6 @@ RUN apk update && apk add --no-cache libc6-compat
 WORKDIR /app
 RUN npm install -g pnpm turbo wait-on
 COPY . .
-RUN wait-on ${NEXT_API_URL}
 RUN turbo prune web --docker
 
 FROM base AS installer
@@ -27,4 +26,3 @@ COPY --from=installer --chown=nextjs:nodejs /app .
 EXPOSE 3000
 
 CMD ["pnpm", "start"]
-
