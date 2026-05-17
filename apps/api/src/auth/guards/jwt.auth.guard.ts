@@ -1,21 +1,25 @@
 import {
+  CanActivate,
   type ExecutionContext,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import type { Request } from 'express';
-import { UserService } from '../../user/user.service';
 import { ApiKey } from '@repo/db/entities/api-key';
-import { IS_PUBLIC_KEY } from '../../common/decorators/public.decorator';
+import {
+  AUTH_MODE_KEY,
+  type AuthMode,
+  IS_PUBLIC_KEY,
+} from '../../common/decorators/public.decorator';
 import { ConfigService } from '@nestjs/config';
+import { UserService } from '../../features/user/user.service';
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {
+export class JwtAuthGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private readonly jwtService: JwtService,
@@ -23,9 +27,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     private readonly configService: ConfigService,
     @InjectRepository(ApiKey)
     private readonly apiKeyRepository: Repository<ApiKey>,
-  ) {
-    super();
-  }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
@@ -35,34 +37,25 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (isPublic) {
       return true;
     }
+
+    const authMode =
+      this.reflector.getAllAndOverride<AuthMode>(AUTH_MODE_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]) ?? 'jwt';
+
     const request = context.switchToHttp().getRequest<Request>();
 
-    const apiKey = request.headers['x-api-key'] as string | undefined;
-    if (apiKey) {
+    if (authMode === 'api-key') {
+      const apiKey = request.headers['x-api-key'] as string | undefined;
+      if (!apiKey) {
+        throw new UnauthorizedException('No API key provided');
+      }
+
       return this.validateApiKey(request, apiKey);
     }
 
-    const token = request.cookies['auth-token'] as string | undefined;
-
-    if (!token) throw new UnauthorizedException('No token cookie found');
-
-    try {
-      const payload = await this.jwtService.verifyAsync<{ email: string }>(
-        token,
-        { secret: this.configService.getOrThrow('NEST_JWT_SECRET') },
-      );
-
-      const user = await this.userService.findOneByEmail(payload.email);
-
-      if (!user.email_verified) {
-        throw new UnauthorizedException('Email not verified');
-      }
-
-      request.user = user;
-      return true;
-    } catch {
-      throw new UnauthorizedException('Invalid token');
-    }
+    return this.validateJwtCookie(request);
   }
 
   private async validateApiKey(
@@ -81,5 +74,34 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     request.apiKey = foundKey;
     request.user = foundKey.user;
     return true;
+  }
+
+  private async validateJwtCookie(request: Request): Promise<boolean> {
+    const token = request.cookies['auth-token'] as string | undefined;
+    if (!token) {
+      throw new UnauthorizedException('No token cookie found');
+    }
+
+    try {
+      const payload = await this.jwtService.verifyAsync<{ email: string }>(
+        token,
+        { secret: this.configService.getOrThrow('NEST_JWT_SECRET') },
+      );
+
+      const user = await this.userService.findOneByEmail(payload.email);
+
+      if (!user.email_verified) {
+        throw new UnauthorizedException('Email not verified');
+      }
+
+      request.user = user;
+      return true;
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+
+      throw new UnauthorizedException('Invalid token');
+    }
   }
 }

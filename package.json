@@ -9,8 +9,9 @@
     "lint": "turbo run lint",
     "format": "turbo run format",
     "check-types": "turbo run check-types",
-    "docker:dev": "docker-compose -f docker-compose.dev.yml --env-file .env up -d",
-    "docker:down": "docker-compose -f docker-compose.dev.yml down"
+    "deploy:production": "sh infrastructure/scripts/deploy.sh",
+    "docker:dev": "docker compose -f infrastructure/docker/development/docker-compose.yml --env-file .env.development.local up -d",
+    "docker:down": "docker compose -f infrastructure/docker/development/docker-compose.yml --env-file .env.development.local down"
   },
   "devDependencies": {
     "prettier": "^3.8.1",

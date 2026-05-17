@@ -7,8 +7,8 @@ import { randomUUID } from 'node:crypto';
 import { Repository } from 'typeorm';
 import { User } from '@repo/db/entities/user';
 import { createHash } from 'node:crypto';
-import { UserService } from '../../user/user.service';
 import { PasswordUtils } from '../../common/utils/password.utils';
+import { UserService } from '../../features/user/user.service';
 
 @Injectable()
 export class VerificationService {

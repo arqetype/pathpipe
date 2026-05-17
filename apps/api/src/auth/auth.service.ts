@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { MailerService } from '../mailer/mailer.service';
+import { MailerService } from '../infrastructure/mailer/mailer.service';
 import { VerificationService } from './verification/verification.service';
 import { User } from '@repo/db/entities/user';
 import { Response } from 'express';
 import { PasswordUtils } from '../common/utils/password.utils';
+import { UserService } from '../features/user/user.service';
 
 @Injectable()
 export class AuthService {

@@ -17,7 +17,7 @@ import { UserRole } from '@repo/db/types/user/roles';
 import { Application } from '@repo/db/entities/application';
 import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
 import { User } from '@repo/db/entities/user';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @Controller('applications')
 export class ApplicationController {

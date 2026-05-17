@@ -12,8 +12,6 @@ services:
       POSTGRES_DB: ${NEST_DATABASE_NAME}
     networks:
       - app-network
-    ports:
-      - '5432:5432'
     healthcheck:
       test:
         [
@@ -39,8 +37,6 @@ services:
       - redisdata:/data
     networks:
       - app-network
-    ports:
-      - '6379:6379'
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     healthcheck:
@@ -54,7 +50,7 @@ services:
   api:
     container_name: pathpipe-api
     build:
-      context: .
+      context: ../../..
       dockerfile: apps/api/Dockerfile
     environment:
       NEST_DATABASE_HOST: ${NEST_DATABASE_HOST}
@@ -89,10 +85,10 @@ services:
   web:
     container_name: pathpipe-web
     build:
-      context: .
+      context: ../../..
       dockerfile: apps/web/Dockerfile
     environment:
-      NEXT_API_URL: ${NEXT_API_URL}
+      NEXT_API_URL: http://api:4000
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
       NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY}
       NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}

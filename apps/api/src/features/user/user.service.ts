@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@repo/db/entities/user';
 import { Repository } from 'typeorm';
-import { PasswordUtils } from '../common/utils/password.utils';
+import { PasswordUtils } from '../../common/utils/password.utils';
 import { AvatarHairStyle, AvatarMood } from '@repo/db/types/user/avatar';
 
 @Injectable()

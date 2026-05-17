@@ -1,7 +1,11 @@
 {
   "$schema": "https://v2-9-14.turborepo.dev/schema.json",
   "ui": "tui",
-  "globalDependencies": [".env"],
+  "globalDependencies": [
+    ".env.example",
+    ".env.development.local",
+    ".env.production.local"
+  ],
   "globalEnv": [
     "NODE_ENV",
     "NODE_TLS_REJECT_UNAUTHORIZED",
