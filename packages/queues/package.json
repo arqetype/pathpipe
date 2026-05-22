@@ -30,9 +30,9 @@
       "types": "./dist/queue.d.ts",
       "default": "./dist/queue.js"
     },
-    "./workers": {
-      "types": "./dist/workers.d.ts",
-      "default": "./dist/workers.js"
+    "./worker": {
+      "types": "./dist/worker.d.ts",
+      "default": "./dist/worker.js"
     },
     "./email": {
       "types": "./dist/email/index.d.ts",
