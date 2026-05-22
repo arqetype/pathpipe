@@ -49,10 +49,11 @@ export async function startEmailWorker() {
             job.data.user,
           );
           break;
-        default:
-          logger.warn(
-            `Unknown job type: ${(job.data as { type: string }).type}`,
-          );
+        default: {
+          const message = `Unknown job type for job ${job.id}: ${(job.data as { type: string }).type}`;
+          logger.warn(message);
+          throw new Error(message);
+        }
       }
 
       logger.info(`Job ${job.id} completed`);
