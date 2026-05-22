@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "build": "tsc -b --clean && tsc",
     "lint": "eslint . --max-warnings 0 && tsc --noEmit",
     "format": "prettier --write . --ignore-unknown"
   },
@@ -17,9 +18,25 @@
     "typescript": "^6.0.2"
   },
   "exports": {
-    ".": "./src/index.ts",
-    "./jobs": "./src/jobs.ts",
-    "./queue": "./src/queue.ts",
-    "./worker": "./src/worker.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./jobs": {
+      "types": "./dist/jobs.d.ts",
+      "default": "./dist/jobs.js"
+    },
+    "./queue": {
+      "types": "./dist/queue.d.ts",
+      "default": "./dist/queue.js"
+    },
+    "./worker": {
+      "types": "./dist/worker.d.ts",
+      "default": "./dist/worker.js"
+    },
+    "./email": {
+      "types": "./dist/email/index.d.ts",
+      "default": "./dist/email/index.js"
+    }
   }
 }

@@ -1,42 +1,38 @@
-import { serve } from '@hono/node-server';
-import { Hono } from 'hono';
 import { configService } from '@/infrastructure/config/config.service';
-import { Mailer } from '@repo/email';
+import { startEmailWorker } from './workers/email.worker';
+import { startAtsWorker } from './workers/ats.worker';
 import pino from 'pino';
-import pretty from 'pino-pretty';
 
-const app = new Hono();
-const logger = pino(pretty());
+const logger = pino();
+const workerType = process.argv[2] as string;
 
-app.use(async (c, next) => {
-  const start = Date.now();
-  await next();
-  const ms = Date.now() - start;
-  logger.info(`${c.req.method} ${c.req.path} - ${c.res.status} (${ms}ms)`);
-});
-
-async function start() {
+async function main() {
   try {
     await configService.validate();
-    logger.info('Configuration validated');
 
-    const emailConfig = configService.get('email');
-
-    const mailer = new Mailer({
-      host: emailConfig.host,
-      port: emailConfig.port,
-      auth: { user: emailConfig.user, pass: emailConfig.pass },
-      from: emailConfig.from,
-    });
-
-    const port = configService.get('workers').port;
-    serve({ fetch: app.fetch, port }, (info) => {
-      logger.info(`Workers server running on port ${info.port}`);
-    });
-  } catch (error) {
-    logger.error('Failed to start server:' + error);
+    switch (workerType) {
+      case 'email':
+        await startEmailWorker();
+        break;
+      case 'ats':
+        await startAtsWorker();
+        break;
+      default:
+        console.error('Usage: worker [email|ats]');
+        console.log('Available workers: email, ats');
+        process.exit(1);
+    }
+  } catch (err) {
+    logger.error(
+      {
+        err,
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      },
+      'Failed to start worker',
+    );
     process.exit(1);
   }
 }
 
-start();
+main();

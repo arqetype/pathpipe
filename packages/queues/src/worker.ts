@@ -1,6 +1,6 @@
 import type { ConnectionOptions, Processor, WorkerOptions } from 'bullmq';
 import { Worker } from 'bullmq';
-import type { QueueName } from './jobs';
+import type { QueueName } from './jobs.js';
 
 export const DEFAULT_WORKER_OPTIONS: Partial<WorkerOptions> = {
   concurrency: 5,

@@ -1,4 +1,4 @@
-name: '🔧 Build, Lint & Test'
+name: 'Build, Lint & Test'
 
 on:
   workflow_call:
@@ -53,6 +53,9 @@ jobs:
 
       - name: Run lint
         run: pnpm lint
+
+      - name: Run type check
+        run: pnpm check-types
 
       - name: Run tests
         run: pnpm test

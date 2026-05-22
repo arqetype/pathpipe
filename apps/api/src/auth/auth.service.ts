@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { MailerService } from '../infrastructure/mailer/mailer.service';
+import { AuthMailerService } from '../infrastructure/mailer/auth-mailer.service';
 import { VerificationService } from './verification/verification.service';
 import { User } from '@repo/db/entities/user';
 import { Response } from 'express';
@@ -12,7 +12,7 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
-    private mailerService: MailerService,
+    private authMailerService: AuthMailerService,
     private verificationService: VerificationService,
   ) {}
 
@@ -113,7 +113,7 @@ export class AuthService {
 
     const token = await this.verificationService.createVerificationToken(user);
 
-    await this.mailerService.sendVerificationEmail(user.email, token, {
+    await this.authMailerService.sendVerificationEmail(user.email, token, {
       name: user.name,
       profilePictureUrl: user.avatar_url,
     });
@@ -157,7 +157,7 @@ export class AuthService {
     }
 
     const otp = await this.verificationService.createOTP(user);
-    await this.mailerService.sendOTPEmail(user.email, otp, {
+    await this.authMailerService.sendOTPEmail(user.email, otp, {
       name: user.name,
       profilePictureUrl: user.avatar_url,
     });
@@ -168,7 +168,7 @@ export class AuthService {
   async forgotPassword(user: User): Promise<{ success: boolean }> {
     const token = await this.verificationService.createResetPasswordToken(user);
 
-    await this.mailerService.sendResetPasswordEmail(user.email, token, {
+    await this.authMailerService.sendResetPasswordEmail(user.email, token, {
       name: user.name,
       profilePictureUrl: user.avatar_url,
     });

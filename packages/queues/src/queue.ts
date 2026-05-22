@@ -1,6 +1,6 @@
 import type { ConnectionOptions } from 'bullmq';
 import { Queue } from 'bullmq';
-import type { QueueName } from './jobs';
+import type { QueueName } from './jobs.js';
 
 /** Default job options applied to all queues. */
 export const DEFAULT_JOB_OPTIONS = {
