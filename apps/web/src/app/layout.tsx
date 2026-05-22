@@ -1,14 +1,9 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { cookies } from 'next/headers';
-import CookieBanner from '../components/cookie-banner/cookie-banner';
 import { ThemeProvider } from '@/components/providers/theme-provider';
-// import { PostHogProvider } from '@/components/providers/posthog-provider';
-import { CookieConsentProvider } from '@/components/providers/cookie-consent-provider';
 import { Space_Grotesk, Geist } from 'next/font/google';
 
 import '@repo/ui/globals.css';
-import { Toaster } from '@repo/ui/components/sonner';
 import { cn } from '@repo/ui/lib/utils';
 
 const spaceGroteskHeading = Space_Grotesk({
@@ -28,10 +23,6 @@ type RootLayoutProps = Readonly<{
 }>;
 
 export default async function RootLayout({ children }: RootLayoutProps) {
-  const cookieStore = await cookies();
-
-  const initialConsent = cookieStore.get('cookieConsent')?.value === 'true';
-
   return (
     <html
       lang="en"
@@ -45,11 +36,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
     >
       <body>
         <ThemeProvider>
-          <CookieConsentProvider initialConsent={initialConsent}>
-            <>{children}</>
-            <CookieBanner />
-          </CookieConsentProvider>
-          <Toaster />
+          <>{children}</>
         </ThemeProvider>
       </body>
     </html>
