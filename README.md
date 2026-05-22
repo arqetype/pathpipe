@@ -16,7 +16,7 @@ Pathpipe is designed as a production-oriented monorepo where each layer has a cl
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **NestJS API as the only source of truth** | All database access is centralized in the backend. This keeps business rules, validation, and authorization in one place and avoids duplicated logic between clients.                                                                                        |
 | **Next.js frontend (App Router + React)**  | Gives a modern React developer experience with server-first patterns, nested routing, and strong performance defaults. In this project, all API interactions are done through **Server Actions** to keep credentials and sensitive calls on the server side. |
-| **Hono workers for background jobs**       | Hono is lightweight and fast to boot, which makes it a good fit for focused worker processes and scheduled/background job execution.                                                                                                                         |
+| **BullMQ workers for background jobs**     | BullMQ provides robust job orchestration (retries, delayed jobs, concurrency) with minimal overhead. Workers consume jobs from Redis queues and process them asynchronously.                                                                                   |
 | **Turborepo monorepo**                     | Enables shared packages across apps (`types`, DB entities, DTOs, queue contracts, configs, email templates), reducing drift and enforcing end-to-end type safety.                                                                                            |
 | **PostgreSQL**                             | Reliable relational database with strong consistency guarantees and mature tooling for transactional data.                                                                                                                                                   |
 | **Redis + BullMQ**                         | Redis provides low-latency queue primitives; BullMQ adds robust job orchestration (retries, delayed jobs, concurrency controls).                                                                                                                             |
@@ -26,7 +26,7 @@ Pathpipe is designed as a production-oriented monorepo where each layer has a cl
 
 - **Backend**: NestJS + TypeORM + PostgreSQL + JWT + Nodemailer
 - **Frontend**: Next.js + React + Tailwind CSS + Radix UI + React Hook Form
-- **Workers/Queues**: Hono workers + BullMQ + Redis
+- **Workers/Queues**: BullMQ workers + Redis
 - **Monorepo/Tooling**: Turborepo + pnpm workspaces + TypeScript + Docker Compose
 
 ## 🧑‍💻 Development Environment
@@ -35,7 +35,7 @@ The development workflow is designed to be plug-and-play using Docker and Turbor
 
 - **Frontend**: http://localhost:3000 (Next.js with Turbopack)
 - **Backend API**: http://localhost:4000 (NestJS with auto-reload)
-- **Workers CRON + API**: http://localhost:4100 (Hono with hexagonal architecture)
+- **Worker**: BullMQ consumer for background jobs
 - **Database**: PostgreSQL on port 5432
 - **Email Development Server**: http://localhost:1080 (MailDev for receiving emails, configured in the `@repo/email` package)
 - **Email Template Preview**: http://localhost:1081 (React Email development server, configured in the `@repo/email` package)

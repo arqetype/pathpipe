@@ -51,12 +51,18 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "with": ["worker#dev:email", "worker#dev:ats"]
     },
-    "workers#dev": {
+    "worker#dev:email": {
       "cache": false,
       "persistent": true,
-      "dependsOn": ["@repo/db#build", "@repo/email#build"]
+      "dependsOn": ["@repo/db#build", "@repo/email#build", "@repo/queues#build"]
+    },
+    "worker#dev:ats": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["@repo/db#build", "@repo/email#build", "@repo/queues#build"]
     },
     "api#dev": {
       "cache": false,
