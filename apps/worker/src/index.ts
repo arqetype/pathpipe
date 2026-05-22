@@ -22,8 +22,15 @@ async function main() {
         console.log('Available workers: email, ats');
         process.exit(1);
     }
-  } catch {
-    logger.error('Failed to start worker:');
+  } catch (err) {
+    logger.error(
+      {
+        err,
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      },
+      'Failed to start worker',
+    );
     process.exit(1);
   }
 }
