@@ -19,32 +19,24 @@
   },
   "exports": {
     ".": {
-      "types": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
     "./jobs": {
-      "types": "./src/jobs.ts",
+      "types": "./dist/jobs.d.ts",
       "default": "./dist/jobs.js"
     },
     "./queue": {
-      "types": "./src/queue.ts",
+      "types": "./dist/queue.d.ts",
       "default": "./dist/queue.js"
     },
-    "./worker": {
-      "types": "./src/worker.ts",
-      "default": "./dist/worker.js"
+    "./workers": {
+      "types": "./dist/workers.d.ts",
+      "default": "./dist/workers.js"
     },
     "./email": {
-      "types": "./src/email/index.ts",
+      "types": "./dist/email/index.d.ts",
       "default": "./dist/email/index.js"
-    },
-    "./scheduler": {
-      "types": "./src/scheduler/index.ts",
-      "default": "./dist/scheduler/index.js"
-    },
-    "./ats": {
-      "types": "./src/ats/index.ts",
-      "default": "./dist/ats/index.js"
     }
   }
 }
