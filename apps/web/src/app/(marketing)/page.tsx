@@ -1,16 +1,15 @@
-import { Button } from '@repo/ui/components/button';
-import Link from 'next/link';
+import { MarketingNavbar } from '@/components/marketing/navbar';
+import { Hero } from '@/components/marketing/hero';
+import { Footer } from '@/components/marketing/footer';
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-muted/50">
-      <Button>Start Building Now</Button>
-      <Link href={'/app/sign-in'} className="ml-4">
-        <Button variant="outline">Sign In</Button>
-      </Link>
-      <Link href={'/app/sign-up'} className="ml-4">
-        <Button variant="outline">Sign Up</Button>
-      </Link>
-    </div>
+    <>
+      <MarketingNavbar />
+      <main>
+        <Hero />
+      </main>
+      <Footer />
+    </>
   );
 }
