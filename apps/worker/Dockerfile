@@ -1,0 +1,26 @@
+FROM node:20-alpine AS base
+
+FROM base AS builder
+
+RUN apk update && apk add --no-cache libc6-compat
+WORKDIR /app
+RUN npm install -g pnpm turbo
+COPY . .
+RUN turbo prune worker --docker
+
+FROM base AS installer
+RUN apk update && apk add --no-cache libc6-compat
+WORKDIR /app
+RUN npm install -g pnpm turbo
+COPY --from=builder /app/out/json/ .
+RUN pnpm install --frozen-lockfile
+COPY --from=builder /app/out/full .
+RUN pnpm build
+
+FROM base AS runner
+WORKDIR /app
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 worker
+USER worker
+COPY --from=installer --chown=worker:nodejs /app .
+
+CMD ["node", "apps/worker/dist/index.js"]
