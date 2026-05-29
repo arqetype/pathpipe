@@ -1,0 +1,42 @@
+{
+  "name": "@repo/queues",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b --clean && tsc",
+    "lint": "eslint . --max-warnings 0 && tsc --noEmit",
+    "format": "prettier --write . --ignore-unknown"
+  },
+  "dependencies": {
+    "bullmq": "^5.76.8",
+    "ioredis": "^5.10.1"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/prettier-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^6.0.2"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./jobs": {
+      "types": "./dist/jobs.d.ts",
+      "default": "./dist/jobs.js"
+    },
+    "./queue": {
+      "types": "./dist/queue.d.ts",
+      "default": "./dist/queue.js"
+    },
+    "./worker": {
+      "types": "./dist/worker.d.ts",
+      "default": "./dist/worker.js"
+    },
+    "./email": {
+      "types": "./dist/email/index.d.ts",
+      "default": "./dist/email/index.js"
+    }
+  }
+}

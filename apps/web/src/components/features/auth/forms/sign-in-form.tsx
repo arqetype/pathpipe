@@ -1,0 +1,505 @@
+'use client';
+
+import { CardContent, CardFooter } from '@repo/ui/components/card';
+import { Input } from '@repo/ui/components/input';
+import { Controller } from 'react-hook-form';
+import {
+  Field,
+  FieldLabel,
+  FieldError,
+  FieldContent,
+} from '@repo/ui/components/field';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from '@repo/ui/components/input-otp';
+import { SignInDto } from '@repo/db/dto/auth/sign-in.dto';
+import { classValidatorResolver } from '@hookform/resolvers/class-validator';
+import { useForm } from 'react-hook-form';
+import { useTransition } from 'react';
+import Link from 'next/link';
+import { Button } from '@repo/ui/components/button';
+import { RiLoader5Line, RiShieldCheckLine, RiMailLine } from '@remixicon/react';
+import { redirect } from 'next/navigation';
+import { signInAction } from '@/actions/auth/sign-in';
+import { resendEmailAction } from '@/actions/auth/resend-email';
+import { useState } from 'react';
+import { AuthVerificationAlert } from '@repo/ui/components/customs/auth-verification-alert';
+import { AuthVerificationError } from '@repo/ui/components/customs/auth-verification-error';
+import { forgotPasswordEmailAction } from '@/actions/auth/forgot-password-email';
+
+type StatusState = {
+  success?: boolean;
+  message?: string;
+};
+
+export function SignInForm() {
+  const [isPending, startTransition] = useTransition();
+  const [showOtp, setShowOtp] = useState(false);
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [forgotPasswordPending, setForgotPasswordPending] = useState(false);
+
+  const [resendStatus, setResendStatus] = useState<StatusState>({});
+  const [otpStatus, setOtpStatus] = useState<StatusState>({});
+  const [forgotPasswordStatus, setForgotPasswordStatus] = useState<StatusState>(
+    {},
+  );
+
+  const form = useForm<SignInDto>({
+    resolver: classValidatorResolver(SignInDto),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const isValidEmail = (email: string): boolean => {
+    return Boolean(email && email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/));
+  };
+
+  const handleSignIn = async (data: SignInDto) => {
+    const response = await signInAction({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (response.success && !response.data.code) return redirect('/app/');
+
+    if (response.success && response.data.code === 'otp_required') {
+      setShowOtp(true);
+      return;
+    }
+
+    if (response.success && response.data.code === 'email_not_verified') {
+      setShowEmailVerification(true);
+      return;
+    }
+
+    if (
+      response.success &&
+      response.data.code === 'email_verification_cooldown'
+    ) {
+      setShowEmailVerification(true);
+      setResendStatus({
+        success: false,
+        message: 'Please wait before requesting another verification email.',
+      });
+      return;
+    }
+
+    if (!response.success) {
+      form.setError('email', {
+        type: 'manual',
+        message: response.message,
+      });
+    } else {
+      form.setError('email', {
+        type: 'manual',
+        message: 'An unexpected error occurred. Please try again later.',
+      });
+    }
+  };
+
+  const handleOtpSubmit = async (data: SignInDto) => {
+    if (!data.otp || data.otp.length !== 6) {
+      form.setError('otp', {
+        type: 'manual',
+        message: 'Please enter a valid 6-digit code',
+      });
+      return;
+    }
+
+    const response = await signInAction({
+      email: data.email,
+      password: data.password,
+      otp: data.otp,
+    });
+
+    if (response.success) {
+      return redirect('/app/');
+    } else {
+      form.setError('otp', {
+        type: 'manual',
+        message: response.message,
+      });
+    }
+  };
+
+  const handleSubmit = async (data: SignInDto) => {
+    if (showOtp && (!data.otp || data.otp.length !== 6)) {
+      form.setError('otp', {
+        type: 'manual',
+        message: 'Please enter a valid 6-digit code',
+      });
+      return;
+    }
+
+    startTransition(async () => {
+      if (!showOtp && !showEmailVerification) {
+        await handleSignIn(data);
+      } else if (showOtp) {
+        await handleOtpSubmit(data);
+      }
+    });
+  };
+
+  const handleResendVerification = () => {
+    setResendStatus({});
+    startTransition(async () => {
+      try {
+        const email = form.getValues('email');
+        const response = await resendEmailAction({ email });
+        setResendStatus({
+          success: response.success,
+          message: response.success
+            ? 'Verification email has been resent successfully.'
+            : response.message || 'Failed to resend verification email.',
+        });
+      } catch {
+        setResendStatus({
+          success: false,
+          message:
+            'An unexpected error occurred while sending the verification email.',
+        });
+      }
+    });
+  };
+
+  const handleForgotPassword = (email: string) => {
+    if (!isValidEmail(email)) {
+      form.setError('email', {
+        type: 'manual',
+        message: 'Please enter a valid email address to reset your password',
+      });
+      return;
+    }
+
+    setForgotPasswordStatus({});
+    setForgotPasswordPending(true);
+
+    startTransition(async () => {
+      try {
+        const response = await forgotPasswordEmailAction({ email });
+        setForgotPasswordStatus({
+          success: response.success,
+          message: response.success
+            ? 'If you have an account, you will receive a password reset email shortly.'
+            : response.message || 'Failed to send password reset email.',
+        });
+      } catch {
+        setForgotPasswordStatus({
+          success: false,
+          message:
+            'An unexpected error occurred while sending the password reset email.',
+        });
+      } finally {
+        setForgotPasswordPending(false);
+      }
+    });
+  };
+
+  const handleResendOtp = () => {
+    setOtpStatus({});
+    startTransition(async () => {
+      const response = await signInAction({
+        email: form.getValues('email'),
+        password: form.getValues('password'),
+      });
+
+      if (response.success && response.data.code === 'otp_required') {
+        setOtpStatus({
+          success: true,
+          message: 'A new verification code has been sent.',
+        });
+      } else if (response.success && response.data.code === 'otp_cooldown') {
+        setOtpStatus({
+          success: false,
+          message:
+            response.data.message ||
+            'Please wait before requesting another code.',
+        });
+      } else if (response.success && !response.data.code) {
+        setOtpStatus({
+          success: false,
+          message:
+            response.data.message || 'Failed to resend verification code.',
+        });
+      } else if (!response.success) {
+        setOtpStatus({
+          success: false,
+          message:
+            response.message || 'An error occurred while resending the code.',
+        });
+      } else {
+        setOtpStatus({
+          success: false,
+          message: 'An unexpected error occurred. Please try again.',
+        });
+      }
+    });
+  };
+
+  const renderForgotPasswordView = () => (
+    <>
+      <CardContent className="space-y-4">
+        <AuthVerificationAlert
+          icon={RiMailLine}
+          title={
+            forgotPasswordStatus.success
+              ? 'Password Reset Email Sent'
+              : 'Password Reset Failed'
+          }
+          description={forgotPasswordStatus.message}
+        />
+      </CardContent>
+      <CardFooter className="flex-col bg-transparent border-none">
+        <Button
+          variant="ghost"
+          className="w-full"
+          onClick={() => setForgotPasswordStatus({})}
+        >
+          Back to Sign In
+        </Button>
+      </CardFooter>
+    </>
+  );
+
+  const renderEmailVerificationView = () => (
+    <>
+      <CardContent className="space-y-4">
+        <AuthVerificationAlert
+          icon={RiMailLine}
+          title="Email Verification Required"
+          description={
+            <>
+              We&apos;ve sent a verification email to
+              <span className="font-medium"> {form.getValues('email')}</span>.
+              Please check your inbox and click the verification link to
+              activate your account.
+            </>
+          }
+        />
+        <div className="space-y-3">
+          {resendStatus.message && (
+            <AuthVerificationError
+              success={resendStatus.success}
+              message={resendStatus.message}
+            />
+          )}
+          <Button
+            variant="outline"
+            className="w-full"
+            disabled={isPending}
+            onClick={handleResendVerification}
+          >
+            {isPending ? (
+              <>
+                <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              'Resend Verification Email'
+            )}
+          </Button>
+        </div>
+      </CardContent>
+      <CardFooter className="space-y-4 flex-col bg-transparent border-none">
+        <Button
+          variant="ghost"
+          className="w-full"
+          onClick={() => setShowEmailVerification(false)}
+        >
+          Back to Sign In
+        </Button>
+      </CardFooter>
+    </>
+  );
+
+  const renderSignInView = () => (
+    <CardContent className="space-y-4">
+      <Controller
+        name="email"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+            <Input
+              {...field}
+              id={field.name}
+              placeholder="name@example.com"
+              disabled={isPending}
+              autoComplete="email"
+              aria-invalid={fieldState.invalid}
+            />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
+      <Controller
+        name="password"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldContent>
+              <div className="flex items-center justify-between">
+                <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                <div
+                  className="text-sm text-primary hover:underline cursor-pointer"
+                  onClick={() => handleForgotPassword(form.getValues('email'))}
+                >
+                  {forgotPasswordPending ? (
+                    <span>
+                      <RiLoader5Line className="mr-1 h-3 w-3 inline animate-spin" />
+                      Sending...
+                    </span>
+                  ) : (
+                    'Forgot password?'
+                  )}
+                </div>
+              </div>
+            </FieldContent>
+            <Input
+              type="password"
+              {...field}
+              id={field.name}
+              disabled={isPending}
+              autoComplete="current-password"
+              placeholder="••••••••••••••••"
+              aria-invalid={fieldState.invalid}
+            />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
+    </CardContent>
+  );
+
+  const renderOtpView = () => (
+    <>
+      <Controller
+        name="otp"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <CardContent className="space-y-4">
+              <div className="mb-4">
+                <AuthVerificationAlert
+                  icon={RiShieldCheckLine}
+                  title="Two-Factor Authentication"
+                  description={
+                    <>
+                      For added security, please enter the 6-digit code sent to
+                      <span className="font-medium">
+                        {' '}
+                        {form.getValues('email')}.
+                      </span>
+                    </>
+                  }
+                />
+              </div>
+              <FieldLabel htmlFor={field.name}>
+                Enter verification code
+              </FieldLabel>
+              <InputOTP
+                maxLength={6}
+                {...field}
+                id={field.name}
+                className="w-full gap-2"
+                aria-invalid={fieldState.invalid}
+                onComplete={(value) => {
+                  if (value.length === 6) {
+                    form.clearErrors('otp');
+                  }
+                }}
+              >
+                <InputOTPGroup className="w-full">
+                  {[...Array(6)].map((_, index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      className="w-[15%] md:w-[20%] h-12 text-2xl"
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+
+              {otpStatus.message && (
+                <AuthVerificationError
+                  success={otpStatus.success}
+                  message={otpStatus.message}
+                />
+              )}
+            </CardContent>
+
+            <CardFooter className="space-y-4 flex-col bg-transparent border-none">
+              <p className="text-sm text-muted-foreground mt-2">
+                Didn&apos;t receive a code?{' '}
+                <Button
+                  variant="link"
+                  className="p-0 h-auto text-sm"
+                  type="button"
+                  onClick={handleResendOtp}
+                >
+                  Resend code
+                </Button>
+              </p>
+            </CardFooter>
+          </Field>
+        )}
+      />
+    </>
+  );
+
+  const renderFormContent = () => {
+    if (forgotPasswordStatus.message) {
+      return renderForgotPasswordView();
+    }
+
+    if (showEmailVerification) {
+      return renderEmailVerificationView();
+    }
+
+    return !showOtp ? renderSignInView() : renderOtpView();
+  };
+
+  const shouldShowFooter =
+    !showEmailVerification && !forgotPasswordStatus.message;
+
+  return (
+    <div>
+      <div className="mb-4 mt-3 px-4 w-full">
+        <div className="bg-muted w-full flex items-center justify-between rounded-lg p-1 gap-2">
+          <Button variant="outline" className="flex-1">
+            Sign In
+          </Button>
+          <Link href="/app/sign-up" className="flex-1">
+            <Button variant="ghost" className="w-full">
+              Sign Up
+            </Button>
+          </Link>
+        </div>
+      </div>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        {renderFormContent()}
+        {shouldShowFooter && (
+          <CardFooter className="space-y-4 flex-col bg-transparent border-none">
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? (
+                <>
+                  <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
+                  {showOtp ? 'Verifying code...' : 'Sign in'}
+                </>
+              ) : showOtp ? (
+                'Verify'
+              ) : (
+                'Sign in'
+              )}
+            </Button>
+          </CardFooter>
+        )}
+      </form>
+    </div>
+  );
+}

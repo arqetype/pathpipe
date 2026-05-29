@@ -1,0 +1,61 @@
+name: 'Build, Lint & Test'
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: 'Git reference to checkout'
+        required: false
+        type: string
+        default: ${{ github.sha }}
+      node-version:
+        description: 'Node.js version to use'
+        required: false
+        type: string
+        default: '22'
+      concurrency-group:
+        description: 'Concurrency group for this workflow'
+        required: false
+        type: string
+
+concurrency:
+  group: ${{ inputs.concurrency-group || github.run_id }}
+  cancel-in-progress: ${{ inputs.concurrency-group != '' }}
+
+permissions:
+  contents: read
+
+jobs:
+  build-lint-test:
+    name: Build, Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 2
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Run lint
+        run: pnpm lint
+
+      - name: Run type check
+        run: pnpm check-types
+
+      - name: Run tests
+        run: pnpm test

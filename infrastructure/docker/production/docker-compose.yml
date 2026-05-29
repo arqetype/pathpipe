@@ -1,0 +1,124 @@
+services:
+  # PostgreSQL
+  db:
+    image: postgres:17
+    restart: always
+    container_name: pathpipe-database
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${NEST_DATABASE_USER}
+      POSTGRES_PASSWORD: ${NEST_DATABASE_PASS}
+      POSTGRES_DB: ${NEST_DATABASE_NAME}
+    networks:
+      - app-network
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'pg_isready',
+          '-U',
+          '${NEST_DATABASE_USER}',
+          '-d',
+          '${NEST_DATABASE_NAME}',
+        ]
+      interval: 60s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+
+  # Redis (BullMQ)
+  redis:
+    image: redis:7-alpine
+    restart: always
+    container_name: pathpipe-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redisdata:/data
+    networks:
+      - app-network
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping']
+      interval: 60s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+
+  # API (Nest.js)
+  api:
+    container_name: pathpipe-api
+    image: ghcr.io/${GITHUB_OWNER}/pathpipe-api:latest
+    environment:
+      NEST_DATABASE_HOST: ${NEST_DATABASE_HOST}
+      NEST_DATABASE_PORT: ${NEST_DATABASE_PORT}
+      NEST_DATABASE_USER: ${NEST_DATABASE_USER}
+      NEST_DATABASE_PASS: ${NEST_DATABASE_PASS}
+      NEST_DATABASE_NAME: ${NEST_DATABASE_NAME}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    depends_on:
+      - db
+      - redis
+    restart: always
+    expose:
+      - '4000'
+    networks:
+      - app-network
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pathpipe-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.pathpipe-api.entrypoints=websecure"
+      - "traefik.http.routers.pathpipe-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.pathpipe-api.priority=10"
+      - "traefik.http.services.pathpipe-api.loadbalancer.server.port=4000"
+    healthcheck:
+      test:
+        ['CMD', 'curl', '--silent', '--fail', 'http://localhost:4000/health']
+      interval: 60s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+
+  # Web (Next.js)
+  web:
+    container_name: pathpipe-web
+    image: ghcr.io/${GITHUB_OWNER}/pathpipe-web:latest
+    environment:
+      NEXT_API_URL: http://api:4000/api
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY}
+      NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}
+    depends_on:
+      - api
+    restart: always
+    expose:
+      - '3000'
+    networks:
+      - app-network
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pathpipe-web.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.pathpipe-web.entrypoints=websecure"
+      - "traefik.http.routers.pathpipe-web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.pathpipe-web.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ['CMD', 'curl', '--silent', '--fail', 'http://localhost:3000/']
+      interval: 60s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  app-network:
+    driver: bridge
+  traefik-public:
+    external: true

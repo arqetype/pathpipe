@@ -1,0 +1,27 @@
+{
+  "name": "worker",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev:email": "DOTENV_CONFIG_PATH=../../.env.development.local node --watch --import dotenv/config --import tsx --no-warnings src/index.ts email",
+    "dev:ats": "DOTENV_CONFIG_PATH=../../.env.development.local node --watch --import dotenv/config --import tsx --no-warnings src/index.ts ats",
+    "build": "tsc -b --clean && tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@repo/db": "workspace:*",
+    "@repo/email": "workspace:*",
+    "@repo/queues": "workspace:*",
+    "croner": "^10.0.1",
+    "dotenv": "^16.4.7",
+    "pino": "^9.6.0",
+    "pino-pretty": "^12.0.0",
+    "typeorm": "^0.3.28"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^20.11.17",
+    "tsx": "^4.7.1",
+    "typescript": "^6.0.2"
+  }
+}
