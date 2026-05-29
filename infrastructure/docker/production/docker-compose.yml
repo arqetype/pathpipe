@@ -1,5 +1,5 @@
 services:
-  # Database (PostgreSQL)
+  # PostgreSQL
   db:
     image: postgres:17
     restart: always
@@ -49,19 +49,13 @@ services:
   # API (Nest.js)
   api:
     container_name: pathpipe-api
-    build:
-      context: ../../..
-      dockerfile: apps/api/Dockerfile
+    image: ghcr.io/${GITHUB_OWNER}/pathpipe-api:latest
     environment:
       NEST_DATABASE_HOST: ${NEST_DATABASE_HOST}
       NEST_DATABASE_PORT: ${NEST_DATABASE_PORT}
       NEST_DATABASE_USER: ${NEST_DATABASE_USER}
       NEST_DATABASE_PASS: ${NEST_DATABASE_PASS}
       NEST_DATABASE_NAME: ${NEST_DATABASE_NAME}
-      NEST_EMAIL_HOST: ${NEST_EMAIL_HOST}
-      NEST_EMAIL_PORT: ${NEST_EMAIL_PORT}
-      NEST_EMAIL_USER: ${NEST_EMAIL_USER}
-      NEST_EMAIL_PASS: ${NEST_EMAIL_PASS}
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -69,10 +63,18 @@ services:
       - db
       - redis
     restart: always
-    ports:
-      - '4000:4000'
+    expose:
+      - '4000'
     networks:
       - app-network
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pathpipe-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.pathpipe-api.entrypoints=websecure"
+      - "traefik.http.routers.pathpipe-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.pathpipe-api.priority=10"
+      - "traefik.http.services.pathpipe-api.loadbalancer.server.port=4000"
     healthcheck:
       test:
         ['CMD', 'curl', '--silent', '--fail', 'http://localhost:4000/health']
@@ -84,21 +86,26 @@ services:
   # Web (Next.js)
   web:
     container_name: pathpipe-web
-    build:
-      context: ../../..
-      dockerfile: apps/web/Dockerfile
+    image: ghcr.io/${GITHUB_OWNER}/pathpipe-web:latest
     environment:
-      NEXT_API_URL: http://api:4000
+      NEXT_API_URL: http://api:4000/api
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
       NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY}
       NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}
     depends_on:
       - api
     restart: always
-    ports:
-      - '3000:3000'
+    expose:
+      - '3000'
     networks:
       - app-network
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pathpipe-web.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.pathpipe-web.entrypoints=websecure"
+      - "traefik.http.routers.pathpipe-web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.pathpipe-web.loadbalancer.server.port=3000"
     healthcheck:
       test: ['CMD', 'curl', '--silent', '--fail', 'http://localhost:3000/']
       interval: 60s
@@ -113,3 +120,5 @@ volumes:
 networks:
   app-network:
     driver: bridge
+  traefik-public:
+    external: true

@@ -9,7 +9,6 @@
     "lint": "turbo run lint",
     "format": "turbo run format",
     "check-types": "turbo run check-types",
-    "deploy:production": "sh infrastructure/scripts/deploy.sh",
     "docker:dev": "docker compose -f infrastructure/docker/development/docker-compose.yml --env-file .env.development.local up -d",
     "docker:down": "docker compose -f infrastructure/docker/development/docker-compose.yml --env-file .env.development.local down"
   },
