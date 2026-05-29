@@ -50,6 +50,7 @@ services:
   api:
     container_name: pathpipe-api
     image: ghcr.io/${GITHUB_OWNER}/pathpipe-api:${IMAGE_TAG:-latest}
+    pull_policy: always
     environment:
       NODE_ENV: production
       NEST_PORT: ${NEST_PORT}
@@ -96,6 +97,7 @@ services:
   web:
     container_name: pathpipe-web
     image: ghcr.io/${GITHUB_OWNER}/pathpipe-web:${IMAGE_TAG:-latest}
+    pull_policy: always
     environment:
       NEXT_API_URL: http://api:4000
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
@@ -125,6 +127,7 @@ services:
   worker-email:
     container_name: pathpipe-worker-email
     image: ghcr.io/${GITHUB_OWNER}/pathpipe-worker:${IMAGE_TAG:-latest}
+    pull_policy: always
     command: ['node', 'apps/worker/dist/index.js', 'email']
     environment:
       WORKERS_PORT: ${WORKERS_PORT}
@@ -148,6 +151,7 @@ services:
   worker-ats:
     container_name: pathpipe-worker-ats
     image: ghcr.io/${GITHUB_OWNER}/pathpipe-worker:${IMAGE_TAG:-latest}
+    pull_policy: always
     command: ['node', 'apps/worker/dist/index.js', 'ats']
     environment:
       WORKERS_PORT: ${WORKERS_PORT}

@@ -53,7 +53,7 @@ import { resolve } from 'node:path';
           Company,
           ApiKey,
         ],
-        synchronize: true,
+        synchronize: process.env.NODE_ENV !== 'production',
       }),
     }),
     HealthModule,
