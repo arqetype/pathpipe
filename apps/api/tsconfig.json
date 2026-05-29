@@ -4,6 +4,6 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "jsx": "react-jsx",
-    "types": ["jest"]
-  }
+    "types": ["jest"],
+  },
 }
