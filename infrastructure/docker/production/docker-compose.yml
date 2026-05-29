@@ -117,7 +117,7 @@ services:
       - app-network
       - dokploy-network
     healthcheck:
-      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/ || exit 1']
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:3000/ || exit 1']
       interval: 30s
       retries: 5
       start_period: 20s
