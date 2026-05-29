@@ -89,6 +89,19 @@ services:
       retries: 5
       start_period: 20s
       timeout: 10s
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.pathpipe-api-web.rule=Host(`api-pathpipe.clementomnes.dev`)
+      - traefik.http.routers.pathpipe-api-web.entrypoints=web
+      - traefik.http.routers.pathpipe-api-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.pathpipe-api-web.service=pathpipe-api-web
+      - traefik.http.services.pathpipe-api-web.loadbalancer.server.port=4000
+      - traefik.http.routers.pathpipe-api-websecure.rule=Host(`api-pathpipe.clementomnes.dev`)
+      - traefik.http.routers.pathpipe-api-websecure.entrypoints=websecure
+      - traefik.http.routers.pathpipe-api-websecure.service=pathpipe-api-websecure
+      - traefik.http.routers.pathpipe-api-websecure.tls.certresolver=letsencrypt
+      - traefik.http.services.pathpipe-api-websecure.loadbalancer.server.port=4000
 
   # Web (Next.js)
   web:
@@ -114,6 +127,19 @@ services:
       retries: 5
       start_period: 20s
       timeout: 10s
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.pathpipe-web-web.rule=Host(`pathpipe.clementomnes.dev`)
+      - traefik.http.routers.pathpipe-web-web.entrypoints=web
+      - traefik.http.routers.pathpipe-web-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.pathpipe-web-web.service=pathpipe-web-web
+      - traefik.http.services.pathpipe-web-web.loadbalancer.server.port=3000
+      - traefik.http.routers.pathpipe-web-websecure.rule=Host(`pathpipe.clementomnes.dev`)
+      - traefik.http.routers.pathpipe-web-websecure.entrypoints=websecure
+      - traefik.http.routers.pathpipe-web-websecure.service=pathpipe-web-websecure
+      - traefik.http.routers.pathpipe-web-websecure.tls.certresolver=letsencrypt
+      - traefik.http.services.pathpipe-web-websecure.loadbalancer.server.port=3000
 
   # Worker - email queue
   worker-email:
