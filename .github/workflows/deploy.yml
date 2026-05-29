@@ -51,7 +51,9 @@ jobs:
           file: apps/${{ matrix.app }}/Dockerfile
           platforms: linux/arm64
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/pathpipe-${{ matrix.app }}:latest
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/pathpipe-${{ matrix.app }}:latest
+            ghcr.io/${{ github.repository_owner }}/pathpipe-${{ matrix.app }}:${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.app }}
           cache-to: type=gha,mode=max,scope=${{ matrix.app }}
 
@@ -60,32 +62,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-push
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Copy docker-compose to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: infrastructure/docker/production/docker-compose.yml
-          target: ${{ secrets.VPS_APP_PATH }}
-          strip_components: 3
-
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          envs: GHCR_READ_TOKEN,GITHUB_ACTOR
-          script: |
-            echo "$GHCR_READ_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-            cd ${{ secrets.VPS_APP_PATH }}
-            docker compose -f docker-compose.yml --env-file .env.production.local pull
-            docker compose -f docker-compose.yml --env-file .env.production.local up -d
-            docker image prune -f
-        env:
-          GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
-          GITHUB_ACTOR: ${{ github.actor }}
+      - name: Trigger Dokploy redeploy
+        run: |
+          curl --fail -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}"

@@ -49,7 +49,7 @@ services:
   # API (Nest.js)
   api:
     container_name: pathpipe-api
-    image: ghcr.io/${GITHUB_OWNER}/pathpipe-api:latest
+    image: ghcr.io/${GITHUB_OWNER}/pathpipe-api:${IMAGE_TAG:-latest}
     environment:
       NODE_ENV: production
       NEST_PORT: ${NEST_PORT}
@@ -79,27 +79,23 @@ services:
       - '4000'
     networks:
       - app-network
-      - traefik-public
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.pathpipe-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)'
-      - 'traefik.http.routers.pathpipe-api.entrypoints=websecure'
-      - 'traefik.http.routers.pathpipe-api.tls.certresolver=letsencrypt'
-      - 'traefik.http.routers.pathpipe-api.priority=10'
-      - 'traefik.http.services.pathpipe-api.loadbalancer.server.port=4000'
-      - 'traefik.docker.network=traefik-public'
     healthcheck:
       test:
-        ['CMD', 'curl', '--silent', '--fail', 'http://localhost:4000/health']
-      interval: 60s
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:4000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
       retries: 5
-      start_period: 5s
+      start_period: 20s
       timeout: 10s
 
   # Web (Next.js)
   web:
     container_name: pathpipe-web
-    image: ghcr.io/${GITHUB_OWNER}/pathpipe-web:latest
+    image: ghcr.io/${GITHUB_OWNER}/pathpipe-web:${IMAGE_TAG:-latest}
     environment:
       NEXT_API_URL: http://api:4000/api
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
@@ -112,25 +108,23 @@ services:
       - '3000'
     networks:
       - app-network
-      - traefik-public
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.pathpipe-web.rule=Host(`${DOMAIN}`)'
-      - 'traefik.http.routers.pathpipe-web.entrypoints=websecure'
-      - 'traefik.http.routers.pathpipe-web.tls.certresolver=letsencrypt'
-      - 'traefik.http.services.pathpipe-web.loadbalancer.server.port=3000'
-      - 'traefik.docker.network=traefik-public'
     healthcheck:
-      test: ['CMD', 'curl', '--silent', '--fail', 'http://localhost:3000/']
-      interval: 60s
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
       retries: 5
-      start_period: 5s
+      start_period: 20s
       timeout: 10s
 
   # Worker - email queue
   worker-email:
     container_name: pathpipe-worker-email
-    image: ghcr.io/${GITHUB_OWNER}/pathpipe-worker:latest
+    image: ghcr.io/${GITHUB_OWNER}/pathpipe-worker:${IMAGE_TAG:-latest}
     command: ['node', 'apps/worker/dist/index.js', 'email']
     environment:
       WORKERS_PORT: ${WORKERS_PORT}
@@ -153,7 +147,7 @@ services:
   # Worker - ATS queue
   worker-ats:
     container_name: pathpipe-worker-ats
-    image: ghcr.io/${GITHUB_OWNER}/pathpipe-worker:latest
+    image: ghcr.io/${GITHUB_OWNER}/pathpipe-worker:${IMAGE_TAG:-latest}
     command: ['node', 'apps/worker/dist/index.js', 'ats']
     environment:
       WORKERS_PORT: ${WORKERS_PORT}
@@ -176,5 +170,3 @@ volumes:
 networks:
   app-network:
     driver: bridge
-  traefik-public:
-    external: true
