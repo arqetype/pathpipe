@@ -97,7 +97,7 @@ services:
     container_name: pathpipe-web
     image: ghcr.io/${GITHUB_OWNER}/pathpipe-web:${IMAGE_TAG:-latest}
     environment:
-      NEXT_API_URL: http://api:4000/api
+      NEXT_API_URL: http://api:4000
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
       NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY}
       NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}
@@ -128,7 +128,7 @@ services:
     command: ['node', 'apps/worker/dist/index.js', 'email']
     environment:
       WORKERS_PORT: ${WORKERS_PORT}
-      WORKERS_API_URL: http://api:4000/api
+      WORKERS_API_URL: http://api:4000
       WORKERS_API_KEY: ${WORKERS_API_KEY}
       WORKERS_REDIS_HOST: redis
       WORKERS_REDIS_PORT: ${REDIS_PORT}
@@ -151,7 +151,7 @@ services:
     command: ['node', 'apps/worker/dist/index.js', 'ats']
     environment:
       WORKERS_PORT: ${WORKERS_PORT}
-      WORKERS_API_URL: http://api:4000/api
+      WORKERS_API_URL: http://api:4000
       WORKERS_API_KEY: ${WORKERS_API_KEY}
       WORKERS_REDIS_HOST: redis
       WORKERS_REDIS_PORT: ${REDIS_PORT}
