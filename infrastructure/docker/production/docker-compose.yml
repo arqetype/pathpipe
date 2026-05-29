@@ -32,7 +32,7 @@ services:
     image: redis:7-alpine
     restart: always
     container_name: pathpipe-redis
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    command: ['redis-server', '--appendonly', 'yes', '--requirepass', '${REDIS_PASSWORD}']
     volumes:
       - redisdata:/data
     networks:
@@ -40,7 +40,7 @@ services:
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     healthcheck:
-      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping']
+      test: ['CMD-SHELL', 'redis-cli -a "$REDIS_PASSWORD" --no-auth-warning ping']
       interval: 60s
       retries: 5
       start_period: 5s
