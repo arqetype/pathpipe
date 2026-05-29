@@ -87,6 +87,7 @@ services:
       - 'traefik.http.routers.pathpipe-api.tls.certresolver=letsencrypt'
       - 'traefik.http.routers.pathpipe-api.priority=10'
       - 'traefik.http.services.pathpipe-api.loadbalancer.server.port=4000'
+      - 'traefik.docker.network=traefik-public'
     healthcheck:
       test:
         ['CMD', 'curl', '--silent', '--fail', 'http://localhost:4000/health']
@@ -118,6 +119,7 @@ services:
       - 'traefik.http.routers.pathpipe-web.entrypoints=websecure'
       - 'traefik.http.routers.pathpipe-web.tls.certresolver=letsencrypt'
       - 'traefik.http.services.pathpipe-web.loadbalancer.server.port=3000'
+      - 'traefik.docker.network=traefik-public'
     healthcheck:
       test: ['CMD', 'curl', '--silent', '--fail', 'http://localhost:3000/']
       interval: 60s
