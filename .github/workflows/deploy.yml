@@ -52,4 +52,8 @@ jobs:
     steps:
       - name: Trigger Dokploy redeploy
         run: |
-          curl --fail -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}"
+          curl --fail -X POST \
+            -H "Authorization: Bearer ${{ secrets.DOKPLOY_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"composeId": "${{ secrets.DOKPLOY_COMPOSE_ID }}"}' \
+            "https://dokploy.clementomnes.dev/api/compose.deploy"
