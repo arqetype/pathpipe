@@ -51,6 +51,8 @@ services:
     container_name: pathpipe-api
     image: ghcr.io/${GITHUB_OWNER}/pathpipe-api:latest
     environment:
+      NODE_ENV: production
+      NEST_PORT: ${NEST_PORT}
       NEST_DATABASE_HOST: ${NEST_DATABASE_HOST}
       NEST_DATABASE_PORT: ${NEST_DATABASE_PORT}
       NEST_DATABASE_USER: ${NEST_DATABASE_USER}
@@ -59,6 +61,16 @@ services:
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+      NEST_JWT_SECRET: ${NEST_JWT_SECRET}
+      NEST_JWT_EXPIRATION_TIME: ${NEST_JWT_EXPIRATION_TIME}
+      NEST_FRONT_URL: ${NEST_FRONT_URL}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      NEST_GITHUB_CLIENT_ID: ${NEST_GITHUB_CLIENT_ID}
+      NEST_GITHUB_CLIENT_SECRET: ${NEST_GITHUB_CLIENT_SECRET}
+      NEST_GITHUB_CALLBACK_URL: ${NEST_GITHUB_CALLBACK_URL}
+      NEST_GOOGLE_CLIENT_ID: ${NEST_GOOGLE_CLIENT_ID}
+      NEST_GOOGLE_CLIENT_SECRET: ${NEST_GOOGLE_CLIENT_SECRET}
+      NEST_GOOGLE_CALLBACK_URL: ${NEST_GOOGLE_CALLBACK_URL}
     depends_on:
       - db
       - redis
@@ -69,12 +81,12 @@ services:
       - app-network
       - traefik-public
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pathpipe-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.pathpipe-api.entrypoints=websecure"
-      - "traefik.http.routers.pathpipe-api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.pathpipe-api.priority=10"
-      - "traefik.http.services.pathpipe-api.loadbalancer.server.port=4000"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.pathpipe-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)'
+      - 'traefik.http.routers.pathpipe-api.entrypoints=websecure'
+      - 'traefik.http.routers.pathpipe-api.tls.certresolver=letsencrypt'
+      - 'traefik.http.routers.pathpipe-api.priority=10'
+      - 'traefik.http.services.pathpipe-api.loadbalancer.server.port=4000'
     healthcheck:
       test:
         ['CMD', 'curl', '--silent', '--fail', 'http://localhost:4000/health']
@@ -101,11 +113,11 @@ services:
       - app-network
       - traefik-public
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pathpipe-web.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.pathpipe-web.entrypoints=websecure"
-      - "traefik.http.routers.pathpipe-web.tls.certresolver=letsencrypt"
-      - "traefik.http.services.pathpipe-web.loadbalancer.server.port=3000"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.pathpipe-web.rule=Host(`${DOMAIN}`)'
+      - 'traefik.http.routers.pathpipe-web.entrypoints=websecure'
+      - 'traefik.http.routers.pathpipe-web.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.pathpipe-web.loadbalancer.server.port=3000'
     healthcheck:
       test: ['CMD', 'curl', '--silent', '--fail', 'http://localhost:3000/']
       interval: 60s
@@ -117,18 +129,20 @@ services:
   worker-email:
     container_name: pathpipe-worker-email
     image: ghcr.io/${GITHUB_OWNER}/pathpipe-worker:latest
-    command: ["node", "apps/worker/dist/index.js", "email"]
+    command: ['node', 'apps/worker/dist/index.js', 'email']
     environment:
-      NEST_DATABASE_HOST: ${NEST_DATABASE_HOST}
-      NEST_DATABASE_PORT: ${NEST_DATABASE_PORT}
-      NEST_DATABASE_USER: ${NEST_DATABASE_USER}
-      NEST_DATABASE_PASS: ${NEST_DATABASE_PASS}
-      NEST_DATABASE_NAME: ${NEST_DATABASE_NAME}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      WORKERS_PORT: ${WORKERS_PORT}
+      WORKERS_API_URL: http://api:4000/api
+      WORKERS_API_KEY: ${WORKERS_API_KEY}
+      WORKERS_REDIS_HOST: redis
+      WORKERS_REDIS_PORT: ${REDIS_PORT}
+      WORKERS_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      WORKERS_EMAIL_HOST: ${WORKERS_EMAIL_HOST}
+      WORKERS_EMAIL_PORT: ${WORKERS_EMAIL_PORT}
+      WORKERS_EMAIL_USER: ${WORKERS_EMAIL_USER}
+      WORKERS_EMAIL_PASS: ${WORKERS_EMAIL_PASS}
     depends_on:
-      - db
+      - api
       - redis
     restart: always
     networks:
@@ -138,18 +152,16 @@ services:
   worker-ats:
     container_name: pathpipe-worker-ats
     image: ghcr.io/${GITHUB_OWNER}/pathpipe-worker:latest
-    command: ["node", "apps/worker/dist/index.js", "ats"]
+    command: ['node', 'apps/worker/dist/index.js', 'ats']
     environment:
-      NEST_DATABASE_HOST: ${NEST_DATABASE_HOST}
-      NEST_DATABASE_PORT: ${NEST_DATABASE_PORT}
-      NEST_DATABASE_USER: ${NEST_DATABASE_USER}
-      NEST_DATABASE_PASS: ${NEST_DATABASE_PASS}
-      NEST_DATABASE_NAME: ${NEST_DATABASE_NAME}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      WORKERS_PORT: ${WORKERS_PORT}
+      WORKERS_API_URL: http://api:4000/api
+      WORKERS_API_KEY: ${WORKERS_API_KEY}
+      WORKERS_REDIS_HOST: redis
+      WORKERS_REDIS_PORT: ${REDIS_PORT}
+      WORKERS_REDIS_PASSWORD: ${REDIS_PASSWORD}
     depends_on:
-      - db
+      - api
       - redis
     restart: always
     networks:
