@@ -73,13 +73,16 @@ services:
       NEST_GOOGLE_CLIENT_SECRET: ${NEST_GOOGLE_CLIENT_SECRET}
       NEST_GOOGLE_CALLBACK_URL: ${NEST_GOOGLE_CALLBACK_URL}
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: always
     expose:
       - '4000'
     networks:
       - app-network
+      - dokploy-network
     healthcheck:
       test:
         [
@@ -110,6 +113,7 @@ services:
       - '3000'
     networks:
       - app-network
+      - dokploy-network
     healthcheck:
       test:
         [
@@ -141,8 +145,10 @@ services:
       WORKERS_EMAIL_USER: ${WORKERS_EMAIL_USER}
       WORKERS_EMAIL_PASS: ${WORKERS_EMAIL_PASS}
     depends_on:
-      - api
-      - redis
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: always
     networks:
       - app-network
@@ -161,8 +167,10 @@ services:
       WORKERS_REDIS_PORT: ${REDIS_PORT}
       WORKERS_REDIS_PASSWORD: ${REDIS_PASSWORD}
     depends_on:
-      - api
-      - redis
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: always
     networks:
       - app-network
@@ -174,3 +182,5 @@ volumes:
 networks:
   app-network:
     driver: bridge
+  dokploy-network:
+    external: true
