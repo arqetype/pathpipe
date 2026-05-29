@@ -51,7 +51,8 @@ export function OAuthButtons() {
           variant="outline"
           className="flex-1"
           type="button"
-          disabled={isLoading === 'google'}
+          disabled // TODO: Google sign-in is currently not working due to CORS issues
+          // disabled={isLoading === 'google'}
           onClick={handleGoogleSignIn}
         >
           {isLoading === 'google' ? (
@@ -69,7 +70,8 @@ export function OAuthButtons() {
           variant="outline"
           className="flex-1"
           type="button"
-          disabled={isLoading === 'github'}
+          disabled // TODO: GitHub sign-in is currently not working due to CORS issues
+          // disabled={isLoading === 'github'}
           onClick={handleGitHubSignIn}
         >
           {isLoading === 'github' ? (
