@@ -199,7 +199,6 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* View toggle */}
         <ToggleGroup
           value={[currentView]}
           onValueChange={([value]) => setParam('view', value || 'kanban')}
