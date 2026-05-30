@@ -9,7 +9,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@repo/ui/components/sidebar';
-import { Separator } from '@repo/ui/components/separator';
 import { TooltipProvider } from '@repo/ui/components/tooltip';
 import type { ReactNode } from 'react';
 import { BreadcrumbProvider } from '@/components/navigation/breadcrumbs/breadcrumb-context';
@@ -34,9 +33,8 @@ export default async function ApplicationLayout({
         <BreadcrumbProvider defaultLabels={{ settings: 'Settings' }}>
           <AppSidebar user={currentUser} className="z-20" />
           <SidebarInset className="min-w-0 flex flex-col h-screen">
-            <div className="sticky top-0 z-30 flex h-12 items-center gap-3 border-b px-4 w-full bg-popover/80 backdrop-blur-2xl backdrop-saturate-150">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="h-12" />
+            <div className="flex min-h-12 items-center gap-3 px-4 w-full">
+              <SidebarTrigger size="icon-lg" />
               <AppBreadcrumb />
             </div>
             <div className="flex-1 h-full">{children}</div>

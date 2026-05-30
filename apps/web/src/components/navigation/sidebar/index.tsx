@@ -64,7 +64,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
   };
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar variant="floating" collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
