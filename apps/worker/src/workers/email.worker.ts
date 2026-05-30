@@ -50,6 +50,13 @@ export async function startEmailWorker() {
             job.data.user,
           );
           break;
+        case 'reset-password-confirmation':
+          await mailer.sendResetPasswordConfirmationEmail(
+            job.data.to,
+            job.data.resetAt,
+            job.data.user,
+          );
+          break;
         default: {
           const message = `Unknown job type for job ${job.id}: ${(job.data as { type: string }).type}`;
           logger.warn(message);

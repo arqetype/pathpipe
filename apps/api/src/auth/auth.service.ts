@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthMailerService } from '../infrastructure/mailer/auth-mailer.service';
 import { VerificationService } from './verification/verification.service';
@@ -9,6 +9,8 @@ import { UserService } from '../features/user/user.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
@@ -191,6 +193,19 @@ export class AuthService {
       resetPasswordToken.user.id,
       await PasswordUtils.hashPassword(newPassword),
     );
+
+    const user = resetPasswordToken.user;
+    try {
+      await this.authMailerService.sendResetPasswordConfirmationEmail(
+        user.email,
+        new Date().toISOString(),
+        { name: user.name, profilePictureUrl: user.avatar_url },
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Failed to enqueue reset-password-confirmation email for user ${user.id}: ${(err as Error).message}`,
+      );
+    }
 
     return { success: true };
   }

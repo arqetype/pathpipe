@@ -4,6 +4,7 @@ import { render } from '@react-email/render';
 import { VerificationEmail } from './templates/auth/verification-email';
 import { OTPEmail } from './templates/auth/otp-email';
 import { ResetPasswordEmail } from './templates/auth/reset-password-email';
+import { ResetPasswordConfirmationEmail } from './templates/auth/reset-password-confirmation-email';
 
 export type SMTPConfig = {
   host: string;
@@ -88,6 +89,31 @@ export class Mailer {
         to,
         from: this.from,
         subject: 'pathpipe : Reset your password',
+        html,
+      });
+    } catch {
+      throw new Error('Failed to send email');
+    }
+  }
+
+  public async sendResetPasswordConfirmationEmail(
+    to: string,
+    resetAt: string,
+    user: { name: string; profilePictureUrl: string },
+  ): Promise<void> {
+    const html = await render(
+      <ResetPasswordConfirmationEmail
+        resetAt={resetAt}
+        user={user}
+        appUrl={this.appUrl}
+      />,
+    );
+
+    try {
+      await this.transporter.sendMail({
+        to,
+        from: this.from,
+        subject: 'pathpipe : Your password was changed',
         html,
       });
     } catch {
