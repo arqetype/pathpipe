@@ -44,7 +44,7 @@ export function OAuthButtons() {
             'LinkedIn authentication failed. Please try again.'}
         </div>
       )}
-      <div className="flex gap-2 sm:flex-row flex-col">
+      <div className="flex gap-2 w-full flex-wrap">
         <Button
           variant="outline"
           className="flex-1"

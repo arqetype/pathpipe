@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Logo } from '@repo/ui/branding/logo';
 import {
   Card,
   CardDescription,
@@ -7,6 +8,7 @@ import {
 } from '@repo/ui/components/card';
 import { redirect } from 'next/navigation';
 import { OAuthButtons } from '@/components/features/auth/oauth-buttons';
+import { AuthPanel } from '@/components/features/auth/auth-panel';
 import { handleAuthenticationRedirection } from '@/lib/auth-server';
 
 type AuthenticationFormLayoutProps = Readonly<{
@@ -23,10 +25,16 @@ export default async function AuthenticationFormLayout({
 
   return (
     <Card className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid lg:grid-cols-2 gap-0">
+      <div className="grid md:grid-cols-2 gap-0">
         <div>
           <CardHeader className="space-y-2">
-            <CardTitle className="scroll-m-20 text-4xl font-extrabold tracking-tight text-balance">
+            <div className="flex md:hidden justify-center items-center gap-1.5 mb-5">
+              <Logo className="size-7" />
+              <span className="font-heading text-base font-semibold tracking-tight">
+                pathpipe
+              </span>
+            </div>
+            <CardTitle className="scroll-m-20 text-4xl font-extrabold tracking-tight text-balance text-center md:text-left">
               👋 It&apos;s nice to see you!
             </CardTitle>
             <CardDescription className="leading-7 text-left mb-2">
@@ -45,10 +53,8 @@ export default async function AuthenticationFormLayout({
           </CardHeader>
           {children}
         </div>
-        <div className="hidden lg:block mx-4 pb-4">
-          <div className="bg-accent h-full rounded-lg px-6 py-4">
-            <div className="flex flex-col items-center justify-center h-full"></div>
-          </div>
+        <div className="hidden md:block mx-4 pb-4">
+          <AuthPanel />
         </div>
       </div>
     </Card>
