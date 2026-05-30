@@ -21,6 +21,7 @@ import { Company } from '@repo/db/entities/company';
 import { ApiKey } from '@repo/db/entities/api-key';
 import { InternalModule } from './internal/internal.module';
 import { resolve } from 'node:path';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -65,6 +66,15 @@ import { resolve } from 'node:path';
     ApplicationModule,
     CompanyModule,
     InternalModule,
+
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 60,
+        },
+      ],
+    }),
   ],
   providers: [
     {
