@@ -47,7 +47,7 @@ import type { Response, Request } from 'express';
 import { User } from '@repo/db/entities/user';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { GoogleCallbackGuard } from './guards/google-callback.guard';
-import { GithubCallbackGuard } from './guards/github-callback.guard';
+import { LinkedinCallbackGuard } from './guards/linkedin-callback.guard';
 import { ApiKeyService } from './api-key.service';
 import { UserRole } from '@repo/db/types/user/roles';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -66,11 +66,11 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Public()
   @Post('sign-in')
-  async signIn(
+  signIn(
     @Body() signInDto: SignInDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<SignInResponseDto> {
-    return await this.authService.signIn(signInDto.email, response);
+    return Promise.resolve(this.authService.signIn(signInDto.email, response));
   }
 
   @HttpCode(HttpStatus.CREATED)
@@ -90,10 +90,6 @@ export class AuthController {
   async enableOtpGet(
     @CurrentUser() user: User,
   ): Promise<EnableOtpGetResponseDto> {
-    if (user.is_github_user) {
-      throw new UnauthorizedException('GitHub users cannot enable OTP');
-    }
-
     return await this.authService.sendOTP(user);
   }
 
@@ -103,10 +99,6 @@ export class AuthController {
     @CurrentUser() user: User,
     @Body() enableOtpDto: EnableOtpDto,
   ): Promise<EnableOtpResponseDto> {
-    if (user.is_github_user) {
-      throw new UnauthorizedException('GitHub users cannot enable OTP');
-    }
-
     const { success } = await this.authService.verifyOTP(
       user,
       enableOtpDto.otp,
@@ -194,37 +186,6 @@ export class AuthController {
     return user;
   }
 
-  // GITHUB AUTHENTICATION FLOW
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(GithubCallbackGuard)
-  @Public()
-  @Get('github')
-  async githubAuth() {}
-
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(GithubCallbackGuard)
-  @Public()
-  @Get('github/callback')
-  githubCallback(@Req() req: Request, @Res() res: Response) {
-    if (req.query && req.query.error) {
-      return res.redirect(
-        `${process.env.NEST_FRONT_URL}/app/sign-in?error=github_auth_failed`,
-      );
-    }
-
-    if (req.user) {
-      const token = this.authService.generateJwtToken((req.user as User).email);
-
-      return res.redirect(
-        `${process.env.NEST_FRONT_URL}/app/github/callback?token=${token}`,
-      );
-    }
-
-    return res.redirect(
-      `${process.env.NEST_FRONT_URL}/app/sign-in?error=github_auth_failed`,
-    );
-  }
-
   // GOOGLE AUTHENTICATION FLOW
   @HttpCode(HttpStatus.OK)
   @UseGuards(GoogleCallbackGuard)
@@ -250,6 +211,37 @@ export class AuthController {
         `${process.env.NEST_FRONT_URL}/app/google/callback?token=${token}`,
       );
     }
+  }
+
+  // LINKEDIN AUTHENTICATION FLOW
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(LinkedinCallbackGuard)
+  @Public()
+  @Get('linkedin')
+  async linkedinAuth() {}
+
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(LinkedinCallbackGuard)
+  @Public()
+  @Get('linkedin/callback')
+  linkedinCallback(@Req() req: Request, @Res() res: Response) {
+    if (req.query && req.query.error) {
+      return res.redirect(
+        `${process.env.NEST_FRONT_URL}/app/sign-in?error=linkedin_auth_failed`,
+      );
+    }
+
+    if (req.user) {
+      const token = this.authService.generateJwtToken((req.user as User).email);
+
+      return res.redirect(
+        `${process.env.NEST_FRONT_URL}/app/linkedin/callback?token=${token}`,
+      );
+    }
+
+    return res.redirect(
+      `${process.env.NEST_FRONT_URL}/app/sign-in?error=linkedin_auth_failed`,
+    );
   }
 
   // API KEYS MANAGEMENT FOR ADMIN

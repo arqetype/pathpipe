@@ -6,11 +6,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { MailerModule } from '../infrastructure/mailer/mailer.module';
 import { JwtStrategy } from './strategies/jwt.stategy';
 import { LocalStrategy } from './strategies/local.strategy';
-import { GithubStrategy } from './strategies/github.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { VerificationModule } from './verification/verification.module';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { LinkedinStrategy } from './strategies/linkedin.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApiKey } from '@repo/db/entities/api-key';
 import { UserModule } from '../features/user/user.module';
@@ -40,8 +40,8 @@ import { UserModule } from '../features/user/user.module';
     ApiKeyService,
     LocalStrategy,
     JwtStrategy,
-    GithubStrategy,
     GoogleStrategy,
+    LinkedinStrategy,
   ],
   exports: [AuthService],
 })

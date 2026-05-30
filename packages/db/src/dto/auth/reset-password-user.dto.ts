@@ -9,5 +9,5 @@ export class ResetPasswordUserDto {
 
 export type ResetPasswordUserResponseDto = Pick<
   User,
-  'id' | 'email' | 'name' | 'avatar_url' | 'is_github_user'
+  'id' | 'email' | 'name' | 'avatar_url'
 >;
