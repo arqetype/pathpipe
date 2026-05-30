@@ -529,7 +529,12 @@ export function SignInForm() {
         {renderFormContent()}
         {shouldShowFooter && (
           <CardFooter className="space-y-4 flex-col bg-transparent border-none">
-            <Button type="submit" className="w-full" disabled={isPending}>
+            <Button
+              type="submit"
+              className="w-full"
+              size="lg"
+              disabled={isPending}
+            >
               {isPending ? (
                 <>
                   <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />
