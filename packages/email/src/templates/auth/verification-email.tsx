@@ -1,53 +1,54 @@
-import { Button, Img, Row, Section, Text } from 'react-email';
+import { Button, Section, Text } from 'react-email';
 import React from 'react';
 import { Layout } from '../../components/layout';
 
 interface VerificationEmailProps {
   token: string;
+  appUrl?: string;
   user: {
     name: string;
-    profilePictureUrl: string;
   };
 }
 
-export function VerificationEmail({ token, user }: VerificationEmailProps) {
+export function VerificationEmail({
+  token,
+  appUrl,
+  user,
+}: VerificationEmailProps) {
   const previewMessage =
-    '👋 Welcome to Pathpipe! Verify your email to complete your registration.';
-  const verificationUrl = `http://localhost:3000/app/verify-email?token=${token}`;
+    'Verify your email to complete your pathpipe registration.';
+  const baseUrl = (appUrl ?? 'http://localhost:3000').replace(/\/$/, '');
+  const verificationUrl = `${baseUrl}/app/verify-email?token=${token}`;
+
   return (
-    <Layout previewMessage={previewMessage}>
-      <Section className="text-center">
-        <Img
-          src={user.profilePictureUrl}
-          alt={`${user.name}'s profile picture`}
-          width="96"
-          height="96"
-          className="mx-auto mb-4 rounded-full"
-        />
-        <Text className="text-3xl font-bold text-primary">
-          Welcome to Pathpipe!
+    <Layout previewMessage={previewMessage} appUrl={baseUrl}>
+      <Section className="text-left">
+        <Text className="text-2xl font-heading font-bold text-foreground m-0">
+          Verify your email
         </Text>
-        <Text className="text-foreground mt-2">
-          We're excited to have you on board. Please verify your email address
-          to complete your registration and start exploring.
+        <Text className="text-base text-foreground mt-4 mb-0">
+          Hi <span className="font-semibold">{user.name}</span>, click the
+          button below to verify your email address and complete your
+          registration.
         </Text>
       </Section>
-      <Section>
-        <Row>
-          <Text className="text-lg text-foreground mt-4">
-            Hi {user.name}, click the button below to verify your email address:
-          </Text>
-          <Button
-            href={verificationUrl}
-            className="text-lg w-full bg-primary font-semibold p-2 text-center rounded-full text-primary-foreground"
-          >
-            Verify Email
-          </Button>
-          <Text className="text-sm text-foreground mt-2">
-            If you did not create an account, please ignore this email. If you
-            have any concerns, feel free to contact our support team.
-          </Text>
-        </Row>
+
+      <Section className="mt-8 text-left">
+        <Button
+          href={verificationUrl}
+          className="bg-primary font-semibold px-8 py-3 text-base text-center text-primary-foreground rounded-md btn-preserve"
+        >
+          Verify email
+        </Button>
+      </Section>
+
+      <Section className="mt-6">
+        <Text className="text-sm text-muted-foreground m-0 leading-6">
+          This link expires in 10 minutes.
+        </Text>
+        <Text className="text-sm text-muted-foreground mt-2 m-0 leading-6">
+          If you did not create an account, you can safely ignore this email.
+        </Text>
       </Section>
     </Layout>
   );
@@ -57,7 +58,6 @@ VerificationEmail.PreviewProps = {
   token: 'bc8fcea8-07ea-4321-884a-ce9f1a01a9e0',
   user: {
     name: 'John Doe',
-    profilePictureUrl: 'https://picsum.photos/100',
   },
 };
 

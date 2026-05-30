@@ -1,54 +1,45 @@
-import { Img, Row, Section, Text } from 'react-email';
+import { Section, Text } from 'react-email';
 import React from 'react';
 import { Layout } from '../../components/layout';
 
 type OTPEmailProps = {
   otp: string;
+  appUrl?: string;
   user: {
     name: string;
-    profilePictureUrl: string;
   };
 };
 
-export function OTPEmail({ otp, user }: OTPEmailProps) {
-  const previewMessage =
-    '👋 Welcome to Pathpipe! Use the OTP below to securely log in.';
+export function OTPEmail({ otp, appUrl, user }: OTPEmailProps) {
+  const previewMessage = `${otp} is your pathpipe sign-in code.`;
+  const baseUrl = (appUrl ?? 'http://localhost:3000').replace(/\/$/, '');
 
   return (
-    <Layout previewMessage={previewMessage}>
-      <Section className="text-center">
-        <Img
-          src={user.profilePictureUrl}
-          alt={`${user.name}'s profile picture`}
-          width="96"
-          height="96"
-          className="mx-auto mb-4 rounded-full"
-        />
-        <Text className="text-3xl font-bold text-primary">
-          Welcome to Pathpipe!
+    <Layout previewMessage={previewMessage} appUrl={baseUrl}>
+      <Section className="text-left">
+        <Text className="text-2xl font-heading font-bold text-foreground m-0">
+          Verify your email
         </Text>
-        <Text className="text-foreground mt-2">
-          We're excited to have you on board. Use the one-time password below to
-          securely log in and start exploring.
+        <Text className="text-base text-foreground mt-4 mb-0">
+          Hi <span className="font-semibold">{user.name}</span>, enter the code
+          below in your browser window to sign in to your pathpipe account.
         </Text>
       </Section>
-      <Section>
-        <Row>
-          <Text className="text-lg text-foreground mt-4">
-            Hi {user.name}, here is your one-time password (OTP):
-          </Text>
-          <Text
-            className="text-2xl bg-accent p-4 text-center rounded-full tracking-widest
- font-bold text-primary"
-          >
-            {otp}
-          </Text>
-          <Text className="text-sm text-foreground mt-2">
-            This OTP is valid for 10 minutes. If you did not request this OTP,
-            please ignore this email and consider changing your password for
-            security.
-          </Text>
-        </Row>
+
+      <Section className="mt-8">
+        <Text className="text-4xl rounded-md bg-muted py-4 px-6 font-heading text-center tracking-widest font-bold text-foreground border border-border m-0">
+          {otp}
+        </Text>
+      </Section>
+
+      <Section className="mt-6">
+        <Text className="text-sm text-muted-foreground m-0 leading-6">
+          This code expires in 10 minutes.
+        </Text>
+        <Text className="text-sm text-muted-foreground mt-2 m-0 leading-6">
+          If you did not request this email, you can safely ignore it. Someone
+          else may have typed your email address by mistake.
+        </Text>
       </Section>
     </Layout>
   );
@@ -58,7 +49,6 @@ OTPEmail.PreviewProps = {
   otp: '123456',
   user: {
     name: 'John Doe',
-    profilePictureUrl: 'https://picsum.photos/100',
   },
 };
 

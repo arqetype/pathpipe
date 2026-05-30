@@ -12,7 +12,7 @@ export default function AccountSettingsPage() {
         <div className="space-y-1">
           <Label>Appearance</Label>
           <p className="text-sm text-muted-foreground">
-            Choose how Pathpipe looks on your device.
+            Choose how pathpipe looks on your device.
           </p>
         </div>
         <ThemeSwitcher />

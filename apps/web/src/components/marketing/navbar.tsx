@@ -64,7 +64,7 @@ export function MarketingNavbar() {
             >
               <Logo className="size-8" />
               <span className="font-heading text-lg font-semibold tracking-tight">
-                Pathpipe
+                pathpipe
               </span>
             </Link>
 

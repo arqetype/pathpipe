@@ -50,7 +50,7 @@ export function Footer() {
             >
               <Logo className="size-8" />
               <span className="font-heading text-lg font-semibold tracking-tight">
-                Pathpipe
+                pathpipe
               </span>
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">

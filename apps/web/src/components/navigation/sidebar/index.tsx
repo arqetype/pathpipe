@@ -71,10 +71,10 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
             <SidebarMenuButton render={<Link href="/app" />} size="lg">
               <Logo
                 className="aspect-square !size-8"
-                aria-label="Pathpipe logo"
+                aria-label="pathpipe logo"
               />
               <div className="grid flex-1 text-left text-lg leading-tight">
-                <span className="truncate font-semibold">Pathpipe</span>
+                <span className="truncate font-semibold">pathpipe</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

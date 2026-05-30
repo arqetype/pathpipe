@@ -18,6 +18,7 @@ export async function startEmailWorker() {
     port: emailConfig.port,
     auth: { user: emailConfig.user, pass: emailConfig.pass },
     from: emailConfig.from,
+    appUrl: emailConfig.frontendUrl,
   });
 
   const connection = {

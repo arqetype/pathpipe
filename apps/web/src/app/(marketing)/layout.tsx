@@ -6,9 +6,9 @@ import CookieBanner from '../../components/cookie-banner/cookie-banner';
 import { CookieConsentProvider } from '@/components/providers/cookie-consent-provider';
 
 export const metadata: Metadata = {
-  title: 'Pathpipe: Job Tracking Application',
+  title: 'pathpipe: Job Tracking Application',
   description:
-    'Pathpipe is a job tracking application that helps you manage your job applications and provides suggestions to improve your chances of landing your dream job.',
+    'pathpipe is a job tracking application that helps you manage your job applications and provides suggestions to improve your chances of landing your dream job.',
 };
 
 type MarketingLayoutProps = Readonly<{

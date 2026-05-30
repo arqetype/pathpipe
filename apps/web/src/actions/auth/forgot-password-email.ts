@@ -35,7 +35,7 @@ export const forgotPasswordEmailAction = action
     const response = await publicPost<ForgotPasswordResponseDto>(
       '/auth/forgot-password',
       {
-      email: parsedInput.email,
+        email: parsedInput.email,
       },
     );
 
