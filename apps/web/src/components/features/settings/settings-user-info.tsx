@@ -16,7 +16,7 @@ export default async function SettingsUserInfo() {
         .join('')
     : 'UU';
 
-  const isGithubUser = currentUser.is_github_user;
+  const isLinkedinUser = currentUser.is_linkedin_user;
   const isGoogleUser = currentUser.is_google_user;
   const hasOtpEnabled = currentUser.need_otp;
 
@@ -38,21 +38,21 @@ export default async function SettingsUserInfo() {
         </span>
       </h2>
       <div className="mt-2 flex gap-2 flex-wrap justify-center">
-        {isGoogleUser && isGithubUser && (
-          <Badge variant="outline">Logged in with Google & GitHub</Badge>
+        {isGoogleUser && isLinkedinUser && (
+          <Badge variant="outline">Logged in with Google & LinkedIn</Badge>
         )}
-        {isGoogleUser && !isGithubUser && (
+        {isGoogleUser && !isLinkedinUser && (
           <Badge variant="outline">Logged in with Google</Badge>
         )}
-        {!isGoogleUser && isGithubUser && (
-          <Badge variant="outline">Logged in with GitHub</Badge>
+        {!isGoogleUser && isLinkedinUser && (
+          <Badge variant="outline">Logged in with LinkedIn</Badge>
         )}
-        {!isGoogleUser && !isGithubUser && (
+        {!isGoogleUser && !isLinkedinUser && (
           <Badge variant="outline">Logged in with Email</Badge>
         )}
-        {!isGithubUser && !isGoogleUser && hasOtpEnabled ? (
+        {!isLinkedinUser && !isGoogleUser && hasOtpEnabled ? (
           <Badge variant="default">2FA Enabled</Badge>
-        ) : !isGithubUser && !isGoogleUser && !hasOtpEnabled ? (
+        ) : !isLinkedinUser && !isGoogleUser && !hasOtpEnabled ? (
           <Badge variant="destructive">2FA Disabled</Badge>
         ) : null}
       </div>

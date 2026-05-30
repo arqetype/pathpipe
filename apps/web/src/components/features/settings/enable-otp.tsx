@@ -103,7 +103,9 @@ export default function EnableOtp({ user }: EnableOtpProps) {
         </div>
         <Switch
           id="otp"
-          disabled={user.is_github_user || isInitiating}
+          disabled={
+            user.is_linkedin_user || user.is_google_user || isInitiating
+          }
           onCheckedChange={handleToggle}
           checked={switchChecked}
         />

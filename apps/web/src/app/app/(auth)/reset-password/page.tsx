@@ -97,7 +97,7 @@ export default async function ResetPasswordPage({
     );
   }
 
-  if (result.data.user.is_github_user) {
+  if (result.data.user.is_google_user || result.data.user.is_linkedin_user) {
     return (
       <Card className="border shadow-md max-w-md w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
         <CardHeader className="space-y-1 text-center">
@@ -107,17 +107,22 @@ export default async function ResetPasswordPage({
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">
-            GitHub User Detected
+            {result.data.user.is_linkedin_user
+              ? 'LinkedIn User Detected'
+              : 'Google User Detected'}
           </CardTitle>
           <CardDescription className="text-base">
-            You cannot reset your password as you signed up with GitHub.
+            {result.data.user.is_linkedin_user
+              ? 'You cannot reset your password as you signed up with LinkedIn.'
+              : 'You cannot reset your password as you signed up with Google.'}
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center px-6">
           <div className="bg-muted/50 rounded-lg p-4 text-sm mt-2">
             <p>
-              Please use your GitHub account to sign in or contact support for
-              assistance.
+              {result.data.user.is_linkedin_user
+                ? 'Please use your LinkedIn account to sign in or contact support for assistance.'
+                : 'Please use your Google account to sign in or contact support for assistance.'}
             </p>
           </div>
         </CardContent>

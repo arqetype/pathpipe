@@ -152,6 +152,18 @@ export class AuthController {
     const user = await this.userService.findOneByEmail(forgotPasswordDto.email);
 
     if (user) {
+      if (user.is_google_user || user.is_linkedin_user) {
+        return {
+          success: true,
+          message: user.is_linkedin_user
+            ? 'You cannot reset your password as you signed up with LinkedIn. Please sign in using your LinkedIn account or contact support for assistance.'
+            : 'You cannot reset your password as you signed up with Google. Please sign in using your Google account or contact support for assistance.',
+          is_google_user: user.is_google_user,
+          is_linkedin_user: user.is_linkedin_user,
+          provider_detected: true,
+        };
+      }
+
       await this.authService.forgotPassword(user);
     }
 
