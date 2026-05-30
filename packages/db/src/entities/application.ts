@@ -21,6 +21,9 @@ export class Application {
   @Column()
   position: string;
 
+  @Column({ type: 'int', nullable: true })
+  kanbanOrder?: number;
+
   @ManyToOne(() => Company, { nullable: true, eager: true })
   @JoinColumn({ name: 'companyId' })
   company: Company;

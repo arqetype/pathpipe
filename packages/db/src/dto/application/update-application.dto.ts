@@ -18,6 +18,10 @@ export class UpdateApplicationDto {
   position?: string;
 
   @IsOptional()
+  @IsNumber()
+  kanbanOrder?: number;
+
+  @IsOptional()
   @IsString()
   companyName?: string;
 
