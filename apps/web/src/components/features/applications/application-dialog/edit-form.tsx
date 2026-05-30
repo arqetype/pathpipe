@@ -2,9 +2,10 @@
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { Button } from '@repo/ui/components/button';
 import { DialogFooter, DialogTitle } from '@repo/ui/components/dialog';
+import { Separator } from '@repo/ui/components/separator';
 import {
   Select,
   SelectContent,
@@ -17,7 +18,6 @@ import {
   RiCalendarLine,
   RiDeleteBinLine,
   RiExternalLinkLine,
-  RiFileTextLine,
   RiFlagLine,
   RiLinksLine,
   RiListUnordered,
@@ -37,11 +37,14 @@ import EditableText from '@repo/ui/components/editable-inputs/editable-text';
 import EditableTextarea from '@repo/ui/components/editable-inputs/editable-textarea';
 import InlineInput from '@repo/ui/components/inline-inputs/inline-input';
 import Property from '@repo/ui/components/customs/property';
+import { Badge } from '@repo/ui/components/badge';
+import { cn } from '@repo/ui/lib/utils';
 import { APPLICATION_STATUS_OPTIONS } from '../constants/status';
-import { APPLICATION_TIER_OPTIONS } from '../constants/tier';
+import { TIER_CONFIG } from '../constants/tier';
 import { TierSelectOptions } from '../shared/tier-select-options';
 import { useApplicationStore } from '../store';
 import SelectCompany from '@/components/shared/select-company';
+import { formatSalary, formatDate } from '@/utils/applications-utils';
 
 type FormValues = {
   position: string;
@@ -61,6 +64,14 @@ type EditApplicationFormProps = {
   application: Application;
   onClose: () => void;
 };
+
+function extractDomain(url: string): string | null {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return null;
+  }
+}
 
 export function EditApplicationForm({
   application,
@@ -87,6 +98,25 @@ export function EditApplicationForm({
       notes: application.notes ?? '',
     },
   });
+
+  const status = useWatch({ control, name: 'status' });
+  const tier = useWatch({ control, name: 'tier' });
+  const salaryMin = useWatch({ control, name: 'salaryMin' });
+  const salaryMax = useWatch({ control, name: 'salaryMax' });
+  const appliedAt = useWatch({ control, name: 'appliedAt' });
+  const url = useWatch({ control, name: 'url' });
+
+  const statusOpt = APPLICATION_STATUS_OPTIONS.find(
+    (opt) => opt.status === status,
+  );
+  const tierConfig = TIER_CONFIG[tier as ApplicationTier];
+  const hasTier = tier !== ApplicationTier.NONE;
+  const salaryDisplay = formatSalary(
+    salaryMin ? Number(salaryMin) : undefined,
+    salaryMax ? Number(salaryMax) : undefined,
+  );
+  const dateDisplay = formatDate(appliedAt);
+  const domain = url ? extractDomain(url) : null;
 
   function onSubmit(data: FormValues) {
     startTransition(async () => {
@@ -126,7 +156,7 @@ export function EditApplicationForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      {/* Header */}
+      {/* ── Header ── */}
       <DialogTitle className="flex items-start gap-5 mb-4">
         <CompanyLogo
           key={application.company?.id ?? application.id}
@@ -165,200 +195,281 @@ export function EditApplicationForm({
         </div>
       </DialogTitle>
 
-      {/* Properties */}
-      <div className="flex flex-col gap-1">
-        <Controller
-          name="status"
-          control={control}
-          render={({ field }) => (
-            <Property
-              icon={<RiListUnordered className="size-4" />}
-              label="Status"
-            >
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="w-full bg-transparent border-0 hover:bg-accent">
-                  <SelectValue placeholder="Status">
-                    {
-                      APPLICATION_STATUS_OPTIONS.find(
-                        (opt) => opt.status === field.value,
-                      )?.label
-                    }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {APPLICATION_STATUS_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.status} value={opt.status}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </Property>
-          )}
-        />
-
-        <Controller
-          name="tier"
-          control={control}
-          render={({ field }) => (
-            <Property icon={<RiFlagLine className="size-4" />} label="Tier">
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="w-full bg-transparent border-0 hover:bg-accent">
-                  <SelectValue placeholder="Tier">
-                    {
-                      APPLICATION_TIER_OPTIONS.find(
-                        (opt) => opt.value === field.value,
-                      )?.label
-                    }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <TierSelectOptions />
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </Property>
-          )}
-        />
-
-        <Controller
-          name="appliedAt"
-          control={control}
-          render={({ field }) => (
-            <Property
-              icon={<RiCalendarLine className="size-4" />}
-              label="Applied date"
-            >
-              <InlineInput
-                type="date"
-                value={field.value}
-                placeholder="Pick a date"
-                onSave={(v) => field.onChange(v ?? '')}
-              />
-            </Property>
-          )}
-        />
-
-        <Property
-          icon={<RiMoneyDollarBoxLine className="size-4" />}
-          label="Salary"
-        >
-          <Controller
-            name="salaryMin"
-            control={control}
-            render={({ field }) => (
-              <InlineInput
-                type="number"
-                value={field.value}
-                placeholder="50"
-                onSave={(v) => field.onChange(v ?? '')}
-              />
-            )}
-          />
-          <span className="px-1 text-sm text-muted-foreground">to</span>
-          <Controller
-            name="salaryMax"
-            control={control}
-            render={({ field }) => (
-              <InlineInput
-                type="number"
-                value={field.value}
-                placeholder="80"
-                onSave={(v) => field.onChange(v ?? '')}
-              />
-            )}
-          />
-        </Property>
-
-        <Controller
-          name="url"
-          control={control}
-          render={({ field }) => (
-            <Property icon={<RiLinksLine className="size-4" />} label="Job URL">
-              <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                <InlineInput
-                  value={field.value}
-                  placeholder="https://…"
-                  onSave={(v) => field.onChange(v ?? '')}
-                />
-                {field.value && (
-                  <a
-                    href={field.value}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <RiExternalLinkLine className="size-3.5" />
-                  </a>
-                )}
-              </div>
-            </Property>
-          )}
-        />
-
-        <Controller
-          name="contactName"
-          control={control}
-          render={({ field }) => (
-            <Property icon={<RiUserLine className="size-4" />} label="Contact">
-              <InlineInput
-                value={field.value}
-                placeholder="Name"
-                onSave={(v) => field.onChange(v ?? '')}
-              />
-            </Property>
-          )}
-        />
-
-        <Controller
-          name="contactEmail"
-          control={control}
-          render={({ field }) => (
-            <Property icon={<RiMailLine className="size-4" />} label="Email">
-              <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                <InlineInput
-                  type="email"
-                  value={field.value}
-                  placeholder="email@company.com"
-                  onSave={(v) => field.onChange(v ?? '')}
-                />
-                {field.value && (
-                  <a
-                    href={`mailto:${field.value}`}
-                    className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <RiExternalLinkLine className="size-3.5" />
-                  </a>
-                )}
-              </div>
-            </Property>
-          )}
-        />
+      <div className="flex flex-wrap items-center gap-2 mb-6 pb-5 border-b">
+        {statusOpt && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-xs font-medium">
+            <span className={cn('size-2 rounded-full', statusOpt.dotClass)} />
+            {statusOpt.label}
+          </span>
+        )}
+        {hasTier && tierConfig && (
+          <Badge
+            variant="outline"
+            className={cn('text-xs', tierConfig.className)}
+          >
+            {tierConfig.label}
+          </Badge>
+        )}
+        {salaryDisplay && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-xs font-medium">
+            <RiMoneyDollarBoxLine className="size-3" />
+            {salaryDisplay}
+          </span>
+        )}
+        {dateDisplay && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-xs font-medium">
+            <RiCalendarLine className="size-3" />
+            {dateDisplay}
+          </span>
+        )}
       </div>
 
-      {/* Notes */}
-      <div className="mt-4">
-        <div className="flex items-center gap-2 text-muted-foreground mb-3">
-          <RiFileTextLine className="size-4" />
-          <span className="text-sm font-medium">Notes</span>
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+          Offer Details
+        </p>
+        <div className="flex flex-col gap-1">
+          <Controller
+            name="url"
+            control={control}
+            render={({ field }) => (
+              <Property icon={<RiLinksLine className="size-4" />} label="URL">
+                <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                    <InlineInput
+                      value={field.value}
+                      placeholder="https://…"
+                      onSave={(v) => field.onChange(v ?? '')}
+                    />
+                    {field.value && (
+                      <a
+                        href={field.value}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                        title={field.value}
+                      >
+                        <RiExternalLinkLine className="size-3.5" />
+                      </a>
+                    )}
+                  </div>
+                  {domain && (
+                    <span className="text-xs text-muted-foreground truncate">
+                      {domain}
+                    </span>
+                  )}
+                </div>
+              </Property>
+            )}
+          />
+
+          <Property
+            icon={<RiMoneyDollarBoxLine className="size-4" />}
+            label="Salary"
+          >
+            <Controller
+              name="salaryMin"
+              control={control}
+              render={({ field }) => (
+                <InlineInput
+                  type="number"
+                  value={field.value}
+                  placeholder="50"
+                  onSave={(v) => field.onChange(v ?? '')}
+                />
+              )}
+            />
+            <span className="px-1 text-sm text-muted-foreground">to</span>
+            <Controller
+              name="salaryMax"
+              control={control}
+              render={({ field }) => (
+                <InlineInput
+                  type="number"
+                  value={field.value}
+                  placeholder="80"
+                  onSave={(v) => field.onChange(v ?? '')}
+                />
+              )}
+            />
+          </Property>
         </div>
+      </div>
+
+      <div className="mt-5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+          Description
+        </p>
         <Controller
           name="notes"
           control={control}
           render={({ field }) => (
             <EditableTextarea
               value={field.value}
-              placeholder="Add notes, interview details, context…"
+              placeholder="Job description, requirements, interview notes…"
               onSave={(v) => field.onChange(v ?? '')}
             />
           )}
         />
       </div>
 
-      <DialogFooter className="flex-row justify-between sm:justify-between mt-4">
+      <Separator className="my-6" />
+
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+          Tracking
+        </p>
+        <div className="flex flex-col gap-1">
+          <Controller
+            name="status"
+            control={control}
+            render={({ field }) => {
+              const currentStatus = APPLICATION_STATUS_OPTIONS.find(
+                (opt) => opt.status === field.value,
+              );
+              return (
+                <Property
+                  icon={<RiListUnordered className="size-4" />}
+                  label="Status"
+                >
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-full bg-transparent border-0 hover:bg-accent">
+                      <SelectValue placeholder="Status">
+                        <span className="flex items-center gap-1.5">
+                          <span
+                            className={cn(
+                              'size-2 rounded-full',
+                              currentStatus?.dotClass,
+                            )}
+                          />
+                          <span>{currentStatus?.label}</span>
+                        </span>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {APPLICATION_STATUS_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.status} value={opt.status}>
+                            <span className="flex items-center gap-2">
+                              <span
+                                className={cn(
+                                  'size-2 rounded-full',
+                                  opt.dotClass,
+                                )}
+                              />
+                              {opt.label}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </Property>
+              );
+            }}
+          />
+
+          <Controller
+            name="tier"
+            control={control}
+            render={({ field }) => {
+              const currentTierConfig =
+                TIER_CONFIG[field.value as ApplicationTier];
+              return (
+                <Property icon={<RiFlagLine className="size-4" />} label="Tier">
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger
+                      className={cn(
+                        'w-full border-0 hover:bg-accent',
+                        field.value === ApplicationTier.NONE
+                          ? 'bg-transparent'
+                          : currentTierConfig?.className,
+                      )}
+                    >
+                      <SelectValue placeholder="Tier">
+                        {currentTierConfig?.label}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <TierSelectOptions />
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </Property>
+              );
+            }}
+          />
+
+          <Controller
+            name="appliedAt"
+            control={control}
+            render={({ field }) => (
+              <Property
+                icon={<RiCalendarLine className="size-4" />}
+                label="Applied"
+              >
+                <InlineInput
+                  type="date"
+                  value={field.value}
+                  placeholder="Pick a date"
+                  onSave={(v) => field.onChange(v ?? '')}
+                />
+              </Property>
+            )}
+          />
+        </div>
+      </div>
+
+      <Separator className="my-6" />
+
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+          Contact
+        </p>
+        <div className="flex flex-col gap-1">
+          <Controller
+            name="contactName"
+            control={control}
+            render={({ field }) => (
+              <Property icon={<RiUserLine className="size-4" />} label="Name">
+                <InlineInput
+                  value={field.value}
+                  placeholder="Contact name"
+                  onSave={(v) => field.onChange(v ?? '')}
+                />
+              </Property>
+            )}
+          />
+
+          <Controller
+            name="contactEmail"
+            control={control}
+            render={({ field }) => (
+              <Property icon={<RiMailLine className="size-4" />} label="Email">
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  <InlineInput
+                    type="email"
+                    value={field.value}
+                    placeholder="email@company.com"
+                    onSave={(v) => field.onChange(v ?? '')}
+                  />
+                  {field.value && (
+                    <a
+                      href={`mailto:${field.value}`}
+                      className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <RiExternalLinkLine className="size-3.5" />
+                    </a>
+                  )}
+                </div>
+              </Property>
+            )}
+          />
+        </div>
+      </div>
+
+      <DialogFooter className="flex-row justify-between sm:justify-between mt-6">
         <Button
           type="button"
           variant="outline"

@@ -9,6 +9,8 @@ import {
   RiArrowUpLine,
   RiArrowDownLine,
   RiFilterLine,
+  RiLayoutMasonryLine,
+  RiTableLine,
 } from '@remixicon/react';
 
 import { ApplicationStatus } from '@repo/db/types/application/status';
@@ -33,6 +35,7 @@ import {
   InputGroupInput,
 } from '@repo/ui/components/input-group';
 import { ButtonGroup } from '@repo/ui/components/button-group';
+import { ToggleGroup, ToggleGroupItem } from '@repo/ui/components/toggle-group';
 
 const SORT_OPTIONS: { value: ApplicationSortBy; label: string }[] = [
   { value: 'created_at', label: 'Date added' },
@@ -58,6 +61,8 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
     (searchParams.get('sortBy') as ApplicationSortBy) ?? 'created_at';
   const currentSortOrder =
     (searchParams.get('sortOrder') as 'asc' | 'desc') ?? 'desc';
+  const currentView =
+    (searchParams.get('view') as 'kanban' | 'table') ?? 'kanban';
 
   const hiddenParam = searchParams.get('hidden') ?? '';
   const hiddenStatuses = new Set(
@@ -193,6 +198,23 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* View toggle */}
+        <ToggleGroup
+          value={[currentView]}
+          onValueChange={([value]) => setParam('view', value || 'kanban')}
+          variant="outline"
+          size="default"
+        >
+          <ToggleGroupItem value="kanban" aria-label="Kanban view">
+            <RiLayoutMasonryLine data-icon="inline-start" />
+            Kanban
+          </ToggleGroupItem>
+          <ToggleGroupItem value="table" aria-label="Table view">
+            <RiTableLine data-icon="inline-start" />
+            Table
+          </ToggleGroupItem>
+        </ToggleGroup>
 
         <p className="text-sm text-muted-foreground pl-1 w-60">
           {total} application{total !== 1 ? 's' : ''}

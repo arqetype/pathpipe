@@ -1,4 +1,5 @@
 import { KanbanBoard } from '@/components/features/applications/views/kanban';
+import { ApplicationsTable } from '@/components/features/applications/views/table';
 import { ViewToolbar } from '@/components/features/applications/views/toolbar';
 import { CreateApplicationDialog } from '@/components/features/applications/create-application-dialog';
 import type { ApplicationSortBy } from '@repo/db/query/application';
@@ -25,6 +26,7 @@ export default async function AppMainPage({
   const hiddenStatuses = new Set(
     hiddenParam ? (hiddenParam.split(',') as ApplicationStatus[]) : [],
   );
+  const view = (str(params.view) as 'kanban' | 'table' | null) ?? 'kanban';
 
   const { result } = await fetchApplicationsAction({
     search,
@@ -39,10 +41,17 @@ export default async function AppMainPage({
       <div className="flex flex-col h-full max-h-[calc(100vh-theme(space.12))]">
         <ViewToolbar total={total} actions={<CreateApplicationDialog />} />
         <ScrollArea className="flex-1 flex flex-col h-full overflow-y-auto w-full">
-          <KanbanBoard
-            applications={applications}
-            hiddenColumns={hiddenStatuses}
-          />
+          {view === 'table' ? (
+            <ApplicationsTable
+              applications={applications}
+              hiddenStatuses={hiddenStatuses}
+            />
+          ) : (
+            <KanbanBoard
+              applications={applications}
+              hiddenColumns={hiddenStatuses}
+            />
+          )}
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
       </div>
