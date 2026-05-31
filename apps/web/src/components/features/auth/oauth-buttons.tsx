@@ -45,44 +45,48 @@ export function OAuthButtons() {
         </div>
       )}
       <div className="flex gap-2 w-full flex-wrap">
-        <Button
-          variant="outline"
-          className="flex-1"
-          type="button"
-          size="lg"
-          disabled={isLoading === 'google'}
-          onClick={handleGoogleSignIn}
-        >
-          {isLoading === 'google' ? (
-            <div className="flex items-center justify-center">
-              <span>Signing in...</span>
-            </div>
-          ) : (
-            <>
-              <GoogleIcon />
-              <span className="ml-1">Connect with Google</span>
-            </>
-          )}
-        </Button>
-        <Button
-          variant="outline"
-          className="flex-1"
-          type="button"
-          size="lg"
-          disabled={isLoading === 'linkedin'}
-          onClick={handleLinkedInSignIn}
-        >
-          {isLoading === 'linkedin' ? (
-            <div className="flex items-center justify-center">
-              <span>Signing in...</span>
-            </div>
-          ) : (
-            <>
-              <LinkedInIcon />
-              <span className="ml-1">Connect with LinkedIn</span>
-            </>
-          )}
-        </Button>
+        <div className="flex-1">
+          <Button
+            variant="outline"
+            className="w-full"
+            type="button"
+            size="lg"
+            disabled={isLoading === 'google'}
+            onClick={handleGoogleSignIn}
+          >
+            {isLoading === 'google' ? (
+              <div className="flex items-center justify-center">
+                <span>Signing in...</span>
+              </div>
+            ) : (
+              <>
+                <GoogleIcon />
+                <span className="ml-1">Connect with Google</span>
+              </>
+            )}
+          </Button>
+        </div>
+        <div className="flex-1">
+          <Button
+            variant="outline"
+            className="w-full"
+            type="button"
+            size="lg"
+            disabled={isLoading === 'linkedin'}
+            onClick={handleLinkedInSignIn}
+          >
+            {isLoading === 'linkedin' ? (
+              <div className="flex items-center justify-center">
+                <span>Signing in...</span>
+              </div>
+            ) : (
+              <>
+                <LinkedInIcon />
+                <span className="ml-1">Connect with LinkedIn</span>
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
