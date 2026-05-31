@@ -56,7 +56,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
         ],
         synchronize: false,
         migrationsRun: true,
-        migrations: [resolve(__dirname, '../migrations/*.{ts,js}')],
+        migrations: [resolve(__dirname, 'migrations/common/*.{ts,js}')],
       }),
     }),
     HealthModule,

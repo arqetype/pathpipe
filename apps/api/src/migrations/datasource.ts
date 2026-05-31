@@ -25,7 +25,7 @@ export const AppDataSource = new DataSource({
     Company,
     ApiKey,
   ],
-  migrations: [resolve(__dirname, '../migrations/*.{ts,js}')],
+  migrations: [resolve(__dirname, 'common/*.{ts,js}')],
   synchronize: false,
   migrationsRun: true,
 });
