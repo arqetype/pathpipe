@@ -85,7 +85,14 @@ export class ApplicationService {
     const offset = (Number(page) - 1) * Number(limit);
     qb.skip(offset).take(Number(limit));
 
-    const [data, total] = await qb.getManyAndCount();
+    const data = await qb.getMany();
+
+    const totalQb = this.applicationsRepository
+      .createQueryBuilder('application')
+      .leftJoin('application.user', 'user');
+    if (userId) totalQb.where('user.id = :userId', { userId });
+    const total = await totalQb.getCount();
+
     return { data, total };
   }
 

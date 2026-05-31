@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthMailerService } from '../infrastructure/mailer/auth-mailer.service';
 import { VerificationService } from './verification/verification.service';
@@ -9,6 +9,8 @@ import { UserService } from '../features/user/user.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
@@ -28,21 +30,7 @@ export class AuthService {
     return this.jwtService.sign({ email });
   }
 
-  async signIn(
-    email: string,
-    response: Response,
-  ): Promise<{ success: boolean }> {
-    if (await this.userService.isGithubUser(email)) {
-      throw new UnauthorizedException(
-        'GitHub users cannot sign in with email and password',
-      );
-    }
-    if (await this.userService.isGoogleUser(email)) {
-      throw new UnauthorizedException(
-        'Google users cannot sign in with email and password',
-      );
-    }
-
+  signIn(email: string, response: Response): { success: boolean } {
     const token = this.generateJwtToken(email);
 
     response.cookie('auth-token', token, {
@@ -206,6 +194,19 @@ export class AuthService {
       await PasswordUtils.hashPassword(newPassword),
     );
 
+    const user = resetPasswordToken.user;
+    try {
+      await this.authMailerService.sendResetPasswordConfirmationEmail(
+        user.email,
+        new Date().toISOString(),
+        { name: user.name, profilePictureUrl: user.avatar_url },
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Failed to enqueue reset-password-confirmation email for user ${user.id}: ${(err as Error).message}`,
+      );
+    }
+
     return { success: true };
   }
 
@@ -222,34 +223,41 @@ export class AuthService {
   }
 
   // AUTH PROVIDERS FLOW
-  async findOrCreateGithubUser(githubUserData: {
+  async findOrCreateLinkedinUser(linkedinUserData: {
     email: string;
-    githubId: string;
+    linkedinId: string;
     name?: string;
     avatarUrl?: string;
   }): Promise<User> {
-    // Check if user already exists with this email
-    let user = await this.userService.findOneByEmail(githubUserData.email);
+    let user = await this.userService.findOneByEmail(linkedinUserData.email);
 
     if (user) {
-      // If the user exists but doesn't have GitHub ID set
-      if (!user.github_id) {
-        user.github_id = githubUserData.githubId;
-        user.is_github_user = true;
-        if (githubUserData.avatarUrl && !user.avatar_url) {
-          user.avatar_url = githubUserData.avatarUrl;
-        }
+      let changed = false;
+      if (!user.linkedin_id) {
+        user.linkedin_id = linkedinUserData.linkedinId;
+        user.is_linkedin_user = true;
+        changed = true;
+      }
+      if (linkedinUserData.avatarUrl && !user.avatar_url) {
+        user.avatar_url = linkedinUserData.avatarUrl;
+        changed = true;
+      }
+      if (!user.email_verified) {
+        user.email_verified = true;
+        changed = true;
+      }
+      if (changed) {
         await this.userService.update(user);
       }
       return user;
     }
 
-    user = await this.userService.createGithubUser(
-      githubUserData.email,
-      '', // Password is not used for GitHub users, so we pass an empty string
-      githubUserData.name || 'GitHub User',
-      githubUserData.githubId,
-      githubUserData.avatarUrl,
+    user = await this.userService.createLinkedinUser(
+      linkedinUserData.email,
+      '',
+      linkedinUserData.name || 'LinkedIn User',
+      linkedinUserData.linkedinId,
+      linkedinUserData.avatarUrl,
     );
 
     return user;
@@ -265,13 +273,21 @@ export class AuthService {
     let user = await this.userService.findOneByEmail(googleUserData.email);
 
     if (user) {
-      // If the user exists but doesn't have Google ID set
+      let changed = false;
       if (!user.google_id) {
         user.google_id = googleUserData.googleId;
         user.is_google_user = true;
-        if (googleUserData.avatarUrl && !user.avatar_url) {
-          user.avatar_url = googleUserData.avatarUrl;
-        }
+        changed = true;
+      }
+      if (googleUserData.avatarUrl && !user.avatar_url) {
+        user.avatar_url = googleUserData.avatarUrl;
+        changed = true;
+      }
+      if (!user.email_verified) {
+        user.email_verified = true;
+        changed = true;
+      }
+      if (changed) {
         await this.userService.update(user);
       }
       return user;

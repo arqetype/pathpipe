@@ -18,7 +18,11 @@ export class ConfigServiceImpl implements ConfigService {
         port: this.requireEnvAsInt('WORKERS_EMAIL_PORT', 587),
         user: this.requireEnv('WORKERS_EMAIL_USER', ''),
         pass: this.requireEnv('WORKERS_EMAIL_PASS', ''),
-        from: '"Pathpipe" <no-reply@pathpipe.clementomnes.dev>',
+        from: '"pathpipe" <no-reply@pathpipe.clementomnes.dev>',
+        frontendUrl: this.requireEnv(
+          'WORKERS_FRONTEND_URL',
+          'http://localhost:3000',
+        ),
       },
       api: {
         baseUrl: this.requireEnv('WORKERS_API_URL', 'http://localhost:4000'),

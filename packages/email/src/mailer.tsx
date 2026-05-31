@@ -4,6 +4,7 @@ import { render } from '@react-email/render';
 import { VerificationEmail } from './templates/auth/verification-email';
 import { OTPEmail } from './templates/auth/otp-email';
 import { ResetPasswordEmail } from './templates/auth/reset-password-email';
+import { ResetPasswordConfirmationEmail } from './templates/auth/reset-password-confirmation-email';
 
 export type SMTPConfig = {
   host: string;
@@ -13,11 +14,13 @@ export type SMTPConfig = {
     pass: string;
   };
   from: string;
+  appUrl?: string;
 };
 
 export class Mailer {
   private readonly transporter: Transporter;
   private readonly from: string;
+  private readonly appUrl: string;
 
   constructor(config: SMTPConfig) {
     this.transporter = createTransport({
@@ -27,6 +30,7 @@ export class Mailer {
       auth: config.auth,
     });
     this.from = config.from;
+    this.appUrl = config.appUrl ?? 'http://localhost:3000';
   }
 
   public async sendVerificationEmail(
@@ -34,13 +38,15 @@ export class Mailer {
     token: string,
     user: { name: string; profilePictureUrl: string },
   ): Promise<void> {
-    const html = await render(<VerificationEmail token={token} user={user} />);
+    const html = await render(
+      <VerificationEmail token={token} user={user} appUrl={this.appUrl} />,
+    );
 
     try {
       await this.transporter.sendMail({
         to,
         from: this.from,
-        subject: 'Pathpipe : Verify your email address',
+        subject: 'pathpipe : Verify your email address',
         html,
       });
     } catch {
@@ -53,13 +59,15 @@ export class Mailer {
     otp: string,
     user: { name: string; profilePictureUrl: string },
   ): Promise<void> {
-    const html = await render(<OTPEmail otp={otp} user={user} />);
+    const html = await render(
+      <OTPEmail otp={otp} user={user} appUrl={this.appUrl} />,
+    );
 
     try {
       await this.transporter.sendMail({
         to,
         from: this.from,
-        subject: 'Pathpipe : Your OTP code',
+        subject: 'pathpipe : Your OTP code',
         html,
       });
     } catch {
@@ -72,13 +80,40 @@ export class Mailer {
     token: string,
     user: { name: string; profilePictureUrl: string },
   ): Promise<void> {
-    const html = await render(<ResetPasswordEmail token={token} user={user} />);
+    const html = await render(
+      <ResetPasswordEmail token={token} user={user} appUrl={this.appUrl} />,
+    );
 
     try {
       await this.transporter.sendMail({
         to,
         from: this.from,
-        subject: 'Pathpipe : Reset your password',
+        subject: 'pathpipe : Reset your password',
+        html,
+      });
+    } catch {
+      throw new Error('Failed to send email');
+    }
+  }
+
+  public async sendResetPasswordConfirmationEmail(
+    to: string,
+    resetAt: string,
+    user: { name: string; profilePictureUrl: string },
+  ): Promise<void> {
+    const html = await render(
+      <ResetPasswordConfirmationEmail
+        resetAt={resetAt}
+        user={user}
+        appUrl={this.appUrl}
+      />,
+    );
+
+    try {
+      await this.transporter.sendMail({
+        to,
+        from: this.from,
+        subject: 'pathpipe : Your password was changed',
         html,
       });
     } catch {

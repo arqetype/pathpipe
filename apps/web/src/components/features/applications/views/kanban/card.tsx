@@ -1,6 +1,6 @@
 'use client';
 
-import { useDraggable } from '@dnd-kit/react';
+import { useSortable } from '@dnd-kit/react/sortable';
 import { Card, CardContent } from '@repo/ui/components/card';
 import type { Application } from '@repo/db/entities/application';
 import { RiMoneyDollarBoxLine, RiCalendarLine } from '@remixicon/react';
@@ -10,21 +10,29 @@ import { CompanyLogo } from '@/components/shared/company-logo';
 import { Badge } from '@repo/ui/components/badge';
 import { TIER_CONFIG } from '../../constants/tier';
 import { ApplicationTier } from '@repo/db/types/application/tier';
+import type { ApplicationStatus } from '@repo/db/types/application/status';
 
 type KanbanCardProps = {
   application: Application;
+  index?: number;
+  group?: ApplicationStatus;
   overlay?: boolean;
   onClick?: (id: string) => void;
 };
 
 export function KanbanCard({
   application,
+  index = 0,
+  group,
   overlay = false,
   onClick,
 }: KanbanCardProps) {
-  const { ref, isDragSource } = useDraggable({
+  const { ref, isDragSource } = useSortable({
     id: application.id,
+    index,
+    group,
     type: 'item',
+    accept: 'item',
     data: { application },
     disabled: overlay,
   });

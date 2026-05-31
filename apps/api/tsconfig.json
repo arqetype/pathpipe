@@ -4,6 +4,6 @@
     "outDir": "./dist",
     "rootDir": "./",
     "jsx": "react-jsx",
-    "types": ["jest", "express", "node"],
-  },
+    "types": ["jest", "express", "node"]
+  }
 }

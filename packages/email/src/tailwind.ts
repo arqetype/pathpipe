@@ -1,10 +1,37 @@
 import type { TailwindConfig } from 'react-email';
 
 export default {
+  darkMode: ['class', '.dark'],
   theme: {
     extend: {
       colors: {
+        base: {
+          50: 'oklch(0.9848 0.0019 286.64)',
+          100: 'oklch(0.9668 0.0038 286.2)',
+          200: 'oklch(0.9199 0.0076 286.14)',
+          300: 'oklch(0.8709 0.0114 286.09)',
+          400: 'oklch(0.7049 0.014 285.88)',
+          500: 'oklch(0.5519 0.0152 285.76)',
+          600: 'oklch(0.442 0.0148 285.58)',
+          700: 'oklch(0.37 0.0136 285.61)',
+          800: 'oklch(0.274 0.0116 285.83)',
+          900: 'oklch(0.2108 0.0078 285.71)',
+          950: 'oklch(0.1409 0.0059 285.64)',
+          1000: 'oklch(0.0959 0.004 285.59)',
+        },
         primary: {
+          50: 'oklch(0.9727 0.0162 43)',
+          100: 'oklch(0.9441 0.0382 42.16)',
+          200: 'oklch(0.8926 0.076 41.45)',
+          300: 'oklch(0.8245 0.1307 40.37)',
+          400: 'oklch(0.7319 0.2017 39.84)',
+          500: 'oklch(0.6794 0.2405 39.49)',
+          600: 'oklch(0.6205 0.226 38.64)',
+          700: 'oklch(0.5827 0.2187 36.98)',
+          800: 'oklch(0.4602 0.1782 35.42)',
+          900: 'oklch(0.4031 0.1406 34.27)',
+          950: 'oklch(0.2626 0.0908 33.81)',
+          1000: 'oklch(0.1714 0.0581 33.09)',
           DEFAULT: 'oklch(0.508 0.118 165.612)',
         },
         ['primary-foreground']: {
@@ -20,6 +47,18 @@ export default {
           DEFAULT: 'oklch(1 0 0)',
         },
         foreground: {
+          DEFAULT: 'oklch(0.153 0.006 107.1)',
+        },
+        card: {
+          DEFAULT: 'oklch(1 0 0)',
+        },
+        ['card-foreground']: {
+          DEFAULT: 'oklch(0.153 0.006 107.1)',
+        },
+        popover: {
+          DEFAULT: 'oklch(1 0 0)',
+        },
+        ['popover-foreground']: {
           DEFAULT: 'oklch(0.153 0.006 107.1)',
         },
         muted: {
@@ -46,6 +85,47 @@ export default {
         ring: {
           DEFAULT: 'oklch(0.737 0.021 106.9)',
         },
+        chart: {
+          1: 'oklch(0.845 0.143 164.978)',
+          2: 'oklch(0.696 0.17 162.48)',
+          3: 'oklch(0.596 0.145 163.225)',
+          4: 'oklch(0.508 0.118 165.612)',
+          5: 'oklch(0.432 0.095 166.913)',
+        },
+        sidebar: {
+          DEFAULT: 'oklch(0.988 0.003 106.5)',
+          foreground: 'oklch(0.153 0.006 107.1)',
+          primary: 'oklch(0.596 0.145 163.225)',
+          ['primary-foreground']: 'oklch(0.979 0.021 166.113)',
+          accent: 'oklch(0.966 0.005 106.5)',
+          ['accent-foreground']: 'oklch(0.228 0.013 107.4)',
+          border: 'oklch(0.93 0.007 106.5)',
+          ring: 'oklch(0.737 0.021 106.9)',
+        },
+      },
+      borderRadius: {
+        sm: 'calc(0.625rem - 4px)',
+        md: 'calc(0.625rem - 2px)',
+        lg: '0.625rem',
+        xl: 'calc(0.625rem + 4px)',
+        '2xl': 'calc(0.625rem * 1.8)',
+        '3xl': 'calc(0.625rem * 2.2)',
+        '4xl': 'calc(0.625rem * 2.6)',
+      },
+      fontFamily: {
+        sans: [
+          'Geist',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'Oxygen-Sans',
+          'Ubuntu',
+          'Cantarell',
+          'Helvetica Neue',
+          'sans-serif',
+        ],
+        heading: ['Space Grotesk', 'Geist', 'sans-serif'],
       },
     },
     fontSize: {

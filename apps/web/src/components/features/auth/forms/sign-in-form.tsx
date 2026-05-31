@@ -20,7 +20,12 @@ import { useForm } from 'react-hook-form';
 import { useTransition } from 'react';
 import Link from 'next/link';
 import { Button } from '@repo/ui/components/button';
-import { RiLoader5Line, RiShieldCheckLine, RiMailLine } from '@remixicon/react';
+import {
+  RiErrorWarningLine,
+  RiLoader5Line,
+  RiShieldCheckLine,
+  RiMailLine,
+} from '@remixicon/react';
 import { redirect } from 'next/navigation';
 import { signInAction } from '@/actions/auth/sign-in';
 import { resendEmailAction } from '@/actions/auth/resend-email';
@@ -32,6 +37,9 @@ import { forgotPasswordEmailAction } from '@/actions/auth/forgot-password-email'
 type StatusState = {
   success?: boolean;
   message?: string;
+  is_google_user?: boolean;
+  is_linkedin_user?: boolean;
+  provider_detected?: boolean;
 };
 
 export function SignInForm() {
@@ -181,6 +189,18 @@ export function SignInForm() {
     startTransition(async () => {
       try {
         const response = await forgotPasswordEmailAction({ email });
+
+        if (response.success && response.data?.provider_detected) {
+          setForgotPasswordStatus({
+            success: true,
+            message: response.data.message,
+            is_google_user: response.data.is_google_user,
+            is_linkedin_user: response.data.is_linkedin_user,
+            provider_detected: response.data.provider_detected,
+          });
+          return;
+        }
+
         setForgotPasswordStatus({
           success: response.success,
           message: response.success
@@ -240,30 +260,54 @@ export function SignInForm() {
     });
   };
 
-  const renderForgotPasswordView = () => (
-    <>
-      <CardContent className="space-y-4">
-        <AuthVerificationAlert
-          icon={RiMailLine}
-          title={
-            forgotPasswordStatus.success
-              ? 'Password Reset Email Sent'
-              : 'Password Reset Failed'
-          }
-          description={forgotPasswordStatus.message}
-        />
-      </CardContent>
-      <CardFooter className="flex-col bg-transparent border-none">
-        <Button
-          variant="ghost"
-          className="w-full"
-          onClick={() => setForgotPasswordStatus({})}
-        >
-          Back to Sign In
-        </Button>
-      </CardFooter>
-    </>
-  );
+  const renderForgotPasswordView = () =>
+    forgotPasswordStatus.provider_detected ? (
+      <>
+        <CardContent className="space-y-4">
+          <AuthVerificationAlert
+            icon={RiErrorWarningLine}
+            title={
+              forgotPasswordStatus.is_linkedin_user
+                ? 'LinkedIn User Detected'
+                : 'Google User Detected'
+            }
+            description={forgotPasswordStatus.message}
+          />
+        </CardContent>
+        <CardFooter className="flex-col bg-transparent border-none">
+          <Button
+            variant="ghost"
+            className="w-full"
+            onClick={() => setForgotPasswordStatus({})}
+          >
+            Back to Sign In
+          </Button>
+        </CardFooter>
+      </>
+    ) : (
+      <>
+        <CardContent className="space-y-4">
+          <AuthVerificationAlert
+            icon={RiMailLine}
+            title={
+              forgotPasswordStatus.success
+                ? 'Password Reset Email Sent'
+                : 'Password Reset Failed'
+            }
+            description={forgotPasswordStatus.message}
+          />
+        </CardContent>
+        <CardFooter className="flex-col bg-transparent border-none">
+          <Button
+            variant="ghost"
+            className="w-full"
+            onClick={() => setForgotPasswordStatus({})}
+          >
+            Back to Sign In
+          </Button>
+        </CardFooter>
+      </>
+    );
 
   const renderEmailVerificationView = () => (
     <>
@@ -485,7 +529,12 @@ export function SignInForm() {
         {renderFormContent()}
         {shouldShowFooter && (
           <CardFooter className="space-y-4 flex-col bg-transparent border-none">
-            <Button type="submit" className="w-full" disabled={isPending}>
+            <Button
+              type="submit"
+              className="w-full"
+              size="lg"
+              disabled={isPending}
+            >
               {isPending ? (
                 <>
                   <RiLoader5Line className="mr-2 h-4 w-4 animate-spin" />

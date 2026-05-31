@@ -39,10 +39,10 @@ export class User {
   is_google_user: boolean;
 
   @Column({ nullable: true })
-  github_id: string;
+  linkedin_id: string;
 
   @Column({ default: false })
-  is_github_user: boolean;
+  is_linkedin_user: boolean;
 
   @Column({ default: false })
   email_verified: boolean;
