@@ -140,6 +140,7 @@ services:
       WORKERS_EMAIL_PORT: ${WORKERS_EMAIL_PORT}
       WORKERS_EMAIL_USER: ${WORKERS_EMAIL_USER}
       WORKERS_EMAIL_PASS: ${WORKERS_EMAIL_PASS}
+      WORKERS_FRONTEND_URL: ${WORKERS_FRONTEND_URL}
     depends_on:
       api:
         condition: service_healthy

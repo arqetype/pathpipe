@@ -73,6 +73,15 @@ export class ConfigServiceImpl implements ConfigService {
     if (!redis.host) {
       throw new Error('Redis configuration is incomplete');
     }
+    const email = this.config.email;
+    if (
+      process.env.NODE_ENV === 'production' &&
+      (!email.frontendUrl || email.frontendUrl.includes('localhost'))
+    ) {
+      throw new Error(
+        'WORKERS_FRONTEND_URL must be set to the public frontend URL in production',
+      );
+    }
   }
 }
 
