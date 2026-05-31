@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 
 FROM base AS builder
 
@@ -11,7 +11,7 @@ RUN turbo prune worker --docker
 FROM base AS installer
 RUN apk update && apk add --no-cache libc6-compat
 WORKDIR /app
-RUN npm install -g pnpm turbo
+RUN npm install -g pnpm
 COPY --from=builder /app/out/json/ .
 RUN pnpm install --frozen-lockfile
 COPY --from=builder /app/out/full .

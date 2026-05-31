@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -7,14 +6,13 @@ export async function GET(request: NextRequest) {
 
   if (!token) {
     return NextResponse.redirect(
-      new URL('/app/sign-in?error=github_auth_failed', request.url),
+      new URL('/app/sign-in?error=google_auth_failed', request.url),
     );
   }
 
-  const cookieStore = await cookies();
+  const response = NextResponse.redirect(new URL('/app', request.url));
 
-  // Set the auth cookie
-  cookieStore.set('auth-token', token, {
+  response.cookies.set('auth-token', token, {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
@@ -22,6 +20,5 @@ export async function GET(request: NextRequest) {
     sameSite: 'lax',
   });
 
-  // Redirect to the main app
-  return NextResponse.redirect(new URL('/app', request.url));
+  return response;
 }

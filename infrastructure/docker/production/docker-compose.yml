@@ -32,7 +32,14 @@ services:
     image: redis:7-alpine
     restart: always
     container_name: pathpipe-redis
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    command:
+      [
+        'redis-server',
+        '--appendonly',
+        'yes',
+        '--requirepass',
+        '${REDIS_PASSWORD}',
+      ]
     volumes:
       - redisdata:/data
     networks:
@@ -40,7 +47,8 @@ services:
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     healthcheck:
-      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping']
+      test:
+        ['CMD-SHELL', 'redis-cli -a "$REDIS_PASSWORD" --no-auth-warning ping']
       interval: 60s
       retries: 5
       start_period: 5s
@@ -49,8 +57,11 @@ services:
   # API (Nest.js)
   api:
     container_name: pathpipe-api
-    image: ghcr.io/${GITHUB_OWNER}/pathpipe-api:latest
+    image: ghcr.io/${GITHUB_OWNER}/pathpipe-api:${IMAGE_TAG:-latest}
+    pull_policy: always
     environment:
+      NODE_ENV: production
+      NEST_PORT: ${NEST_PORT}
       NEST_DATABASE_HOST: ${NEST_DATABASE_HOST}
       NEST_DATABASE_PORT: ${NEST_DATABASE_PORT}
       NEST_DATABASE_USER: ${NEST_DATABASE_USER}
@@ -59,36 +70,41 @@ services:
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+      NEST_JWT_SECRET: ${NEST_JWT_SECRET}
+      NEST_JWT_EXPIRATION_TIME: ${NEST_JWT_EXPIRATION_TIME}
+      NEST_FRONT_URL: ${NEST_FRONT_URL}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      NEST_GITHUB_CLIENT_ID: ${NEST_GITHUB_CLIENT_ID}
+      NEST_GITHUB_CLIENT_SECRET: ${NEST_GITHUB_CLIENT_SECRET}
+      NEST_GITHUB_CALLBACK_URL: ${NEST_GITHUB_CALLBACK_URL}
+      NEST_GOOGLE_CLIENT_ID: ${NEST_GOOGLE_CLIENT_ID}
+      NEST_GOOGLE_CLIENT_SECRET: ${NEST_GOOGLE_CLIENT_SECRET}
+      NEST_GOOGLE_CALLBACK_URL: ${NEST_GOOGLE_CALLBACK_URL}
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: always
     expose:
       - '4000'
     networks:
       - app-network
-      - traefik-public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pathpipe-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.pathpipe-api.entrypoints=websecure"
-      - "traefik.http.routers.pathpipe-api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.pathpipe-api.priority=10"
-      - "traefik.http.services.pathpipe-api.loadbalancer.server.port=4000"
+      - dokploy-network
     healthcheck:
-      test:
-        ['CMD', 'curl', '--silent', '--fail', 'http://localhost:4000/health']
-      interval: 60s
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:4000/health || exit 1']
+      interval: 30s
       retries: 5
-      start_period: 5s
+      start_period: 20s
       timeout: 10s
 
   # Web (Next.js)
   web:
     container_name: pathpipe-web
-    image: ghcr.io/${GITHUB_OWNER}/pathpipe-web:latest
+    image: ghcr.io/${GITHUB_OWNER}/pathpipe-web:${IMAGE_TAG:-latest}
+    pull_policy: always
     environment:
-      NEXT_API_URL: http://api:4000/api
+      NEXT_API_URL: http://api:4000
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
       NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY}
       NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}
@@ -99,37 +115,36 @@ services:
       - '3000'
     networks:
       - app-network
-      - traefik-public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pathpipe-web.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.pathpipe-web.entrypoints=websecure"
-      - "traefik.http.routers.pathpipe-web.tls.certresolver=letsencrypt"
-      - "traefik.http.services.pathpipe-web.loadbalancer.server.port=3000"
+      - dokploy-network
     healthcheck:
-      test: ['CMD', 'curl', '--silent', '--fail', 'http://localhost:3000/']
-      interval: 60s
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:3000/ || exit 1']
+      interval: 30s
       retries: 5
-      start_period: 5s
+      start_period: 20s
       timeout: 10s
 
   # Worker - email queue
   worker-email:
     container_name: pathpipe-worker-email
-    image: ghcr.io/${GITHUB_OWNER}/pathpipe-worker:latest
-    command: ["node", "apps/worker/dist/index.js", "email"]
+    image: ghcr.io/${GITHUB_OWNER}/pathpipe-worker:${IMAGE_TAG:-latest}
+    pull_policy: always
+    command: ['node', 'apps/worker/dist/index.js', 'email']
     environment:
-      NEST_DATABASE_HOST: ${NEST_DATABASE_HOST}
-      NEST_DATABASE_PORT: ${NEST_DATABASE_PORT}
-      NEST_DATABASE_USER: ${NEST_DATABASE_USER}
-      NEST_DATABASE_PASS: ${NEST_DATABASE_PASS}
-      NEST_DATABASE_NAME: ${NEST_DATABASE_NAME}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      WORKERS_PORT: ${WORKERS_PORT}
+      WORKERS_API_URL: http://api:4000
+      WORKERS_API_KEY: ${WORKERS_API_KEY}
+      WORKERS_REDIS_HOST: redis
+      WORKERS_REDIS_PORT: ${REDIS_PORT}
+      WORKERS_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      WORKERS_EMAIL_HOST: ${WORKERS_EMAIL_HOST}
+      WORKERS_EMAIL_PORT: ${WORKERS_EMAIL_PORT}
+      WORKERS_EMAIL_USER: ${WORKERS_EMAIL_USER}
+      WORKERS_EMAIL_PASS: ${WORKERS_EMAIL_PASS}
     depends_on:
-      - db
-      - redis
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: always
     networks:
       - app-network
@@ -137,20 +152,21 @@ services:
   # Worker - ATS queue
   worker-ats:
     container_name: pathpipe-worker-ats
-    image: ghcr.io/${GITHUB_OWNER}/pathpipe-worker:latest
-    command: ["node", "apps/worker/dist/index.js", "ats"]
+    image: ghcr.io/${GITHUB_OWNER}/pathpipe-worker:${IMAGE_TAG:-latest}
+    pull_policy: always
+    command: ['node', 'apps/worker/dist/index.js', 'ats']
     environment:
-      NEST_DATABASE_HOST: ${NEST_DATABASE_HOST}
-      NEST_DATABASE_PORT: ${NEST_DATABASE_PORT}
-      NEST_DATABASE_USER: ${NEST_DATABASE_USER}
-      NEST_DATABASE_PASS: ${NEST_DATABASE_PASS}
-      NEST_DATABASE_NAME: ${NEST_DATABASE_NAME}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      WORKERS_PORT: ${WORKERS_PORT}
+      WORKERS_API_URL: http://api:4000
+      WORKERS_API_KEY: ${WORKERS_API_KEY}
+      WORKERS_REDIS_HOST: redis
+      WORKERS_REDIS_PORT: ${REDIS_PORT}
+      WORKERS_REDIS_PASSWORD: ${REDIS_PASSWORD}
     depends_on:
-      - db
-      - redis
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: always
     networks:
       - app-network
@@ -162,5 +178,5 @@ volumes:
 networks:
   app-network:
     driver: bridge
-  traefik-public:
+  dokploy-network:
     external: true

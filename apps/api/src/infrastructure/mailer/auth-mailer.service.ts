@@ -41,4 +41,15 @@ export class AuthMailerService {
       email.resetPassword({ to, token, user }),
     );
   }
+
+  async sendResetPasswordConfirmationEmail(
+    to: string,
+    resetAt: string,
+    user: { name: string; profilePictureUrl: string },
+  ) {
+    await this.emailQueue.add(
+      QUEUES.EMAIL_SENDER,
+      email.resetPasswordConfirmation({ to, resetAt, user }),
+    );
+  }
 }

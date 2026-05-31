@@ -33,16 +33,6 @@ export class UserService {
     await this.usersRepository.save(user);
   }
 
-  async isGithubUser(email: string): Promise<boolean> {
-    const user = await this.usersRepository.findOne({ where: { email } });
-    return user ? user.is_github_user : false;
-  }
-
-  async isGoogleUser(email: string): Promise<boolean> {
-    const user = await this.usersRepository.findOne({ where: { email } });
-    return user ? user.is_google_user : false;
-  }
-
   async findOneWithPasswordByEmail(email: string): Promise<User | null> {
     try {
       const user = await this.usersRepository
@@ -95,27 +85,6 @@ export class UserService {
     await this.usersRepository.save(user);
   }
 
-  async createGithubUser(
-    email: string,
-    password: string,
-    name: string,
-    githubId: string,
-    avatarUrl?: string,
-  ): Promise<User> {
-    const hashedPassword = await PasswordUtils.hashPassword(password);
-    const user = this.usersRepository.create({
-      email,
-      password: hashedPassword,
-      name,
-      github_id: githubId,
-      avatar_url: avatarUrl,
-      is_github_user: true,
-      email_verified: true,
-      need_otp: false,
-    });
-    return this.usersRepository.save(user);
-  }
-
   async createGoogleUser(
     email: string,
     password: string,
@@ -131,6 +100,27 @@ export class UserService {
       google_id: googleId,
       avatar_url: avatarUrl,
       is_google_user: true,
+      email_verified: true,
+      need_otp: false,
+    });
+    return this.usersRepository.save(user);
+  }
+
+  async createLinkedinUser(
+    email: string,
+    password: string,
+    name: string,
+    linkedinId: string,
+    avatarUrl?: string,
+  ): Promise<User> {
+    const hashedPassword = await PasswordUtils.hashPassword(password);
+    const user = this.usersRepository.create({
+      email,
+      password: hashedPassword,
+      name,
+      linkedin_id: linkedinId,
+      avatar_url: avatarUrl,
+      is_linkedin_user: true,
       email_verified: true,
       need_otp: false,
     });

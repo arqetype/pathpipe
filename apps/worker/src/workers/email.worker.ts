@@ -18,6 +18,7 @@ export async function startEmailWorker() {
     port: emailConfig.port,
     auth: { user: emailConfig.user, pass: emailConfig.pass },
     from: emailConfig.from,
+    appUrl: emailConfig.frontendUrl,
   });
 
   const connection = {
@@ -46,6 +47,13 @@ export async function startEmailWorker() {
           await mailer.sendResetPasswordEmail(
             job.data.to,
             job.data.token,
+            job.data.user,
+          );
+          break;
+        case 'reset-password-confirmation':
+          await mailer.sendResetPasswordConfirmationEmail(
+            job.data.to,
+            job.data.resetAt,
             job.data.user,
           );
           break;

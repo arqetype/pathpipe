@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
 import { RiErrorWarningLine } from '@remixicon/react';
 import GoogleIcon from '@repo/ui/components/icons/google';
-import GitHubIcon from '@repo/ui/components/icons/github';
+import LinkedInIcon from '@repo/ui/components/icons/linkedin';
 
 export function OAuthButtons() {
   const searchParams = useSearchParams();
@@ -16,23 +16,21 @@ export function OAuthButtons() {
     if (error === 'google_auth_failed') {
       toast.error('Google authentication failed. Please try again.');
     }
-    if (error === 'github_auth_failed') {
-      toast.error('GitHub authentication failed. Please try again.');
+    if (error === 'linkedin_auth_failed') {
+      toast.error('LinkedIn authentication failed. Please try again.');
     }
   }, [error]);
 
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
-  const handleGitHubSignIn = () => {
-    setIsLoading('github');
-    // Redirect to the GitHub auth endpoint
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/github`;
-  };
-
   const handleGoogleSignIn = () => {
     setIsLoading('google');
-    // Redirect to the Google auth endpoint
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+  };
+
+  const handleLinkedInSignIn = () => {
+    setIsLoading('linkedin');
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/linkedin`;
   };
 
   return (
@@ -42,47 +40,53 @@ export function OAuthButtons() {
           <RiErrorWarningLine className="inline mr-1" size={16} />
           {error === 'google_auth_failed' &&
             'Google authentication failed. Please try again.'}
-          {error === 'github_auth_failed' &&
-            'GitHub authentication failed. Please try again.'}
+          {error === 'linkedin_auth_failed' &&
+            'LinkedIn authentication failed. Please try again.'}
         </div>
       )}
-      <div className="flex gap-2 sm:flex-row flex-col">
-        <Button
-          variant="outline"
-          className="flex-1"
-          type="button"
-          disabled={isLoading === 'google'}
-          onClick={handleGoogleSignIn}
-        >
-          {isLoading === 'google' ? (
-            <div className="flex items-center justify-center">
-              <span>Signing in...</span>
-            </div>
-          ) : (
-            <>
-              <GoogleIcon />
-              <span className="ml-1">Connect with Google</span>
-            </>
-          )}
-        </Button>
-        <Button
-          variant="outline"
-          className="flex-1"
-          type="button"
-          disabled={isLoading === 'github'}
-          onClick={handleGitHubSignIn}
-        >
-          {isLoading === 'github' ? (
-            <div className="flex items-center justify-center">
-              <span>Signing in...</span>
-            </div>
-          ) : (
-            <>
-              <GitHubIcon />
-              <span className="ml-1">Connect with GitHub</span>
-            </>
-          )}
-        </Button>
+      <div className="flex gap-2 w-full flex-wrap">
+        <div className="flex-1">
+          <Button
+            variant="outline"
+            className="w-full"
+            type="button"
+            size="lg"
+            disabled={isLoading === 'google'}
+            onClick={handleGoogleSignIn}
+          >
+            {isLoading === 'google' ? (
+              <div className="flex items-center justify-center">
+                <span>Signing in...</span>
+              </div>
+            ) : (
+              <>
+                <GoogleIcon />
+                <span className="ml-1">Connect with Google</span>
+              </>
+            )}
+          </Button>
+        </div>
+        <div className="flex-1">
+          <Button
+            variant="outline"
+            className="w-full"
+            type="button"
+            size="lg"
+            disabled={isLoading === 'linkedin'}
+            onClick={handleLinkedInSignIn}
+          >
+            {isLoading === 'linkedin' ? (
+              <div className="flex items-center justify-center">
+                <span>Signing in...</span>
+              </div>
+            ) : (
+              <>
+                <LinkedInIcon />
+                <span className="ml-1">Connect with LinkedIn</span>
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );

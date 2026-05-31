@@ -50,7 +50,7 @@ export function Footer() {
             >
               <Logo className="size-8" />
               <span className="font-heading text-lg font-semibold tracking-tight">
-                Pathpipe
+                pathpipe
               </span>
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
@@ -94,7 +94,7 @@ export function Footer() {
 
         <p className="text-xs text-muted-foreground mt-14 w-full text-center sm:text-left">
           <span className="select-none inline-flex items-center gap-1">
-            &copy; {new Date().getFullYear()} Arqetype - Made{' '}
+            &copy; {new Date().getFullYear()} Arqetype - Made with{' '}
             <RiHeart2Line className="size-4" /> and{' '}
             <RiDrinksLine className="size-4" /> in France.
           </span>
