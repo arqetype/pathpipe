@@ -25,7 +25,9 @@
     "NEST_FRONT_URL",
     "REDIS_HOST",
     "REDIS_PORT",
-    "REDIS_PASSWORD"
+    "REDIS_PASSWORD",
+    "APP_URL",
+    "WORKERS_FRONTEND_URL"
   ],
   "tasks": {
     "build": {

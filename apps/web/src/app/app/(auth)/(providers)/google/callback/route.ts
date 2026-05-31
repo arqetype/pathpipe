@@ -4,12 +4,7 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const token = searchParams.get('token');
 
-  const proto =
-    request.headers.get('x-forwarded-proto') ??
-    new URL(request.url).protocol.replace(':', '');
-  const host =
-    request.headers.get('x-forwarded-host') ?? request.headers.get('host');
-  const base = `${proto}://${host}`;
+  const base = process.env.APP_URL ?? new URL(request.url).origin;
 
   if (!token) {
     return NextResponse.redirect(
