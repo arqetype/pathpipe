@@ -14,7 +14,11 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "migration:generate": "dotenv -e ../../.env.development.local -- node -r ts-node/register -r tsconfig-paths/register node_modules/typeorm/cli-ts-node-commonjs.js migration:generate -d src/migrations/datasource.ts",
+    "migration:run": "dotenv -e ../../.env.development.local -- node -r ts-node/register -r tsconfig-paths/register node_modules/typeorm/cli-ts-node-commonjs.js migration:run -d src/migrations/datasource.ts",
+    "migration:revert": "dotenv -e ../../.env.development.local -- node -r ts-node/register -r tsconfig-paths/register node_modules/typeorm/cli-ts-node-commonjs.js migration:revert -d src/migrations/datasource.ts",
+    "migration:show": "dotenv -e ../../.env.development.local -- node -r ts-node/register -r tsconfig-paths/register node_modules/typeorm/cli-ts-node-commonjs.js migration:show -d src/migrations/datasource.ts"
   },
   "dependencies": {
     "@dicebear/collection": "^9.4.2",
@@ -71,6 +75,7 @@
     "@types/passport-oauth2": "^1.8.0",
     "@types/sharp": "^0.32.0",
     "@types/supertest": "^7.2.0",
+    "dotenv-cli": "^11.0.0",
     "eslint": "9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
