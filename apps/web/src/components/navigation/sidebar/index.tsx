@@ -1,7 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { RiBriefcaseLine, RiBuildingLine, RiKeyLine } from '@remixicon/react';
+import {
+  RiBriefcaseLine,
+  RiBuildingLine,
+  RiEyeLine,
+  RiKeyLine,
+} from '@remixicon/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { startTransition } from 'react';
@@ -26,6 +31,7 @@ import { Logo } from '@repo/ui/branding/logo';
 
 const userNavItems = [
   { title: 'Applications', href: '/app/applications', icon: RiBriefcaseLine },
+  { title: 'Watchlist', href: '/app/watchlist', icon: RiEyeLine },
 ];
 
 const adminNavItems = [

@@ -30,3 +30,8 @@ export interface CompanySearchResult {
   id: string;
   name: string;
 }
+
+export interface WatchedCompany extends Company {
+  applicationsCount: number;
+  notes: string | null;
+}

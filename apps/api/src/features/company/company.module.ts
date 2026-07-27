@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Company } from '@repo/db/entities/company';
 import { Application } from '@repo/db/entities/application';
+import { CompanyWatch } from '@repo/db/entities/company-watch';
 import { CompanyController } from './company.controller';
 import { CompanyService } from './company.service';
 import { CompanyCsvService } from './company-csv.service';
@@ -11,7 +12,7 @@ import { memoryStorage } from 'multer';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Company, Application]),
+    TypeOrmModule.forFeature([Company, Application, CompanyWatch]),
     MulterModule.register({
       storage: memoryStorage(),
       limits: {
