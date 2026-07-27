@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   type ColumnDef,
+  type RowSelectionState,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
@@ -14,6 +15,17 @@ import { ApplicationStatus } from '@repo/db/types/application/status';
 import { ApplicationTier } from '@repo/db/types/application/tier';
 import { Badge } from '@repo/ui/components/badge';
 import { Button } from '@repo/ui/components/button';
+import { Checkbox } from '@repo/ui/components/checkbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@repo/ui/components/alert-dialog';
 import {
   Select,
   SelectContent,
@@ -34,7 +46,10 @@ import { CompanyLogo } from '@/components/shared/company-logo';
 import { formatDate, formatSalary } from '@/utils/applications-utils';
 import { APPLICATION_STATUS_OPTIONS } from '../../constants/status';
 import { TIER_CONFIG } from '../../constants/tier';
-import { RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react';
+import { useApplicationStore } from '../../store';
+import { deleteApplicationAction } from '@/actions/application/delete';
+import { toast } from 'sonner';
+import { RiArrowLeftSLine, RiArrowRightSLine, RiDeleteBinLine } from '@remixicon/react';
 
 type ApplicationsTableProps = {
   applications: Application[];
@@ -49,7 +64,7 @@ const STATUS_CONFIG = APPLICATION_STATUS_OPTIONS.reduce(
   {} as Record<ApplicationStatus, { label: string; dotClass: string }>,
 );
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 50;
 
 export function ApplicationsTable({
   applications,
@@ -58,6 +73,14 @@ export function ApplicationsTable({
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const { removeApplication, setApplications } = useApplicationStore();
+  const [isDeleting, startDeleteTransition] = useTransition();
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  useEffect(() => {
+    setApplications(applications);
+  }, [applications, setApplications]);
 
   const visibleApplications = useMemo(
     () =>
@@ -70,12 +93,36 @@ export function ApplicationsTable({
   const columns = useMemo<ColumnDef<Application>[]>(
     () => [
       {
-        id: 'position',
-        header: 'Position',
+        id: 'select',
+        header: ({ table }) => (
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && 'indeterminate')
+            }
+            onCheckedChange={(checked: boolean) =>
+              table.toggleAllPageRowsSelected(checked)
+            }
+            aria-label="Select all"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(checked: boolean) => row.toggleSelected(checked)}
+            aria-label="Select row"
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      },
+      {
+        id: 'company',
+        header: 'Company',
         cell: ({ row }) => {
           const application = row.original;
           return (
-            <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
               <CompanyLogo
                 companyId={application.company?.id}
                 cacheKey={
@@ -84,18 +131,24 @@ export function ApplicationsTable({
                     : undefined
                 }
                 name={application.company?.name ?? 'Unknown'}
-                size={32}
-                className="size-8 rounded-md shrink-0"
+                size={20}
+                className="size-5 rounded-md shrink-0"
               />
-              <div className="min-w-0">
-                <p className="font-medium truncate">{application.position}</p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {application.company?.name ?? 'Unknown'}
-                </p>
-              </div>
+              <span className="text-sm truncate">
+                {application.company?.name ?? 'Unknown'}
+              </span>
             </div>
           );
         },
+      },
+      {
+        id: 'position',
+        header: 'Position',
+        cell: ({ row }) => (
+          <span className="text-sm font-medium truncate">
+            {row.original.position}
+          </span>
+        ),
       },
       {
         id: 'status',
@@ -180,8 +233,29 @@ export function ApplicationsTable({
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getRowId: (row) => row.id,
+    onRowSelectionChange: setRowSelection,
+    state: { rowSelection },
     initialState: { pagination: { pageSize: PAGE_SIZE } },
   });
+
+  const selectedIds = Object.keys(rowSelection);
+
+  function handleDeleteSelected() {
+    const ids = selectedIds;
+    ids.forEach((id) => removeApplication(id));
+    setRowSelection({});
+    setDeleteDialogOpen(false);
+    startDeleteTransition(async () => {
+      const results = await Promise.all(
+        ids.map((id) => deleteApplicationAction({ id })),
+      );
+      if (results.some((result) => !result?.success)) {
+        toast.error('Failed to delete some applications. Please try again.');
+      }
+      router.refresh();
+    });
+  }
 
   const totalRows = visibleApplications.length;
   const pageCount = table.getPageCount();
@@ -205,13 +279,55 @@ export function ApplicationsTable({
 
   return (
     <div className="px-4 py-4 space-y-4">
+      {selectedIds.length > 0 && (
+        <div className="flex items-center justify-between rounded-md border bg-muted/50 px-3 py-2">
+          <span className="text-sm font-medium">
+            {selectedIds.length} selected
+          </span>
+          <Button
+            variant="destructive"
+            size="sm"
+            disabled={isDeleting}
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            <RiDeleteBinLine className="size-4" />
+            Delete
+          </Button>
+          <AlertDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Delete {selectedIds.length} application
+                  {selectedIds.length > 1 ? 's' : ''}?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  onClick={handleDeleteSelected}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
+
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="h-8 py-1.5">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -232,7 +348,15 @@ export function ApplicationsTable({
                   onClick={() => openApplication(row.original.id)}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      className="py-1"
+                      onClick={
+                        cell.column.id === 'select'
+                          ? (e) => e.stopPropagation()
+                          : undefined
+                      }
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
@@ -271,7 +395,7 @@ export function ApplicationsTable({
                 <SelectValue placeholder={String(PAGE_SIZE)} />
               </SelectTrigger>
               <SelectContent side="top" align="end">
-                {[10, 20, 30, 40, 50].map((size) => (
+                {[20, 30, 50, 75, 100].map((size) => (
                   <SelectItem key={size} value={String(size)}>
                     {size}
                   </SelectItem>
