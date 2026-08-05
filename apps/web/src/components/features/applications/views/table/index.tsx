@@ -98,7 +98,7 @@ export function ApplicationsTable({
           <Checkbox
             checked={
               table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && 'indeterminate')
+              table.getIsSomePageRowsSelected()
             }
             onCheckedChange={(checked: boolean) =>
               table.toggleAllPageRowsSelected(checked)

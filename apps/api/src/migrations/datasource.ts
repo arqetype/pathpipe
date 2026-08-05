@@ -8,6 +8,7 @@ import { ResetPasswordToken } from '@repo/db/entities/reset-password-token';
 import { Application } from '@repo/db/entities/application';
 import { Company } from '@repo/db/entities/company';
 import { CompanyWatch } from '@repo/db/entities/company-watch';
+import { JobPosting } from '@repo/db/entities/job-posting';
 import { ApiKey } from '@repo/db/entities/api-key';
 
 export const AppDataSource = new DataSource({
@@ -25,6 +26,7 @@ export const AppDataSource = new DataSource({
     Application,
     Company,
     CompanyWatch,
+    JobPosting,
     ApiKey,
   ],
   migrations: [resolve(__dirname, 'common/*.{ts,js}')],

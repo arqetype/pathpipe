@@ -5,6 +5,7 @@ import { VerificationEmail } from './templates/auth/verification-email';
 import { OTPEmail } from './templates/auth/otp-email';
 import { ResetPasswordEmail } from './templates/auth/reset-password-email';
 import { ResetPasswordConfirmationEmail } from './templates/auth/reset-password-confirmation-email';
+import { NewJobAlertEmail } from './templates/jobs/new-job-alert-email';
 
 export type SMTPConfig = {
   host: string;
@@ -114,6 +115,35 @@ export class Mailer {
         to,
         from: this.from,
         subject: 'pathpipe : Your password was changed',
+        html,
+      });
+    } catch {
+      throw new Error('Failed to send email');
+    }
+  }
+
+  public async sendNewJobAlertEmail(
+    to: string,
+    user: { name: string },
+    companyName: string,
+    jobCount: number,
+    jobs: Array<{ title: string; url: string; location?: string }>,
+  ): Promise<void> {
+    const html = await render(
+      <NewJobAlertEmail
+        userName={user.name}
+        companyName={companyName}
+        jobCount={jobCount}
+        jobs={jobs}
+        appUrl={this.appUrl}
+      />,
+    );
+
+    try {
+      await this.transporter.sendMail({
+        to,
+        from: this.from,
+        subject: `pathpipe : ${jobCount} new job${jobCount > 1 ? 's' : ''} at ${companyName}`,
         html,
       });
     } catch {
