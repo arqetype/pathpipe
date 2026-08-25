@@ -50,7 +50,10 @@ export class JobPostingService {
     );
   }
 
-  async findByUser(userId: string, status?: JobPostingStatus): Promise<JobPostingResponse[]> {
+  async findByUser(
+    userId: string,
+    status?: JobPostingStatus,
+  ): Promise<JobPostingResponse[]> {
     const where: Record<string, unknown> = { user: { id: userId } };
     if (status) where['status'] = status;
     const jobs = await this.jobPostingRepository.find({
@@ -58,7 +61,7 @@ export class JobPostingService {
       relations: ['company'],
       order: { createdAt: 'DESC' },
     });
-    return jobs.map(this.toResponse);
+    return jobs.map((job) => this.toResponse(job));
   }
 
   async countNew(userId: string): Promise<number> {
@@ -67,7 +70,11 @@ export class JobPostingService {
     });
   }
 
-  async markAs(userId: string, jobId: string, status: JobPostingStatus): Promise<void> {
+  async markAs(
+    userId: string,
+    jobId: string,
+    status: JobPostingStatus,
+  ): Promise<void> {
     await this.jobPostingRepository.update(
       { id: jobId, user: { id: userId } },
       { status },

@@ -1,4 +1,11 @@
-import { Controller, Get, HttpCode, HttpStatus, Inject, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Inject,
+  Post,
+} from '@nestjs/common';
 import { ApiKeyProtected } from '../common/decorators/api-key-protected.decorator';
 import { Repository } from 'typeorm';
 import { CompanyWatch } from '@repo/db/entities/company-watch';

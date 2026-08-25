@@ -49,7 +49,11 @@ import { TIER_CONFIG } from '../../constants/tier';
 import { useApplicationStore } from '../../store';
 import { deleteApplicationAction } from '@/actions/application/delete';
 import { toast } from 'sonner';
-import { RiArrowLeftSLine, RiArrowRightSLine, RiDeleteBinLine } from '@remixicon/react';
+import {
+  RiArrowLeftSLine,
+  RiArrowRightSLine,
+  RiDeleteBinLine,
+} from '@remixicon/react';
 
 type ApplicationsTableProps = {
   applications: Application[];

@@ -36,7 +36,11 @@ export class JobPosting {
   @Column({ nullable: true })
   salaryMax: number | null;
 
-  @Column({ type: 'enum', enum: JobPostingStatus, default: JobPostingStatus.NEW })
+  @Column({
+    type: 'enum',
+    enum: JobPostingStatus,
+    default: JobPostingStatus.NEW,
+  })
   status: JobPostingStatus;
 
   @Column({ nullable: true })
