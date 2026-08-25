@@ -215,7 +215,7 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
           </ToggleGroupItem>
         </ToggleGroup>
 
-        <p className="text-sm text-muted-foreground pl-1 w-60">
+        <p className="text-sm text-muted-foreground pl-1 shrink-0 whitespace-nowrap">
           {total} application{total !== 1 ? 's' : ''}
         </p>
       </div>

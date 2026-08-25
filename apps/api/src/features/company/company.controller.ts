@@ -16,19 +16,23 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { type Response } from 'express';
 import { CompanyService } from './company.service';
+import type { CompanyWatchOverrides } from './company.service';
 import { CompanyImageService } from './company-image.service';
 import { CompanyCsvService } from './company-csv.service';
 import { CsvImportResult } from '@repo/db/dto/company/csv-import-result.dto';
 import {
   CompanySearchResult,
   PaginatedCompanies,
+  WatchedCompany,
 } from '@repo/db/query/company';
 import type { CompaniesQuery } from '@repo/db/query/company';
 import { Company } from '@repo/db/entities/company';
 import { UpdateCompanyDto } from '@repo/db/dto/company/update-company.dto';
 import { UpdateCompanyStatusDto } from '@repo/db/dto/company/update-company-status.dto';
 import { UserRole } from '@repo/db/types/user/roles';
+import { User } from '@repo/db/entities/user';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @Controller('companies')
 export class CompanyController {
@@ -48,11 +52,13 @@ export class CompanyController {
   @HttpCode(HttpStatus.OK)
   @Get('suggestions')
   suggestions(
+    @CurrentUser() user: User,
     @Query('query') query?: string,
     @Query('limit') limit?: number | string,
   ): Promise<CompanySearchResult[]> {
     return this.companyService.suggestions(
       query ?? '',
+      user.id,
       limit ? Number(limit) : 20,
     );
   }
@@ -61,6 +67,45 @@ export class CompanyController {
   @Post()
   create(@Body() data: { name: string }): Promise<Company> {
     return this.companyService.create(data.name);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get('watched')
+  getWatched(@CurrentUser() user: User): Promise<WatchedCompany[]> {
+    return this.companyService.findWatched(user.id);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('watch')
+  async watch(
+    @CurrentUser() user: User,
+    @Body() data: { name: string },
+  ): Promise<{ success: boolean }> {
+    const company = await this.companyService.findOrCreate(data.name);
+    await this.companyService.setWatch(company.id, user.id, true);
+    return { success: true };
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Delete(':id/watch')
+  unwatch(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+  ): Promise<{ success: boolean }> {
+    return this.companyService
+      .setWatch(id, user.id, false)
+      .then(() => ({ success: true }));
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Patch(':id/watch')
+  async updateWatch(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body() data: CompanyWatchOverrides,
+  ): Promise<{ success: boolean }> {
+    await this.companyService.updateWatchOverrides(id, user.id, data);
+    return { success: true };
   }
 
   @HttpCode(HttpStatus.OK)

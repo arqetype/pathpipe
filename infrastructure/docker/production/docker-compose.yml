@@ -104,7 +104,10 @@ services:
     image: ghcr.io/${GITHUB_OWNER}/pathpipe-web:${IMAGE_TAG:-latest}
     pull_policy: always
     environment:
+      APP_URL: ${APP_URL}
       NEXT_API_URL: http://api:4000
+      # NOTE: NEXT_PUBLIC_* vars are baked at build time — this runtime value is ignored by client code.
+      # Set NEXT_PUBLIC_API_URL as a GitHub Actions secret to affect the built JS.
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
       NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY}
       NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}

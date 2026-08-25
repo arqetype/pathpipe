@@ -4,13 +4,15 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const token = searchParams.get('token');
 
+  const base = process.env.APP_URL ?? new URL(request.url).origin;
+
   if (!token) {
     return NextResponse.redirect(
-      new URL('/app/sign-in?error=linkedin_auth_failed', request.url),
+      new URL('/app/sign-in?error=linkedin_auth_failed', base),
     );
   }
 
-  const response = NextResponse.redirect(new URL('/app', request.url));
+  const response = NextResponse.redirect(new URL('/app', base));
 
   response.cookies.set('auth-token', token, {
     secure: process.env.NODE_ENV === 'production',

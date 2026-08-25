@@ -3,10 +3,8 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  ManyToMany,
 } from 'typeorm';
 import { UserRole } from '../types/user/roles';
-import { Company } from './company';
 
 @Entity()
 export class User {
@@ -49,9 +47,6 @@ export class User {
 
   @Column({ default: true })
   need_otp: boolean;
-
-  @ManyToMany(() => Company, (company) => company.watchers)
-  watchedCompanies: Company[];
 
   @CreateDateColumn()
   created_at: Date;
