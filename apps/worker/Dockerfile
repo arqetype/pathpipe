@@ -3,17 +3,17 @@ FROM node:22-slim AS base
 FROM base AS builder
 
 WORKDIR /app
-RUN npm install -g pnpm@9.0.0 turbo
+RUN npm install -g pnpm@9.15.9 turbo
 COPY . .
 RUN turbo prune worker --docker
 
 FROM base AS installer
 WORKDIR /app
 ENV PLAYWRIGHT_BROWSERS_PATH=/app/.playwright-browsers
-RUN npm install -g pnpm@9.0.0
+RUN npm install -g pnpm@9.15.9
 COPY --from=builder /app/out/json/ .
 RUN pnpm install --frozen-lockfile
-RUN npx --yes playwright install --with-deps chromium
+RUN pnpm --filter worker exec playwright install --with-deps chromium
 COPY --from=builder /app/out/full .
 RUN pnpm build
 
