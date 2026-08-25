@@ -21,11 +21,15 @@ export interface JobMatchItem {
   updatedAt: string;
 }
 
-export async function fetchJobMatchesAction(status?: JobPostingStatus): Promise<JobMatchItem[]> {
+export async function fetchJobMatchesAction(
+  status?: JobPostingStatus,
+): Promise<JobMatchItem[]> {
   const params = new URLSearchParams();
   if (status) params.set('status', status);
   const qs = params.toString();
-  const result = await get<JobMatchItem[]>(`/job-postings${qs ? `?${qs}` : ''}`);
+  const result = await get<JobMatchItem[]>(
+    `/job-postings${qs ? `?${qs}` : ''}`,
+  );
   if (!result.ok) throw new Error('Failed to fetch job matches');
   return result.data;
 }

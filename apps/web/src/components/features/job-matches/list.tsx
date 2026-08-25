@@ -13,9 +13,12 @@ export function JobMatchList({ jobs, onDeleted }: JobMatchListProps) {
   if (jobs.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <h3 className="text-lg font-semibold text-muted-foreground">No job matches yet</h3>
+        <h3 className="text-lg font-semibold text-muted-foreground">
+          No job matches yet
+        </h3>
         <p className="text-sm text-muted-foreground mt-1">
-          We'll notify you when we find jobs matching your watched companies.
+          We&apos;ll notify you when we find jobs matching your watched
+          companies.
         </p>
       </div>
     );

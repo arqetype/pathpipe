@@ -6,7 +6,8 @@ export default function DiscoverPage() {
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">Discovery</h1>
         <p className="text-muted-foreground">
-          Manually trigger the ATS worker to discover new job postings from watched companies.
+          Manually trigger the ATS worker to discover new job postings from
+          watched companies.
         </p>
       </div>
       <TriggerDiscovery />

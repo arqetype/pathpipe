@@ -1,4 +1,7 @@
-import { fetchJobMatchesAction, countNewJobMatchesAction } from '@/actions/job-match/fetch';
+import {
+  fetchJobMatchesAction,
+  countNewJobMatchesAction,
+} from '@/actions/job-match/fetch';
 import { JobMatchList } from '@/components/features/job-matches/list';
 
 export default async function JobMatchesPage() {
@@ -13,8 +16,9 @@ export default async function JobMatchesPage() {
         <h1 className="text-2xl font-semibold">Job Matches</h1>
         {newCount > 0 && (
           <p className="text-muted-foreground">
-            You have <span className="font-semibold text-foreground">{newCount}</span> new job
-            offer{newCount > 1 ? 's' : ''} matching your profile
+            You have{' '}
+            <span className="font-semibold text-foreground">{newCount}</span>{' '}
+            new job offer{newCount > 1 ? 's' : ''} matching your profile
           </p>
         )}
       </div>

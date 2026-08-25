@@ -3,7 +3,10 @@
 import { patch, del } from '@/lib/fetch';
 import { JobPostingStatus } from '@repo/db/types/job-posting/status';
 
-export async function updateJobMatchStatusAction(id: string, status: JobPostingStatus): Promise<void> {
+export async function updateJobMatchStatusAction(
+  id: string,
+  status: JobPostingStatus,
+): Promise<void> {
   const result = await patch(`/job-postings/${id}/status`, { status });
   if (!result.ok) throw new Error('Failed to update job match status');
 }
