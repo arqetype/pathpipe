@@ -1,6 +1,6 @@
 import { configService } from '@/infrastructure/config/config.service';
 import { createWorker } from '@repo/queues';
-import { QUEUES, email } from '@repo/queues';
+import { QUEUES, email, jobAlert } from '@repo/queues';
 import { Mailer } from '@repo/email';
 import pino from 'pino';
 import pretty from 'pino-pretty';
@@ -79,9 +79,36 @@ export async function startEmailWorker() {
 
   logger.info('Email worker started, waiting for jobs...');
 
+  const jobAlertWorker = createWorker<jobAlert.JobAlertJob>(
+    QUEUES.JOB_ALERT,
+    async (job) => {
+      logger.info(`Processing job alert ${job.id} for ${job.data.companyName}`);
+
+      await mailer.sendNewJobAlertEmail(
+        job.data.to,
+        { name: job.data.userName },
+        job.data.companyName,
+        job.data.jobCount,
+        job.data.jobs,
+      );
+
+      logger.info(`Job alert ${job.id} completed`);
+    },
+    connection,
+  );
+
+  jobAlertWorker.on('completed', (job) => {
+    logger.info(`Job alert ${job.id} finished`);
+  });
+
+  jobAlertWorker.on('failed', (job, err) => {
+    logger.error(`Job alert ${job?.id} failed: ${err.message}`);
+  });
+
   const shutdown = async () => {
-    logger.info('Shutting down email worker...');
+    logger.info('Shutting down email workers...');
     await worker.close();
+    await jobAlertWorker.close();
     process.exit(0);
   };
 

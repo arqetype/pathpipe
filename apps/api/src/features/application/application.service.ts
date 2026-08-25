@@ -14,18 +14,16 @@ import {
 } from '@repo/db/query/application';
 import { User } from '@repo/db/entities/user';
 import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
-import { Company, CompanyStatus } from '@repo/db/entities/company';
-import { CompanyImageService } from '../company/company-image.service';
+import { Company } from '@repo/db/entities/company';
+import { CompanyService } from '../company/company.service';
 
 @Injectable()
 export class ApplicationService {
   constructor(
     @InjectRepository(Application)
     private readonly applicationsRepository: Repository<Application>,
-    @InjectRepository(Company)
-    private readonly companiesRepository: Repository<Company>,
-    @Inject(forwardRef(() => CompanyImageService))
-    private readonly companyImageService: CompanyImageService,
+    @Inject(forwardRef(() => CompanyService))
+    private readonly companyService: CompanyService,
   ) {}
 
   async findMany(
@@ -113,25 +111,10 @@ export class ApplicationService {
     return application;
   }
 
-  private async resolveOrCreateCompany(name: string): Promise<Company> {
-    const trimmed = name.trim();
-    let company = await this.companiesRepository.findOne({
-      where: { name: trimmed },
-    });
-    if (!company) {
-      company = await this.companiesRepository.save({
-        name: trimmed,
-        status: CompanyStatus.PENDING,
-      });
-      await this.companyImageService.fetchAndSaveLogo(company.id, trimmed);
-    }
-    return company;
-  }
-
   async create(user: User, dto: CreateApplicationDto): Promise<Application> {
     const companyName = dto.company?.trim();
-    const company = companyName
-      ? await this.resolveOrCreateCompany(companyName)
+    const company: Company | undefined = companyName
+      ? await this.companyService.findOrCreate(companyName)
       : undefined;
 
     const newApplication = this.applicationsRepository.create({
@@ -152,7 +135,7 @@ export class ApplicationService {
     const payload: Record<string, unknown> = { ...rest };
     if (companyName !== undefined) {
       payload.company = companyName
-        ? await this.resolveOrCreateCompany(companyName)
+        ? await this.companyService.findOrCreate(companyName)
         : null;
     }
     return payload;

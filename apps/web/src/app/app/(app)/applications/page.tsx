@@ -40,7 +40,7 @@ export default async function AppMainPage({
     <>
       <div className="flex flex-col h-full max-h-[calc(100vh-theme(space.12))]">
         <ViewToolbar total={total} actions={<CreateApplicationDialog />} />
-        <ScrollArea className="flex-1 flex flex-col h-full overflow-y-auto w-full">
+        <ScrollArea className="flex-1 flex flex-col h-full min-h-0 overflow-y-auto w-full">
           {view === 'table' ? (
             <ApplicationsTable
               applications={applications}

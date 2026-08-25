@@ -47,14 +47,14 @@ export function KanbanCard({
       ref={ref as React.Ref<HTMLDivElement>}
       onClick={overlay ? undefined : () => onClick?.(application.id)}
       className={cn(
-        'py-3 cursor-grab active:cursor-grabbing select-none transition-shadow',
+        'py-2 shrink-0 cursor-grab active:cursor-grabbing select-none transition-shadow',
         !overlay && 'hover:shadow-md',
         overlay && 'shadow-xl rotate-1 cursor-grabbing',
         isDragSource && !overlay && 'opacity-40',
       )}
     >
-      <CardContent className="px-3 flex flex-col gap-2.5">
-        <div className="flex items-start gap-3">
+      <CardContent className="px-2.5 flex flex-col gap-1.5">
+        <div className="flex items-start gap-2">
           <CompanyLogo
             companyId={application.company?.id}
             cacheKey={
@@ -63,11 +63,11 @@ export function KanbanCard({
                 : undefined
             }
             name={application.company?.name ?? 'Unknown'}
-            size={40}
-            className="size-10 rounded-lg shrink-0"
+            size={28}
+            className="size-7 rounded-md shrink-0"
           />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm leading-snug line-clamp-2">
+            <p className="font-semibold text-xs leading-snug line-clamp-2">
               {application.position}
             </p>
             <p className="text-xs text-muted-foreground leading-tight line-clamp-1 mt-0.5">

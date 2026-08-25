@@ -4,11 +4,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApplicationController } from './application.controller';
 import { Application } from '@repo/db/entities/application';
 import { CompanyModule } from '../company/company.module';
-import { Company } from '@repo/db/entities/company';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Application, Company]),
+    TypeOrmModule.forFeature([Application]),
     forwardRef(() => CompanyModule),
   ],
   providers: [ApplicationService],

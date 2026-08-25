@@ -3,12 +3,10 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  ManyToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user';
 import { CompanyIndustry } from '../types/company/industry';
 
 export enum CompanyStatus {
@@ -59,9 +57,6 @@ export class Company {
 
   @Column({ type: 'timestamp', nullable: true })
   lastCheckedAt: Date;
-
-  @ManyToMany(() => User, (user) => user.watchedCompanies)
-  watchers: User[];
 
   @CreateDateColumn()
   created_at: Date;

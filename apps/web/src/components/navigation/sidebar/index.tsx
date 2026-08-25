@@ -1,7 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { RiBriefcaseLine, RiBuildingLine, RiKeyLine } from '@remixicon/react';
+import {
+  RiBriefcaseLine,
+  RiBuildingLine,
+  RiEyeLine,
+  RiKeyLine,
+  RiFileListLine,
+  RiRadarLine,
+} from '@remixicon/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { startTransition } from 'react';
@@ -25,10 +32,13 @@ import type { User } from '@repo/db/entities/user';
 import { Logo } from '@repo/ui/branding/logo';
 
 const userNavItems = [
+  { title: 'Job Matches', href: '/app/job-matches', icon: RiFileListLine },
   { title: 'Applications', href: '/app/applications', icon: RiBriefcaseLine },
+  { title: 'Watchlist', href: '/app/watchlist', icon: RiEyeLine },
 ];
 
 const adminNavItems = [
+  { title: 'Discovery', href: '/app/discover', icon: RiRadarLine },
   { title: 'Companies', href: '/app/companies', icon: RiBuildingLine },
   { title: 'API Keys', href: '/app/api-keys', icon: RiKeyLine },
 ];

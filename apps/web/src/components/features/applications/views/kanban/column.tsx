@@ -33,8 +33,8 @@ export function KanbanColumn({
   });
 
   return (
-    <div className="flex flex-col w-72 group">
-      <div className="bg-background w-full flex items-center gap-2 sticky top-0 px-3 py-2 border">
+    <div className="flex flex-col w-72 h-full min-h-0 group">
+      <div className="bg-background w-full flex items-center gap-2 sticky top-0 px-3 py-2 border shrink-0">
         <span className={cn('size-2 rounded-full shrink-0', config.dotClass)} />
         <span className="text-sm font-semibold">{config.label}</span>
         <span className="ml-auto text-xs text-muted-foreground tabular-nums">
@@ -45,13 +45,13 @@ export function KanbanColumn({
       <div
         ref={ref}
         className={cn(
-          'flex flex-col gap-2 rounded-3xl mt-3 p-2 h-full transition-colors',
+          'flex flex-col gap-2 rounded-3xl mt-3 p-2 flex-1 min-h-0 overflow-y-auto transition-colors',
           isDropTarget ? 'bg-primary/10' : 'bg-accent',
         )}
       >
         {children}
         <Card
-          className="group-hover:opacity-100 opacity-0 relative p-3 border-dashed cursor-pointer hover:bg-background/70 transition-all ring-0 border border-foreground/10 border-1"
+          className="group-hover:opacity-100 opacity-0 relative p-3 shrink-0 border-dashed cursor-pointer hover:bg-background/70 transition-all ring-0 border border-foreground/10 border-1"
           onClick={() => useApplicationStore.getState().openCreateDialog(id)}
           aria-label={`Add new card to ${config.label}`}
         >

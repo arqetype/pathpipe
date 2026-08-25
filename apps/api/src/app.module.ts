@@ -18,7 +18,11 @@ import { ApplicationModule } from './features/application/application.module';
 import { CompanyModule } from './features/company/company.module';
 import { Application } from '@repo/db/entities/application';
 import { Company } from '@repo/db/entities/company';
+import { CompanyWatch } from '@repo/db/entities/company-watch';
+import { JobPosting } from '@repo/db/entities/job-posting';
 import { ApiKey } from '@repo/db/entities/api-key';
+import { JobPostingModule } from './features/job-posting/job-posting.module';
+import { AdminModule } from './features/admin/admin.module';
 import { InternalModule } from './internal/internal.module';
 import { resolve } from 'node:path';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -52,6 +56,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
           ResetPasswordToken,
           Application,
           Company,
+          CompanyWatch,
+          JobPosting,
           ApiKey,
         ],
         synchronize: false,
@@ -67,6 +73,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
     JwtModule,
     ApplicationModule,
     CompanyModule,
+    JobPostingModule,
+    AdminModule,
     InternalModule,
 
     ThrottlerModule.forRoot({
