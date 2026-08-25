@@ -30,7 +30,7 @@ export class InternalController {
     return watches.map((w) => ({
       userId: w.user.id,
       userEmail: w.user.email,
-      userName: w.user.name,
+      userName: w.user.name ?? w.user.email,
       companyId: w.company.id,
       companyName: w.company.name,
       careersUrl: w.careersUrl ?? w.company.careersUrl,

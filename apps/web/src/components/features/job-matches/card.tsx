@@ -21,16 +21,25 @@ export function JobMatchCard({ job, onDeleted }: JobMatchCardProps) {
   const router = useRouter();
 
   const handleUpdate = async (newStatus: JobPostingStatus) => {
+    const previousStatus = status;
     setStatus(newStatus);
-    await updateJobMatchStatusAction(job.id, newStatus);
-    router.refresh();
+    try {
+      await updateJobMatchStatusAction(job.id, newStatus);
+      router.refresh();
+    } catch {
+      setStatus(previousStatus);
+    }
   };
 
   const handleDelete = async () => {
     setDeleted(true);
-    await deleteJobMatchAction(job.id);
-    onDeleted?.(job.id);
-    router.refresh();
+    try {
+      await deleteJobMatchAction(job.id);
+      onDeleted?.(job.id);
+      router.refresh();
+    } catch {
+      setDeleted(false);
+    }
   };
 
   if (deleted) return null;

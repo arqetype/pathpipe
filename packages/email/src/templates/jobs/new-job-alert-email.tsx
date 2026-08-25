@@ -1,6 +1,6 @@
-import { Button, Section, Text } from "react-email";
-import React from "react";
-import { Layout } from "../../components/layout";
+import { Button, Section, Text } from 'react-email';
+import React from 'react';
+import { Layout } from '../../components/layout';
 
 interface NewJobAlertEmailProps {
   userName: string;
@@ -17,8 +17,8 @@ export function NewJobAlertEmail({
   jobs,
   appUrl,
 }: NewJobAlertEmailProps) {
-  const previewMessage = `${jobCount} new job${jobCount > 1 ? "s" : ""} at ${companyName}`;
-  const baseUrl = (appUrl ?? "http://localhost:3000").replace(/\/$/, "");
+  const previewMessage = `${jobCount} new job${jobCount > 1 ? 's' : ''} at ${companyName}`;
+  const baseUrl = (appUrl ?? 'http://localhost:3000').replace(/\/$/, '');
 
   return (
     <Layout previewMessage={previewMessage} appUrl={baseUrl}>
@@ -27,9 +27,9 @@ export function NewJobAlertEmail({
           New jobs at {companyName}
         </Text>
         <Text className="text-base text-foreground mt-4 mb-0">
-          Hi <span className="font-semibold">{userName}</span>, we found{" "}
+          Hi <span className="font-semibold">{userName}</span>, we found{' '}
           <span className="font-semibold">{jobCount}</span> new job
-          {jobCount > 1 ? "s" : ""} at {companyName} that match your profile.
+          {jobCount > 1 ? 's' : ''} at {companyName} that match your profile.
         </Text>
       </Section>
 
@@ -67,13 +67,13 @@ export function NewJobAlertEmail({
 }
 
 NewJobAlertEmail.PreviewProps = {
-  userName: "John Doe",
-  companyName: "Acme Corp",
+  userName: 'John Doe',
+  companyName: 'Acme Corp',
   jobCount: 3,
   jobs: [
-    { title: "Senior Software Engineer", url: "https://example.com/job1", location: "Remote" },
-    { title: "Full Stack Developer", url: "https://example.com/job2", location: "New York" },
-    { title: "DevOps Engineer", url: "https://example.com/job3" },
+    { title: 'Senior Software Engineer', url: 'https://example.com/job1', location: 'Remote' },
+    { title: 'Full Stack Developer', url: 'https://example.com/job2', location: 'New York' },
+    { title: 'DevOps Engineer', url: 'https://example.com/job3' },
   ],
 };
 

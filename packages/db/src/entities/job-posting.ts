@@ -31,10 +31,10 @@ export class JobPosting {
   location: string | null;
 
   @Column({ nullable: true })
-  salaryMin: number;
+  salaryMin: number | null;
 
   @Column({ nullable: true })
-  salaryMax: number;
+  salaryMax: number | null;
 
   @Column({ type: 'enum', enum: JobPostingStatus, default: JobPostingStatus.NEW })
   status: JobPostingStatus;

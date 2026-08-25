@@ -26,10 +26,10 @@ export class CompanyWatch {
   company: Company;
 
   @Column({ nullable: true })
-  careersUrl: string;
+  careersUrl: string | null;
 
   @Column({ nullable: true })
-  website: string;
+  website: string | null;
 
   @Column({ nullable: true })
   notes: string;

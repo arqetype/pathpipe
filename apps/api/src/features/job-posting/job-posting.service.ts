@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { JobPosting } from '@repo/db/entities/job-posting';
 import { JobPostingStatus } from '@repo/db/types/job-posting/status';
 import { CreateJobPostingDto } from '@repo/db/dto/job-posting/create-job-posting.dto';
@@ -21,25 +21,33 @@ export class JobPostingService {
   async createBatch(dtos: CreateJobPostingDto[]): Promise<BatchCreateResult> {
     let inserted = 0;
     for (const dto of dtos) {
-      const existing = await this.jobPostingRepository.findOne({
-        where: { user: { id: dto.userId }, url: dto.url },
-      });
-      if (existing) continue;
-      await this.jobPostingRepository.save({
-        title: dto.title,
-        url: dto.url,
-        description: dto.description ?? null,
-        location: dto.location ?? null,
-        salaryMin: dto.salaryMin ?? null,
-        salaryMax: dto.salaryMax ?? null,
-        source: dto.source ?? null,
-        postedAt: dto.postedAt ? new Date(dto.postedAt) : null,
-        company: { id: dto.companyId },
-        user: { id: dto.userId },
-      });
-      inserted++;
+      try {
+        await this.jobPostingRepository.insert({
+          title: dto.title,
+          url: dto.url,
+          description: dto.description ?? null,
+          location: dto.location ?? null,
+          salaryMin: dto.salaryMin ?? null,
+          salaryMax: dto.salaryMax ?? null,
+          source: dto.source ?? null,
+          postedAt: dto.postedAt ? new Date(dto.postedAt) : null,
+          company: { id: dto.companyId },
+          user: { id: dto.userId },
+        });
+        inserted++;
+      } catch (err) {
+        if (!this.isUniqueViolation(err)) throw err;
+      }
     }
     return { inserted, total: dtos.length };
+  }
+
+  private isUniqueViolation(err: unknown): boolean {
+    return (
+      err instanceof QueryFailedError &&
+      (err as QueryFailedError & { driverError?: { code?: string } })
+        .driverError?.code === '23505'
+    );
   }
 
   async findByUser(userId: string, status?: JobPostingStatus): Promise<JobPostingResponse[]> {

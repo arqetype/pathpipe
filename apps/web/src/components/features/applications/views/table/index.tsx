@@ -74,6 +74,7 @@ export function ApplicationsTable({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { removeApplication, setApplications } = useApplicationStore();
+  const storeApplications = useApplicationStore((state) => state.applications);
   const [isDeleting, startDeleteTransition] = useTransition();
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -84,10 +85,10 @@ export function ApplicationsTable({
 
   const visibleApplications = useMemo(
     () =>
-      applications.filter((application) =>
+      storeApplications.filter((application) =>
         hiddenStatuses.has(application.status) ? false : true,
       ),
-    [applications, hiddenStatuses],
+    [storeApplications, hiddenStatuses],
   );
 
   const columns = useMemo<ColumnDef<Application>[]>(

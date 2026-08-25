@@ -1,22 +1,6 @@
 import { chromium } from 'playwright';
 import type { ScrapedJob, ScrapeResult } from './scraper.service';
-
-const BLOCKED_TITLES = new Set([
-  'sign out', 'sign in', 'settings', 'my profile', 'my applications',
-  'account security', 'my account', 'logout', 'login', 'register',
-  'privacy', 'terms', 'cookies', 'legal', 'mentions légales',
-  'confidentialité', 'protection des données', 'contact', 'contact us',
-  'help', 'faq', 'about', 'about us', 'newsletter', 'home', 'accueil',
-  'skip to main content', 'skip to content', 'main menu', 'menu',
-  'footer', 'back to top', 'load more', 'show more', 'view all',
-]);
-
-const JOB_URL_PATTERNS = [
-  /\/job/i, /\/jobs/i, /\/position/i, /\/positions/i,
-  /\/career/i, /\/careers/i, /\/requisition/i,
-  /\/opportunity/i, /\/opportunities/i, /\/opening/i, /\/openings/i,
-  /\/posting/i, /\/postings/i, /\/listing/i, /\/listings/i,
-];
+import { BLOCKED_TITLES, JOB_URL_PATTERNS } from './job-title-filters';
 
 export class BrowserScraperService {
   async scrapeWithBrowser(careersUrl: string): Promise<ScrapeResult> {
