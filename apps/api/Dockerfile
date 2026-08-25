@@ -4,14 +4,14 @@ FROM base AS builder
 
 RUN apk update && apk add --no-cache libc6-compat
 WORKDIR /app
-RUN npm install -g pnpm turbo
+RUN npm install -g pnpm@9.0.0 turbo
 COPY . .
 RUN turbo prune api --docker
 
 FROM base AS installer
 RUN apk update && apk add --no-cache libc6-compat
 WORKDIR /app
-RUN npm install -g pnpm turbo
+RUN npm install -g pnpm@9.0.0 turbo
 COPY --from=builder /app/out/json/ .
 RUN pnpm install --frozen-lockfile
 COPY --from=builder /app/out/full .
