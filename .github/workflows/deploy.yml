@@ -57,4 +57,4 @@ jobs:
             -H "Content-Type: application/json" \
             -H "accept: application/json" \
             -d '{"composeId": "${{ secrets.DOKPLOY_COMPOSE_ID }}"}' \
-            "https://dokploy.clementomnes.dev/api/compose.deploy"
+            "https://lab.clementomnes.dev/api/compose.deploy"
