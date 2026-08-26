@@ -20,6 +20,7 @@ import { Application } from '@repo/db/entities/application';
 import { Company } from '@repo/db/entities/company';
 import { CompanyWatch } from '@repo/db/entities/company-watch';
 import { JobPosting } from '@repo/db/entities/job-posting';
+import { JobSource } from '@repo/db/entities/job-source';
 import { ApiKey } from '@repo/db/entities/api-key';
 import { JobPostingModule } from './features/job-posting/job-posting.module';
 import { AdminModule } from './features/admin/admin.module';
@@ -58,6 +59,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
           Company,
           CompanyWatch,
           JobPosting,
+          JobSource,
           ApiKey,
         ],
         synchronize: false,

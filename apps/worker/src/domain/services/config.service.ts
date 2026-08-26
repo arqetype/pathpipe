@@ -23,11 +23,39 @@ export interface RedisConfig {
   password?: string;
 }
 
+export interface ScraperConfig {
+  /** Careers pages crawled at the same time. */
+  concurrency: number;
+  /** Chromium pages open at the same time. */
+  browserConcurrency: number;
+  userAgent: string;
+  /** Minimum gap between two requests to the same host, in ms. */
+  perHostDelayMs: number;
+  respectRobots: boolean;
+  /** Also apply robots.txt to the vendor board APIs (see pipeline docs). */
+  respectRobotsForAts: boolean;
+  /** Cheap poll: conditional GET, no browser. */
+  fastCron: string;
+  /** Full poll: the whole ladder, browser included. */
+  fullCron: string;
+  /** Hours after which a source is re-crawled with the full ladder. */
+  fullIntervalHours: number;
+  /** Hours after which an unchanged source is re-synced to the database anyway. */
+  reconcileIntervalHours: number;
+  /** Wall-clock budget for one source before the expensive rungs are skipped. */
+  maxDurationMs: number;
+  /** Pages of a paginated listing to follow. */
+  maxListingPages: number;
+  /** Consecutive failures after which a source is backed off. */
+  maxFailuresBeforeBackoff: number;
+}
+
 export interface AppConfig {
   workers: WorkersConfig;
   email: EmailConfig;
   api: ApiConfig;
   redis: RedisConfig;
+  scraper: ScraperConfig;
 }
 
 export interface ConfigService {

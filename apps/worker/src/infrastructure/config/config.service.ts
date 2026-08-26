@@ -33,6 +33,47 @@ export class ConfigServiceImpl implements ConfigService {
         port: this.requireEnvAsInt('WORKERS_REDIS_PORT', 6379),
         password: this.optionalEnv('WORKERS_REDIS_PASSWORD'),
       },
+      scraper: {
+        concurrency: this.requireEnvAsInt('WORKERS_SCRAPE_CONCURRENCY', 6),
+        browserConcurrency: this.requireEnvAsInt(
+          'WORKERS_SCRAPE_BROWSER_CONCURRENCY',
+          3,
+        ),
+        userAgent: this.requireEnv(
+          'WORKERS_SCRAPE_USER_AGENT',
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 PathpipeBot/1.0 (+https://pathpipe.clementomnes.dev/bot)',
+        ),
+        perHostDelayMs: this.requireEnvAsInt(
+          'WORKERS_SCRAPE_HOST_DELAY_MS',
+          800,
+        ),
+        respectRobots:
+          this.optionalEnv('WORKERS_SCRAPE_RESPECT_ROBOTS') !== 'false',
+        respectRobotsForAts:
+          this.optionalEnv('WORKERS_SCRAPE_ROBOTS_FOR_ATS') === 'true',
+        fastCron: this.requireEnv('WORKERS_SCRAPE_FAST_CRON', '*/15 * * * *'),
+        fullCron: this.requireEnv('WORKERS_SCRAPE_FULL_CRON', '0 */4 * * *'),
+        fullIntervalHours: this.requireEnvAsInt(
+          'WORKERS_SCRAPE_FULL_INTERVAL_HOURS',
+          4,
+        ),
+        reconcileIntervalHours: this.requireEnvAsInt(
+          'WORKERS_SCRAPE_RECONCILE_INTERVAL_HOURS',
+          24,
+        ),
+        maxDurationMs: this.requireEnvAsInt(
+          'WORKERS_SCRAPE_MAX_SOURCE_MS',
+          150000,
+        ),
+        maxListingPages: this.requireEnvAsInt(
+          'WORKERS_SCRAPE_MAX_LISTING_PAGES',
+          10,
+        ),
+        maxFailuresBeforeBackoff: this.requireEnvAsInt(
+          'WORKERS_SCRAPE_MAX_FAILURES',
+          4,
+        ),
+      },
     };
   }
 

@@ -9,6 +9,7 @@ import { Application } from '@repo/db/entities/application';
 import { Company } from '@repo/db/entities/company';
 import { CompanyWatch } from '@repo/db/entities/company-watch';
 import { JobPosting } from '@repo/db/entities/job-posting';
+import { JobSource } from '@repo/db/entities/job-source';
 import { ApiKey } from '@repo/db/entities/api-key';
 
 export const AppDataSource = new DataSource({
@@ -27,6 +28,7 @@ export const AppDataSource = new DataSource({
     Company,
     CompanyWatch,
     JobPosting,
+    JobSource,
     ApiKey,
   ],
   migrations: [resolve(__dirname, 'common/*.{ts,js}')],

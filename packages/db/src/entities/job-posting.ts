@@ -24,6 +24,14 @@ export class JobPosting {
   @Column()
   url: string;
 
+  /**
+   * Stable id from the source ATS. Boards rewrite their slugs when a title is
+   * edited, so this — not the URL — is what keeps a posting from being
+   * re-announced as new.
+   */
+  @Column({ nullable: true })
+  externalId: string | null;
+
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
