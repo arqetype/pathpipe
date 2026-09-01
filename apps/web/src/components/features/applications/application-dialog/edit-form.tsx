@@ -23,6 +23,7 @@ import {
   RiListUnordered,
   RiLoader5Line,
   RiMailLine,
+  RiMapPin2Line,
   RiMoneyDollarBoxLine,
   RiUserLine,
 } from '@remixicon/react';
@@ -44,6 +45,7 @@ import { TIER_CONFIG } from '../constants/tier';
 import { TierSelectOptions } from '../shared/tier-select-options';
 import { useApplicationStore } from '../store';
 import SelectCompany from '@/components/shared/select-company';
+import SelectLocation from '@/components/shared/select-location';
 import { formatSalary, formatDate } from '@/utils/applications-utils';
 
 type FormValues = {
@@ -53,6 +55,8 @@ type FormValues = {
   tier: ApplicationTier;
   appliedAt: string;
   url: string;
+  city: string;
+  country: string;
   salaryMin: string;
   salaryMax: string;
   contactName: string;
@@ -91,6 +95,8 @@ export function EditApplicationForm({
         ? new Date(application.appliedAt).toISOString().split('T')[0]
         : '',
       url: application.url ?? '',
+      city: application.city ?? '',
+      country: application.country ?? '',
       salaryMin: application.salaryMin?.toString() ?? '',
       salaryMax: application.salaryMax?.toString() ?? '',
       contactName: application.contactName ?? '',
@@ -130,6 +136,10 @@ export function EditApplicationForm({
           ? (new Date(data.appliedAt) as unknown as Date)
           : undefined,
         url: data.url || undefined,
+        // Null rather than undefined: clearing a location has to reach the row,
+        // and undefined is how the API is told to leave a field alone.
+        city: data.city || null,
+        country: data.country || null,
         salaryMin: data.salaryMin ? Number(data.salaryMin) : undefined,
         salaryMax: data.salaryMax ? Number(data.salaryMax) : undefined,
         contactName: data.contactName || undefined,
@@ -262,6 +272,35 @@ export function EditApplicationForm({
               </Property>
             )}
           />
+
+          <Property
+            icon={<RiMapPin2Line className="size-4" />}
+            label="Location"
+          >
+            <Controller
+              name="city"
+              control={control}
+              render={({ field: cityField }) => (
+                <Controller
+                  name="country"
+                  control={control}
+                  render={({ field: countryField }) => (
+                    <SelectLocation
+                      value={{
+                        city: cityField.value,
+                        country: countryField.value,
+                      }}
+                      onChange={(next) => {
+                        cityField.onChange(next.city);
+                        countryField.onChange(next.country);
+                      }}
+                      inputClassName="h-8"
+                    />
+                  )}
+                />
+              )}
+            />
+          </Property>
 
           <Property
             icon={<RiMoneyDollarBoxLine className="size-4" />}

@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -14,6 +15,8 @@ import { Company } from './company';
 import { ApplicationTier } from '../types/application/tier';
 
 @Entity()
+@Index(['city'])
+@Index(['country'])
 export class Application {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -30,6 +33,21 @@ export class Application {
 
   @Column({ nullable: true })
   url: string;
+
+  /**
+   * Where the job is, as two fields rather than one line.
+   *
+   * "Paris, France" typed freely sorts and groups as a different place from
+   * "Paris (France)", and a filter over one string cannot tell them apart.
+   * Either half may stand alone: a remote role in France names no city, and a
+   * city is often all a posting gives.
+   */
+  @Column({ nullable: true })
+  city: string | null;
+
+  /** ISO 3166-1 alpha-2, so a country reads the same however it was typed. */
+  @Column({ type: 'varchar', length: 2, nullable: true })
+  country: string | null;
 
   @Column({ nullable: true })
   salaryMin: number;

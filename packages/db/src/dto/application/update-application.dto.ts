@@ -4,6 +4,8 @@ import {
   IsString,
   IsNumber,
   IsDate,
+  Length,
+  MaxLength,
 } from 'class-validator';
 import { ApplicationStatus } from '../../types/application/status';
 import { ApplicationTier } from '../../types/application/tier';
@@ -28,6 +30,17 @@ export class UpdateApplicationDto {
   @IsOptional()
   @IsString()
   url?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  city?: string | null;
+
+  /** ISO 3166-1 alpha-2. Empty is allowed; a half-typed code is not. */
+  @IsOptional()
+  @IsString()
+  @Length(2, 2)
+  country?: string | null;
 
   @IsOptional()
   @IsNumber()

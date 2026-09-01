@@ -43,6 +43,7 @@ import {
 } from '@repo/ui/components/table';
 import { cn } from '@repo/ui/lib/utils';
 import { CompanyLogo } from '@/components/shared/company-logo';
+import { formatLocation } from '@/components/shared/select-location';
 import { formatDate, formatSalary } from '@/utils/applications-utils';
 import { APPLICATION_STATUS_OPTIONS } from '../../constants/status';
 import { TIER_CONFIG } from '../../constants/tier';
@@ -154,6 +155,21 @@ export function ApplicationsTable({
             {row.original.position}
           </span>
         ),
+      },
+      {
+        id: 'location',
+        header: 'Location',
+        cell: ({ row }) => {
+          const location = formatLocation({
+            city: row.original.city ?? '',
+            country: row.original.country ?? '',
+          });
+          return location ? (
+            <span className="text-sm">{location}</span>
+          ) : (
+            <span className="text-sm text-muted-foreground">&mdash;</span>
+          );
+        },
       },
       {
         id: 'status',

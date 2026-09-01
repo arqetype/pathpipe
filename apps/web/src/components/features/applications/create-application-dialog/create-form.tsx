@@ -25,6 +25,7 @@ import { ApplicationStatus } from '@repo/db/types/application/status';
 import { ApplicationTier } from '@repo/db/types/application/tier';
 import { TierSelectOptions } from '../shared/tier-select-options';
 import SelectCompany from '@/components/shared/select-company';
+import SelectLocation from '@/components/shared/select-location';
 import { APPLICATION_TIER_OPTIONS } from '../constants/tier';
 import { DialogFooter } from '@repo/ui/components/dialog';
 
@@ -45,6 +46,8 @@ export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
       status: (status as ApplicationStatus) || ApplicationStatus.WISHLIST,
       tier: ApplicationTier.NONE,
       url: '',
+      city: '',
+      country: '',
       salaryMin: undefined,
       salaryMax: undefined,
       appliedAt: '',
@@ -62,6 +65,9 @@ export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
       const result = await createApplicationAction({
         ...data,
         url: data.url || undefined,
+        city: data.city || undefined,
+        // The DTO wants two letters or nothing — an empty string is neither.
+        country: data.country || undefined,
         appliedAt: data.appliedAt || undefined,
       });
 
@@ -193,6 +199,35 @@ export function CreateApplicationForm({ status }: CreateApplicationFormProps) {
           )}
         />
       </div>
+
+      <Controller
+        name="city"
+        control={form.control}
+        render={({ field: cityField, fieldState }) => (
+          <Controller
+            name="country"
+            control={form.control}
+            render={({ field: countryField }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={cityField.name}>Location</FieldLabel>
+                <SelectLocation
+                  value={{
+                    city: cityField.value ?? '',
+                    country: countryField.value ?? '',
+                  }}
+                  onChange={(next) => {
+                    cityField.onChange(next.city);
+                    countryField.onChange(next.country);
+                  }}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+        )}
+      />
 
       <Controller
         name="url"

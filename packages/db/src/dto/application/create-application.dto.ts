@@ -3,6 +3,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Length,
+  MaxLength,
   Min,
   MinLength,
 } from 'class-validator';
@@ -29,6 +31,17 @@ export class CreateApplicationDto {
   @IsOptional()
   @IsString()
   url?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  city?: string;
+
+  /** ISO 3166-1 alpha-2. Empty is allowed; a half-typed code is not. */
+  @IsOptional()
+  @IsString()
+  @Length(2, 2)
+  country?: string;
 
   @IsOptional()
   @IsNumber()

@@ -42,6 +42,7 @@ const SORT_OPTIONS: { value: ApplicationSortBy; label: string }[] = [
   { value: 'updated_at', label: 'Last updated' },
   { value: 'company', label: 'Company' },
   { value: 'position', label: 'Position' },
+  { value: 'city', label: 'Location' },
   { value: 'salaryMin', label: 'Minimum Salary' },
   { value: 'salaryMax', label: 'Maximum Salary' },
 ];

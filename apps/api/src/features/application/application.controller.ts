@@ -11,7 +11,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApplicationService } from './application.service';
-import { type ApplicationsQuery } from '@repo/db/query/application';
+import {
+  type ApplicationsQuery,
+  type LocationSuggestion,
+} from '@repo/db/query/application';
 import { ApplicationStatus } from '@repo/db/types/application/status';
 import { UserRole } from '@repo/db/types/user/roles';
 import { Application } from '@repo/db/entities/application';
@@ -30,6 +33,26 @@ export class ApplicationController {
       return this.applicationService.findMany(query);
     }
     return this.applicationService.findMany(query, user.id);
+  }
+
+  /**
+   * Places to offer while somebody types a location.
+   *
+   * Declared before `:id` on purpose — Nest matches in order, and a route
+   * parameter would otherwise swallow the word "locations".
+   */
+  @HttpCode(HttpStatus.OK)
+  @Get('locations')
+  getLocations(
+    @CurrentUser() user: User,
+    @Query('query') query?: string,
+    @Query('limit') limit?: number | string,
+  ): Promise<LocationSuggestion[]> {
+    return this.applicationService.locationSuggestions(
+      user.id,
+      query ?? '',
+      limit ? Number(limit) : 20,
+    );
   }
 
   @HttpCode(HttpStatus.OK)
