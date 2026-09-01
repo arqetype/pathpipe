@@ -37,7 +37,7 @@ export default async function ApplicationLayout({
               <SidebarTrigger size="icon-lg" />
               <AppBreadcrumb />
             </div>
-            <div className="flex-1 h-full">{children}</div>
+            <div className="flex-1 min-h-0">{children}</div>
           </SidebarInset>
         </BreadcrumbProvider>
       </SidebarProvider>

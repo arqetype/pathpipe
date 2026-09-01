@@ -38,22 +38,22 @@ export default async function AppMainPage({
 
   return (
     <>
-      <div className="flex flex-col h-full max-h-[calc(100vh-theme(space.12))]">
+      <div className="flex flex-col h-full min-h-0">
         <ViewToolbar total={total} actions={<CreateApplicationDialog />} />
-        <ScrollArea className="flex-1 flex flex-col h-full min-h-0 overflow-y-auto w-full">
-          {view === 'table' ? (
-            <ApplicationsTable
-              applications={applications}
-              hiddenStatuses={hiddenStatuses}
-            />
-          ) : (
+        {view === 'table' ? (
+          <ApplicationsTable
+            applications={applications}
+            hiddenStatuses={hiddenStatuses}
+          />
+        ) : (
+          <ScrollArea className="flex-1 min-h-0 w-full">
             <KanbanBoard
               applications={applications}
               hiddenColumns={hiddenStatuses}
             />
-          )}
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        )}
       </div>
       <ApplicationDialog id={id} />
     </>

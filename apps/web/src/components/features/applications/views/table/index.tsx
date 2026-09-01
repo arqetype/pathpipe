@@ -283,7 +283,7 @@ export function ApplicationsTable({
   }
 
   return (
-    <div className="px-4 py-4 space-y-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4 px-4 py-4">
       {selectedIds.length > 0 && (
         <div className="flex items-center justify-between rounded-md border bg-muted/50 px-3 py-2">
           <span className="text-sm font-medium">
@@ -326,9 +326,9 @@ export function ApplicationsTable({
         </div>
       )}
 
-      <div className="overflow-hidden rounded-md border">
+      <div className="min-h-0 flex-1 overflow-hidden rounded-md border [&>[data-slot=table-container]]:h-full [&>[data-slot=table-container]]:overflow-auto">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 z-10 [&_th]:bg-background">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -384,7 +384,7 @@ export function ApplicationsTable({
         </Table>
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex shrink-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-muted-foreground">
           Showing {rangeStart}&ndash;{rangeEnd} of {totalRows}
         </div>
