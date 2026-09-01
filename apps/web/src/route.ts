@@ -3,6 +3,7 @@ export const routes: Record<string, string> = {
   '/app/job-matches': 'Job Matches',
   '/app/job-profile': 'Job Profile',
   '/app/applications': 'Applications',
+  '/app/watchlist': 'Company Watch List',
   '/app/discover': 'Discovery',
   '/app/settings': 'Settings',
   '/app/settings/profile': 'Profile',

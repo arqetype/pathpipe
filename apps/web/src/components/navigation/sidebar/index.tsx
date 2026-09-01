@@ -35,7 +35,7 @@ import { Logo } from '@repo/ui/branding/logo';
 const userNavItems = [
   { title: 'Job Matches', href: '/app/job-matches', icon: RiFileListLine },
   { title: 'Applications', href: '/app/applications', icon: RiBriefcaseLine },
-  { title: 'Watchlist', href: '/app/watchlist', icon: RiEyeLine },
+  { title: 'Company Watch List', href: '/app/watchlist', icon: RiEyeLine },
   { title: 'Job Profile', href: '/app/job-profile', icon: RiUserSearchLine },
 ];
 
