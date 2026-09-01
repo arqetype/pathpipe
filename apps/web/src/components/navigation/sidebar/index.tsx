@@ -8,6 +8,7 @@ import {
   RiKeyLine,
   RiFileListLine,
   RiRadarLine,
+  RiUserSearchLine,
 } from '@remixicon/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -35,6 +36,7 @@ const userNavItems = [
   { title: 'Job Matches', href: '/app/job-matches', icon: RiFileListLine },
   { title: 'Applications', href: '/app/applications', icon: RiBriefcaseLine },
   { title: 'Watchlist', href: '/app/watchlist', icon: RiEyeLine },
+  { title: 'Job Profile', href: '/app/job-profile', icon: RiUserSearchLine },
 ];
 
 const adminNavItems = [
