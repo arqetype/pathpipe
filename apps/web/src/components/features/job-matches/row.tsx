@@ -8,23 +8,8 @@ import { JobPostingStatus } from '@repo/db/types/job-posting/status';
 import type { EmploymentType } from '@repo/db/types/job-posting/employment-type';
 import type { RemoteType } from '@repo/db/types/job-posting/remote-type';
 import type { JobMatchItem } from '@/actions/job-match/fetch';
-import { formatSalary } from '@/utils/applications-utils';
+import { formatSalary, relativeDate } from '@/utils/applications-utils';
 import { EMPLOYMENT_TYPE_LABELS, REMOTE_TYPE_LABELS } from './constants';
-
-/** "3d ago" — offers are compared by freshness far more than by exact date. */
-export function relativeDate(value: string | null): string | null {
-  if (!value) return null;
-  const days = Math.floor(
-    (Date.now() - new Date(value).getTime()) / 86_400_000,
-  );
-  if (!Number.isFinite(days) || days < 0) return null;
-  if (days === 0) return 'today';
-  if (days === 1) return 'yesterday';
-  if (days < 30) return `${days}d ago`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months}mo ago`;
-  return `${Math.floor(months / 12)}y ago`;
-}
 
 interface JobRowProps {
   job: JobMatchItem;

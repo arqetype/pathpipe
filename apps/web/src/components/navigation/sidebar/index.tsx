@@ -5,6 +5,7 @@ import {
   RiBriefcaseLine,
   RiBuildingLine,
   RiEyeLine,
+  RiHome5Line,
   RiKeyLine,
   RiFileListLine,
   RiRadarLine,
@@ -33,6 +34,7 @@ import type { User } from '@repo/db/entities/user';
 import { Logo } from '@repo/ui/branding/logo';
 
 const userNavItems = [
+  { title: 'Home', href: '/app', icon: RiHome5Line },
   { title: 'Job Matches', href: '/app/job-matches', icon: RiFileListLine },
   { title: 'Applications', href: '/app/applications', icon: RiBriefcaseLine },
   { title: 'Company Watch List', href: '/app/watchlist', icon: RiEyeLine },

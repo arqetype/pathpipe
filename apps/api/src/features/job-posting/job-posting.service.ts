@@ -992,6 +992,58 @@ export class JobPostingService {
     };
   }
 
+  /**
+   * A short, ranked slice of the board.
+   *
+   * Same filters and same ranking as {@link findMany}, without the facets or
+   * the "new" count: a home page shows three offers and has no filter bar, and
+   * those aggregates are the expensive half of a board query.
+   */
+  async highlights(
+    userId: string,
+    query: JobPostingsQuery,
+    preloaded?: Viewer,
+  ): Promise<{ data: JobPostingResponse[]; total: number }> {
+    const viewer = preloaded ?? (await this.viewer(userId));
+    const limit = Math.min(Math.max(toInt(query.limit) ?? 5, 1), 25);
+    const match = buildMatchSql(userId, viewer);
+
+    const qb = this.buildQuery(viewer, query, [], true)
+      .addSelect('interaction.status', 'i_status')
+      .addSelect('interaction.saved', 'i_saved')
+      .addSelect('interaction.applicationId', 'i_application')
+      .limit(limit);
+
+    if (match) {
+      qb.addSelect(match.score, 'match_score').setParameters(match.params);
+    }
+    this.applySort(qb, query, Boolean(match));
+
+    // `getCount` drops the limit, so a tile can say "12 waiting" above a list
+    // that only shows three.
+    const [{ entities, raw }, total] = await Promise.all([
+      qb.getRawAndEntities<Record<string, unknown>>(),
+      qb.getCount(),
+    ]);
+
+    const [locations, followed] = await Promise.all([
+      this.locationsFor(entities.map((job) => job.id)),
+      this.followedCompanies(userId),
+    ]);
+
+    return {
+      data: entities.map((job, index) =>
+        this.toResponse(job, {
+          raw: raw[index] ?? {},
+          locations: locations.get(job.id) ?? [],
+          followed: followed.has(job.companyId),
+          preference: viewer.preference,
+        }),
+      ),
+      total,
+    };
+  }
+
   async findOne(userId: string, id: string): Promise<JobPostingResponse> {
     const viewer = await this.viewer(userId);
     const job = await this.jobPostingRepository.findOne({

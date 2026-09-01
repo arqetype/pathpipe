@@ -27,13 +27,16 @@ import {
   trackJobMatchAction,
   updateJobMatchStatusAction,
 } from '@/actions/job-match/update';
-import { formatDate, formatSalary } from '@/utils/applications-utils';
+import {
+  formatDate,
+  formatSalary,
+  relativeDate,
+} from '@/utils/applications-utils';
 import {
   CLOSED_REASON_LABELS,
   EMPLOYMENT_TYPE_LABELS,
   REMOTE_TYPE_LABELS,
 } from './constants';
-import { relativeDate } from './row';
 
 interface JobDetailProps {
   job: JobMatchItem;

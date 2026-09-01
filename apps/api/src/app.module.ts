@@ -27,6 +27,7 @@ import { JobSource } from '@repo/db/entities/job-source';
 import { ApiKey } from '@repo/db/entities/api-key';
 import { JobPostingModule } from './features/job-posting/job-posting.module';
 import { JobPreferenceModule } from './features/job-preference/job-preference.module';
+import { DashboardModule } from './features/dashboard/dashboard.module';
 import { AdminModule } from './features/admin/admin.module';
 import { InternalModule } from './internal/internal.module';
 import { resolve } from 'node:path';
@@ -84,6 +85,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     CompanyModule,
     JobPostingModule,
     JobPreferenceModule,
+    DashboardModule,
     AdminModule,
     InternalModule,
 
