@@ -1,86 +1,53 @@
 import { HttpClient } from './http';
-import { BrowserPool } from './browser';
 import { normalizeJobs } from './normalize';
-import { extractEmbeddedStateJobs } from './generic/json-walk';
-import {
-  extractDomJobs,
-  extractDomJobsPaged,
-  findNextPageUrl,
-} from './generic/dom';
-import {
-  detectAdapterInHtml,
-  matchAdapterByUrl,
-  type AdapterMatch,
-} from './registry';
+import { matchAdapterByUrl, type AdapterMatch } from './registry';
 import { fingerprintJobs, normalizeUrl } from './url';
 import type {
   AdapterContext,
   DiscoverOptions,
   HttpFetcher,
   ScrapeResult,
-  ScrapeStrategy,
   ScrapedJob,
 } from './types';
 
 export interface JobDiscoveryOptions {
   http: HttpClient;
-  browser: BrowserPool;
   log?: (data: Record<string, unknown>, msg: string) => void;
   /**
-   * Apply the robots.txt gate to the vendor board APIs too.
+   * Apply the robots.txt gate to the vendor board APIs.
    *
    * Off by default: SmartRecruiters (and others) serve `Disallow: /` on their
    * API host while their own embed widget calls that exact endpoint from the
-   * visitor's browser, so enforcing it there disables the adapter tier without
-   * protecting anything. Generic crawling of company sites always honours
-   * robots.txt.
+   * visitor's browser, so enforcing it there disables the adapter without
+   * protecting anything.
    */
   respectRobotsForAts?: boolean;
-  /**
-   * Wall-clock budget for one source. A JS-heavy careers site can keep the
-   * browser busy for minutes; past the budget the expensive rungs are skipped
-   * so one bad source cannot stall the cycle.
-   */
-  maxDurationMs?: number;
-  /** Pages of a paginated listing to follow. */
-  maxListingPages?: number;
 }
 
-const MIN_LISTING_JOBS = 2;
-const MIN_DOM_JOBS = 3;
-
 /**
- * Finds the open positions behind a careers URL.
+ * Reads the open positions behind a careers URL — from the vendor's own API,
+ * and from nothing else.
  *
- * The pipeline walks a ladder from cheapest and most exact to most expensive:
+ * There is one rung: the URL names an ATS, and that ATS publishes a JSON API.
+ * No page fetching, no DOM extraction, no headless browser. That is a
+ * deliberate limit rather than a missing feature — the crawling tiers existed,
+ * worked, and were removed, because a board we cannot read through an API is
+ * not worth the rate limits and IP bans that reading it by hand invites.
  *
- *   1. a known ATS JSON API, matched from the URL (exact ids, no guesswork)
- *   2. the same, matched from the embed markup on a company's own page
- *   3. the state blob a server-rendered SPA leaves in its HTML
- *   4. repeated-structure extraction over the DOM, following pagination
+ * Which ATS a company uses is settled ahead of time by `vendors.ts`, which asks
+ * each vendor's public API directly rather than reading anybody's HTML. So a
+ * company arrives here already pointed at a board this can read.
  *
- * Each rung stops the walk as soon as it produces a credible listing, so the
- * common case costs one HTTP request and no browser at all.
- *
- * Rungs are added here only once they are shown to work against a live site;
- * JSON-LD, RSS/JSON feeds, sitemap crawling and XHR capture were all tried and
- * removed because they produced nothing the rungs above did not already cover.
+ * Adding coverage means adding an adapter for a vendor with a public API, never
+ * a cleverer way to parse a page.
  */
 export class JobDiscoveryService {
-  private readonly http: HttpClient;
-  private readonly browser: BrowserPool;
   private readonly log: (data: Record<string, unknown>, msg: string) => void;
   /** Fetcher handed to ATS adapters — see `respectRobotsForAts`. */
   private readonly atsHttp: HttpFetcher;
-  private readonly maxDurationMs: number;
-  private readonly maxListingPages: number;
 
   constructor(options: JobDiscoveryOptions) {
-    this.http = options.http;
-    this.browser = options.browser;
     this.log = options.log ?? (() => {});
-    this.maxDurationMs = options.maxDurationMs ?? 150_000;
-    this.maxListingPages = options.maxListingPages ?? 10;
     this.atsHttp = options.respectRobotsForAts
       ? options.http
       : {
@@ -96,11 +63,7 @@ export class JobDiscoveryService {
     options: DiscoverOptions = {},
   ): Promise<ScrapeResult> {
     try {
-      return await this.run(
-        sourceUrl,
-        options,
-        Date.now() + this.maxDurationMs,
-      );
+      return await this.run(sourceUrl, options);
     } catch (err) {
       return {
         jobs: [],
@@ -112,178 +75,43 @@ export class JobDiscoveryService {
   private async run(
     sourceUrl: string,
     options: DiscoverOptions,
-    deadline: number,
   ): Promise<ScrapeResult> {
-    /**
-     * Browser-backed rungs run only on a full pass, and only while the source
-     * still has budget left.
-     */
-    const hasBudgetForDeepScan = (): boolean =>
-      !options.fastOnly && Date.now() < deadline;
-
-    // 1. The URL itself names the ATS.
-    const urlMatch = matchAdapterByUrl(sourceUrl);
-    if (urlMatch) {
-      const jobs = await this.fetchViaAdapter(urlMatch, options);
-      if (jobs.length) {
-        return this.finalize(jobs, {
-          sourceUrl,
-          strategy: 'ats-api',
-          platform: urlMatch.adapter.platform,
-          previous: options.previous,
-        });
-      }
-    }
-
-    // 2. Fetch the page once; every remaining strategy reads from it.
-    const page = await this.http.request(sourceUrl, {
-      conditional: options.previous,
-    });
-
-    if (page.notModified) {
-      this.log({ url: sourceUrl }, 'Source unchanged (304)');
+    const match = matchAdapterByUrl(sourceUrl);
+    if (!match) {
       return {
         jobs: [],
-        notModified: true,
         resolvedUrl: sourceUrl,
-        platform: options.knownPlatform ?? undefined,
-        strategy: options.knownStrategy ?? undefined,
-        fingerprint: {
-          etag: page.etag ?? options.previous?.etag ?? null,
-          lastModified:
-            page.lastModified ?? options.previous?.lastModified ?? null,
-          contentHash: options.previous?.contentHash ?? null,
-          jobCount: options.previous?.jobCount ?? null,
-        },
+        error:
+          'No ATS adapter claims this URL. Boards are resolved by seeding, which asks each vendor API directly — run the board discovery for this company.',
       };
     }
 
-    if (!page.ok || !page.body) {
+    let partialReason: string | null = null;
+    const jobs = await this.fetchViaAdapter(match, options, (reason) => {
+      partialReason = reason;
+    });
+    if (!jobs.length) {
       return {
         jobs: [],
-        resolvedUrl: page.url,
-        error: `Fetch failed with status ${page.status}`,
+        resolvedUrl: normalizeUrl(sourceUrl),
+        platform: match.adapter.platform,
+        error: 'Board answered with no open positions',
       };
     }
 
-    const html = page.body;
-    const pageUrl = page.url || sourceUrl;
-    const headerFingerprint = {
-      etag: page.etag,
-      lastModified: page.lastModified,
-    };
-
-    // 3. The page embeds a board from a vendor we have an adapter for.
-    const htmlMatch = detectAdapterInHtml(html, pageUrl);
-    if (htmlMatch) {
-      const jobs = await this.fetchViaAdapter(htmlMatch, options);
-      if (jobs.length) {
-        this.log(
-          { url: pageUrl, platform: htmlMatch.adapter.platform },
-          'Resolved ATS from page markup',
-        );
-        return this.finalize(jobs, {
-          sourceUrl: pageUrl,
-          strategy: 'ats-api',
-          platform: htmlMatch.adapter.platform,
-          previous: options.previous,
-        });
-      }
+    if (partialReason) {
+      this.log(
+        { url: sourceUrl, reason: partialReason },
+        'Listing incomplete — reconciliation will be skipped for this source',
+      );
     }
 
-    // 4. The listing is in a state blob the server left in the HTML.
-    const embedded = extractEmbeddedStateJobs(html, pageUrl);
-    if (embedded.length >= MIN_LISTING_JOBS) {
-      return this.finalize(embedded, {
-        sourceUrl: pageUrl,
-        strategy: 'embedded-state',
-        previous: options.previous,
-        headerFingerprint,
-      });
-    }
-
-    // 5. Read the listing off the DOM. Parsing the HTML we already have is
-    //    cheaper than a navigation, so try that before rendering for real.
-    if (hasBudgetForDeepScan()) {
-      const staticDom = await this.browser
-        .withParsedHtml(html, pageUrl, async (p) => ({
-          jobs: await extractDomJobs(p),
-          nextPage: await findNextPageUrl(p),
-        }))
-        .catch((err: unknown) => {
-          this.log({ url: pageUrl, err }, 'Static DOM extraction failed');
-          return { jobs: [] as ScrapedJob[], nextPage: null };
-        });
-
-      if (staticDom.jobs.length >= MIN_DOM_JOBS) {
-        // The first page is only part of the listing when it paginates, and
-        // boards sorted alphabetically hide new postings on later pages — so
-        // pay for a real navigation and walk them.
-        if (staticDom.nextPage) {
-          const paged = await this.pagedDom(pageUrl, deadline);
-          if (paged.length > staticDom.jobs.length) {
-            return this.finalize(paged, {
-              sourceUrl: pageUrl,
-              strategy: 'dom-repeat',
-              previous: options.previous,
-              usedBrowser: true,
-            });
-          }
-        }
-
-        return this.finalize(staticDom.jobs, {
-          sourceUrl: pageUrl,
-          strategy: 'dom-repeat',
-          previous: options.previous,
-          headerFingerprint,
-          // Parsing static HTML still goes through Chromium, so this source
-          // cannot produce anything on a cheap pass — recording that lets the
-          // frequent poll skip it instead of re-fetching it for nothing.
-          usedBrowser: true,
-        });
-      }
-
-      // 6. Nothing in the static HTML: the board renders client-side.
-      const rendered = await this.pagedDom(pageUrl, deadline);
-      if (rendered.length >= MIN_DOM_JOBS) {
-        return this.finalize(rendered, {
-          sourceUrl: pageUrl,
-          strategy: 'dom-repeat',
-          previous: options.previous,
-          usedBrowser: true,
-        });
-      }
-    }
-
-    return {
-      jobs: [],
-      resolvedUrl: pageUrl,
-      fingerprint: {
-        ...headerFingerprint,
-        contentHash: null,
-        jobCount: 0,
-      },
-      error: options.fastOnly ? undefined : 'No job listings found',
-    };
-  }
-
-  /** Renders the board and walks its pagination. */
-  private async pagedDom(
-    pageUrl: string,
-    deadline: number,
-  ): Promise<ScrapedJob[]> {
-    return this.browser
-      .withRenderedPage(pageUrl, (p) =>
-        extractDomJobsPaged(p, {
-          maxPages: this.maxListingPages,
-          deadline,
-          log: this.log,
-        }),
-      )
-      .catch((err: unknown) => {
-        this.log({ url: pageUrl, err }, 'Paged DOM extraction failed');
-        return [] as ScrapedJob[];
-      });
+    return this.finalize(jobs, {
+      sourceUrl,
+      platform: match.adapter.platform,
+      previous: options.previous,
+      partial: Boolean(partialReason),
+    });
   }
 
   /**
@@ -297,8 +125,13 @@ export class JobDiscoveryService {
   private async fetchViaAdapter(
     match: AdapterMatch,
     options: DiscoverOptions,
+    onPartial: (reason: string) => void,
   ): Promise<ScrapedJob[]> {
-    const base = { http: this.atsHttp, log: this.log };
+    const base = {
+      http: this.atsHttp,
+      log: this.log,
+      markPartial: onPartial,
+    };
     const call = (light: boolean): Promise<ScrapedJob[]> =>
       match.adapter
         .fetch(match.target, { ...base, light } as AdapterContext)
@@ -330,11 +163,10 @@ export class JobDiscoveryService {
     raw: ScrapedJob[],
     context: {
       sourceUrl: string;
-      strategy: ScrapeStrategy;
-      platform?: string;
+      platform: string;
       previous?: DiscoverOptions['previous'];
-      headerFingerprint?: { etag: string | null; lastModified: string | null };
-      usedBrowser?: boolean;
+      /** True when the adapter did not reach the end of the board. */
+      partial: boolean;
     },
   ): ScrapeResult {
     const jobs = normalizeJobs(raw, context.platform);
@@ -347,7 +179,6 @@ export class JobDiscoveryService {
     this.log(
       {
         url: context.sourceUrl,
-        strategy: context.strategy,
         platform: context.platform,
         jobs: jobs.length,
         unchanged,
@@ -357,14 +188,17 @@ export class JobDiscoveryService {
 
     return {
       jobs,
-      strategy: context.strategy,
+      strategy: 'ats-api',
       platform: context.platform,
       resolvedUrl: normalizeUrl(context.sourceUrl),
       notModified: unchanged,
-      usedBrowser: context.usedBrowser,
+      // Set only by an adapter that said it stopped early. Reconciliation reads
+      // a complete listing as "everything else is gone", so this must never be
+      // optimistic.
+      partial: context.partial,
       fingerprint: {
-        etag: context.headerFingerprint?.etag ?? null,
-        lastModified: context.headerFingerprint?.lastModified ?? null,
+        etag: null,
+        lastModified: null,
         contentHash,
         jobCount: jobs.length,
       },

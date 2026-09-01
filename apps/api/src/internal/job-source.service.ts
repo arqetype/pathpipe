@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
+import { Company, CompanyStatus } from '@repo/db/entities/company';
 import { CompanyWatch } from '@repo/db/entities/company-watch';
 import { JobSource } from '@repo/db/entities/job-source';
 import { UpdateJobSourceStateDto } from '@repo/db/dto/job-posting/update-job-source-state.dto';
 
-export interface JobSourceWatcher {
-  userId: string;
-  userEmail: string;
-  userName: string;
+/** A company whose board lives behind one crawled URL. */
+export interface JobSourceCompany {
   companyId: string;
   companyName: string;
 }
@@ -26,7 +25,7 @@ export interface JobSourceTask {
   lastCheckedAt: string | null;
   lastChangedAt: string | null;
   lastSyncedAt: string | null;
-  watchers: JobSourceWatcher[];
+  companies: JobSourceCompany[];
 }
 
 /** Trailing slashes and casing must not split one company into two sources. */
@@ -46,15 +45,19 @@ const normalizeSourceUrl = (raw: string): string => {
 };
 
 /**
- * Turns the watch list into a crawl work list: one entry per careers URL, with
- * every user watching it attached, plus the crawl state from the previous run.
+ * The crawl work list: one entry per careers URL, with the companies behind it
+ * and the crawl state from the previous run.
  *
- * Grouping by URL is what stops the worker from fetching the same board once
- * per watcher.
+ * Every company with a careers URL is crawled, not only the ones somebody is
+ * watching — offers are global, so a board nobody follows yet still has to be
+ * read before anybody can find anything on it. Grouping by URL is what stops
+ * two companies sharing a board from being fetched twice.
  */
 @Injectable()
 export class JobSourceService {
   constructor(
+    @InjectRepository(Company)
+    private readonly companyRepository: Repository<Company>,
     @InjectRepository(CompanyWatch)
     private readonly companyWatchRepository: Repository<CompanyWatch>,
     @InjectRepository(JobSource)
@@ -62,31 +65,54 @@ export class JobSourceService {
   ) {}
 
   async listTasks(): Promise<JobSourceTask[]> {
-    const watches = await this.companyWatchRepository.find({
-      relations: ['user', 'company'],
+    const companies = await this.companyRepository.find({
+      where: [
+        { careersUrl: Not(IsNull()), status: Not(CompanyStatus.REJECTED) },
+        { website: Not(IsNull()), status: Not(CompanyStatus.REJECTED) },
+      ],
     });
 
+    // A follower who corrected a company's careers URL on their own watch knows
+    // something the company record does not, so that URL is crawled too.
+    const overrides = await this.companyWatchRepository.find({
+      relations: ['company'],
+    });
+
+    const sources: Array<{ url: string; company: JobSourceCompany }> = [];
+    for (const company of companies) {
+      const rawUrl = company.careersUrl ?? company.website;
+      if (!rawUrl) continue;
+      sources.push({
+        url: rawUrl,
+        company: { companyId: company.id, companyName: company.name },
+      });
+    }
+    for (const watch of overrides) {
+      const rawUrl = watch.careersUrl ?? watch.website;
+      if (!rawUrl || !watch.company) continue;
+      sources.push({
+        url: rawUrl,
+        company: {
+          companyId: watch.company.id,
+          companyName: watch.company.name,
+        },
+      });
+    }
+
     const grouped = new Map<string, JobSourceTask>();
-    for (const watch of watches) {
-      const rawUrl =
-        watch.careersUrl ??
-        watch.company?.careersUrl ??
-        watch.website ??
-        watch.company?.website;
-      if (!rawUrl || !watch.user || !watch.company) continue;
+    for (const source of sources) {
+      const url = normalizeSourceUrl(source.url);
+      const entry = source.company;
 
-      const url = normalizeSourceUrl(rawUrl);
       const existing = grouped.get(url);
-      const watcher: JobSourceWatcher = {
-        userId: watch.user.id,
-        userEmail: watch.user.email,
-        userName: watch.user.name ?? watch.user.email,
-        companyId: watch.company.id,
-        companyName: watch.company.name,
-      };
-
       if (existing) {
-        existing.watchers.push(watcher);
+        if (
+          !existing.companies.some(
+            (company) => company.companyId === entry.companyId,
+          )
+        ) {
+          existing.companies.push(entry);
+        }
         continue;
       }
       grouped.set(url, {
@@ -102,7 +128,7 @@ export class JobSourceService {
         lastCheckedAt: null,
         lastChangedAt: null,
         lastSyncedAt: null,
-        watchers: [watcher],
+        companies: [entry],
       });
     }
 

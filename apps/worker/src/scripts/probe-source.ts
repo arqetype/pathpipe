@@ -12,7 +12,6 @@
 import pino from 'pino';
 import pretty from 'pino-pretty';
 import { HttpClient } from '@/domain/scraping/http';
-import { BrowserPool } from '@/domain/scraping/browser';
 import { JobDiscoveryService } from '@/domain/scraping/pipeline';
 
 const USER_AGENT =
@@ -41,26 +40,18 @@ const main = async (): Promise<void> => {
     respectRobots: process.env.WORKERS_SCRAPE_RESPECT_ROBOTS !== 'false',
     log: (data, msg) => logger.debug(data, msg),
   });
-  const browser = new BrowserPool({
-    userAgent: USER_AGENT,
-    idleTimeoutMs: 0,
-    log: (data, msg) => logger.debug(data, msg),
-  });
   const discovery = new JobDiscoveryService({
     http,
-    browser,
     log: (data, msg) => logger.info(data, msg),
   });
 
   const startedAt = Date.now();
   const result = await discovery.discover(url, { fastOnly });
-  await browser.close();
 
   const summary = {
     url,
     platform: result.platform ?? null,
     strategy: result.strategy ?? null,
-    usedBrowser: Boolean(result.usedBrowser),
     jobCount: result.jobs.length,
     contentHash: result.fingerprint?.contentHash ?? null,
     error: result.error ?? null,
@@ -74,7 +65,6 @@ const main = async (): Promise<void> => {
     console.log(`  source     ${summary.url}`);
     console.log(`  platform   ${summary.platform ?? '-'}`);
     console.log(`  strategy   ${summary.strategy ?? '-'}`);
-    console.log(`  browser    ${summary.usedBrowser ? 'yes' : 'no'}`);
     console.log(`  jobs       ${summary.jobCount}`);
     console.log(`  hash       ${summary.contentHash ?? '-'}`);
     console.log(`  took       ${summary.seconds}s`);

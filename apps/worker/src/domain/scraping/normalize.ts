@@ -1,5 +1,8 @@
 import type { ScrapedJob } from './types';
 import { jobKey, normalizeUrl } from './url';
+import { formatLocations, parseLocations } from './location';
+import { classifyDomain, classifySeniority } from './classify';
+import { decodeEntities, looksLikeHtml, sanitizeHtml } from './sanitize';
 
 /**
  * Titles that show up in navigation, footers and consent banners. Kept as exact
@@ -139,46 +142,6 @@ const NAV_TITLES = new Set([
 const NAV_PREFIXES =
   /^(?:sign\s|log\s|my\s|our\s|all\s|view\s|see\s|browse\s|search\s|back\s|go\s|skip\s|share\s|follow\s|subscribe\s|download\s|learn\s|read\s|discover\s|explore\s|why\s|how\s|what\s|meet\s|about\s|contact\s|privacy|cookie|terms|legal|mentions|conditions|politique)/i;
 
-const DECIMAL_ENTITIES: Record<string, string> = {
-  amp: '&',
-  lt: '<',
-  gt: '>',
-  quot: '"',
-  apos: "'",
-  nbsp: ' ',
-  ndash: '–',
-  mdash: '—',
-  hellip: '…',
-  eacute: 'é',
-  egrave: 'è',
-  agrave: 'à',
-  ccedil: 'ç',
-  ocirc: 'ô',
-  ucirc: 'û',
-  icirc: 'î',
-  auml: 'ä',
-  ouml: 'ö',
-  uuml: 'ü',
-  szlig: 'ß',
-  rsquo: '’',
-  lsquo: '‘',
-  ldquo: '“',
-  rdquo: '”',
-};
-
-export const decodeEntities = (value: string): string =>
-  value
-    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) =>
-      String.fromCodePoint(Number.parseInt(hex, 16)),
-    )
-    .replace(/&#(\d+);/g, (_, dec: string) =>
-      String.fromCodePoint(Number.parseInt(dec, 10)),
-    )
-    .replace(
-      /&([a-z]+);/gi,
-      (match, name: string) => DECIMAL_ENTITIES[name.toLowerCase()] ?? match,
-    );
-
 export const stripHtml = (value: string): string =>
   decodeEntities(
     value
@@ -299,9 +262,10 @@ const toIsoDate = (value: unknown): string | undefined => {
   if (typeof value !== 'string') return undefined;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return undefined;
-  // Guard against nonsense dates from bad parses.
+  // Guard against nonsense dates from bad parses. Expiry dates are legitimately
+  // in the future, so the upper bound has to leave room for them.
   const year = date.getUTCFullYear();
-  if (year < 2000 || year > new Date().getUTCFullYear() + 2) return undefined;
+  if (year < 2000 || year > new Date().getUTCFullYear() + 5) return undefined;
   return date.toISOString();
 };
 
@@ -311,10 +275,30 @@ export const normalizeJob = (job: ScrapedJob): ScrapedJob | null => {
   const url = normalizeUrl(job.url ?? '');
   if (!/^https?:\/\//i.test(url)) return null;
 
-  const description = job.description
-    ? stripHtml(job.description).slice(0, 20000)
+  // Boards put markup in whichever field they feel like; whatever carries tags
+  // becomes the rendered copy, and the plain text is derived from it.
+  const rawHtml =
+    job.descriptionHtml ??
+    (job.description && looksLikeHtml(job.description)
+      ? job.description
+      : undefined);
+  const descriptionHtml = rawHtml
+    ? sanitizeHtml(rawHtml).slice(0, 60000) || undefined
     : undefined;
-  const location = cleanLocation(job.location);
+  const plainSource = job.description ?? rawHtml;
+  const description = plainSource
+    ? stripHtml(plainSource).slice(0, 20000) || undefined
+    : undefined;
+
+  // Places first: the display label is derived from them, so a board that names
+  // three cities reads as three cities everywhere.
+  const parsedLocations = parseLocations([
+    ...(job.locations ?? []),
+    job.location,
+  ]);
+  const location =
+    formatLocations(parsedLocations) ?? cleanLocation(job.location);
+  const department = job.department ? cleanLocation(job.department) : undefined;
   const salary =
     job.salaryMin || job.salaryMax
       ? {
@@ -329,14 +313,30 @@ export const normalizeJob = (job: ScrapedJob): ScrapedJob | null => {
     title,
     url,
     description,
+    descriptionHtml,
     location,
-    department: job.department ? cleanLocation(job.department) : undefined,
-    employmentType: job.employmentType,
+    parsedLocations,
+    department,
+    // Classified once here rather than guessed at on every query.
+    domain: job.domain ?? classifyDomain(title, department),
+    seniority: job.seniority ?? classifySeniority(title),
+    employmentType: normalizeEmploymentType(
+      job.employmentType,
+      title,
+      description?.slice(0, 400),
+    ),
     remote: job.remote ?? isRemote(title, location, job.employmentType),
+    remoteType:
+      job.remoteType ??
+      // A place the board itself labelled "Remote" or "Hybrid" outranks any
+      // guess made from the wording of the title.
+      parsedLocations.find((place) => place.remote)?.remote ??
+      normalizeRemoteType(job.remote, title, location, job.employmentType),
     salaryMin: salary.salaryMin ?? undefined,
     salaryMax: salary.salaryMax ?? undefined,
     salaryCurrency: salary.salaryCurrency ?? undefined,
     postedAt: toIsoDate(job.postedAt),
+    validThrough: toIsoDate(job.validThrough),
   };
 };
 
@@ -344,11 +344,15 @@ export const normalizeJob = (job: ScrapedJob): ScrapedJob | null => {
 const richness = (job: ScrapedJob): number =>
   [
     job.description,
+    job.descriptionHtml,
     job.location,
+    job.parsedLocations?.length,
     job.department,
     job.postedAt,
+    job.validThrough,
     job.salaryMin,
     job.employmentType,
+    job.remoteType,
     job.externalId,
   ].filter(Boolean).length;
 
@@ -365,4 +369,77 @@ export const normalizeJobs = (
     if (!existing || richness(job) > richness(existing)) byKey.set(key, job);
   }
   return [...byKey.values()];
+};
+
+/** Raw employment wording, folded into the values the UI filters on. */
+const EMPLOYMENT_PATTERNS: Array<[RegExp, string]> = [
+  [
+    /\b(intern|interns|internship|stage|stagiaire|praktikum|becario|estagio)\b/i,
+    'INTERNSHIP',
+  ],
+  [
+    /\b(apprentice|apprenticeship|alternance|alternant|apprenti|contrat pro|professionnalisation|ausbildung)\b/i,
+    'APPRENTICESHIP',
+  ],
+  [
+    /\b(freelance|independent contractor|auto[- ]entrepreneur|self[- ]employed)\b/i,
+    'FREELANCE',
+  ],
+  [/\b(volunteer|benevolat|service civique)\b/i, 'VOLUNTEER'],
+  [
+    /\b(temporary|temp|interim|seasonal|saisonnier|cdd|fixed[- ]term|befristet)\b/i,
+    'TEMPORARY',
+  ],
+  [/\b(contract|contractor|contract to hire|w2|c2c)\b/i, 'CONTRACT'],
+  [/\b(part[\s_-]?time|temps partiel|teilzeit|medio tiempo)\b/i, 'PART_TIME'],
+  [
+    /\b(full[\s_-]?time|temps plein|vollzeit|cdi|permanent|regular|tiempo completo)\b/i,
+    'FULL_TIME',
+  ],
+];
+
+/**
+ * FULL_TIME / PART_TIME / … from whatever the board wrote.
+ *
+ * Values are tried in order of specificity — "full-time internship" is an
+ * internship — and accents are folded first so "stagiaire" and "stagiaîre"
+ * behave the same.
+ */
+export const normalizeEmploymentType = (
+  ...values: Array<string | undefined | null>
+): string | undefined => {
+  for (const value of values) {
+    if (!value) continue;
+    const text = foldAccents(String(value)).replace(/_/g, ' ');
+    for (const [pattern, result] of EMPLOYMENT_PATTERNS) {
+      if (pattern.test(text)) return result;
+    }
+  }
+  return undefined;
+};
+
+const HYBRID_PATTERN =
+  /\b(hybrid|hybride|partially remote|remote[- ]friendly|flexible office|\d\s*days?\s*(a|per)\s*week\s*(in|at)\s*(the\s*)?office)\b/i;
+const FULLY_REMOTE_PATTERN =
+  /\b(fully remote|100% remote|remote[- ]first|remote[- ]only|full remote|teletravail total|work from anywhere)\b/i;
+const ON_SITE_PATTERN =
+  /\b(on[- ]?site|onsite|in[- ]office|in[- ]person|presentiel|vor ort)\b/i;
+
+/**
+ * ON_SITE / HYBRID / REMOTE from whatever signals the board gave.
+ *
+ * Hybrid is tested first: "hybrid remote" is hybrid, and boards write that
+ * pairing both ways round.
+ */
+export const normalizeRemoteType = (
+  flag: boolean | undefined,
+  ...values: Array<string | undefined | null>
+): string | undefined => {
+  const text = foldAccents(values.filter(Boolean).join(' '));
+  if (HYBRID_PATTERN.test(text)) return 'HYBRID';
+  if (FULLY_REMOTE_PATTERN.test(text)) return 'REMOTE';
+  if (flag === true) return 'REMOTE';
+  if (ON_SITE_PATTERN.test(text)) return 'ON_SITE';
+  if (isRemote(text)) return 'REMOTE';
+  return undefined;
 };

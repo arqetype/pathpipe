@@ -26,8 +26,6 @@ export interface RedisConfig {
 export interface ScraperConfig {
   /** Careers pages crawled at the same time. */
   concurrency: number;
-  /** Chromium pages open at the same time. */
-  browserConcurrency: number;
   userAgent: string;
   /** Minimum gap between two requests to the same host, in ms. */
   perHostDelayMs: number;
@@ -42,12 +40,17 @@ export interface ScraperConfig {
   fullIntervalHours: number;
   /** Hours after which an unchanged source is re-synced to the database anyway. */
   reconcileIntervalHours: number;
-  /** Wall-clock budget for one source before the expensive rungs are skipped. */
-  maxDurationMs: number;
-  /** Pages of a paginated listing to follow. */
-  maxListingPages: number;
   /** Consecutive failures after which a source is backed off. */
   maxFailuresBeforeBackoff: number;
+  /**
+   * Requests allowed to one hostname per cycle.
+   *
+   * Hundreds of boards can share one vendor host, so a per-source cap does not
+   * bound what that host receives from us — this does.
+   */
+  maxRequestsPerHost: number;
+  /** Consecutive 429s before a host is left alone for the rest of the cycle. */
+  maxRateLimitStrikes: number;
 }
 
 export interface AppConfig {

@@ -17,7 +17,12 @@ const EMBED_PATTERN =
 // Tenants reject a larger page than this outright, so 20 it is; paging then
 // advances by however many postings actually came back.
 const PAGE_SIZE = 20;
-const MAX_PAGES = 25;
+/**
+ * Enough for a 3000-posting board. Big tenants (NVIDIA, Salesforce) run past
+ * 1500, and stopping early is not a cosmetic loss: reconciliation would read
+ * the short listing as proof the rest were taken down.
+ */
+const MAX_PAGES = 150;
 
 /**
  * Workday tenants. The CXS endpoint behind every Workday careers site accepts
@@ -78,6 +83,16 @@ export const workdayAdapter: AtsAdapter = {
 
       const postings = payload?.jobPostings;
       if (!postings?.length) break;
+
+      // Last allowed page, and the tenant says there is more to come.
+      if (
+        page === MAX_PAGES - 1 &&
+        (payload.total ?? 0) > offset + postings.length
+      ) {
+        ctx.markPartial?.(
+          `workday board has ${payload.total} postings, read ${offset + postings.length}`,
+        );
+      }
 
       for (const posting of postings) {
         if (!posting.externalPath) continue;

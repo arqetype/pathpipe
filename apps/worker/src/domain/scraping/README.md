@@ -6,78 +6,161 @@ which of them are new since the last run.
 This is the MVP: every strategy and adapter here has been confirmed against a
 live site. Nothing speculative is kept — see [Removed](#removed-and-why).
 
-## The ladder
+## One rung: the vendor's API
 
-`pipeline.ts` walks four rungs, cheapest and most exact first, and stops at the
-first one that yields a credible listing.
+`pipeline.ts` reads a board through the ATS vendor's own public JSON API, and
+through nothing else. No page fetching, no DOM extraction, no headless browser.
 
-| # | Rung | How it works | Cost |
-|---|------|--------------|------|
-| 1 | `ats-api` (by URL) | The URL names a known ATS, so we call that vendor's public JSON API | 1 request, no browser |
-| 2 | `ats-api` (by page) | A company page embeds a vendor board (iframe/script); the vendor is read out of the HTML, then rung 1 applies | 2 requests, no browser |
-| 3 | `embedded-state` | The listing is in the state blob a server-rendered SPA leaves in its HTML (`__NEXT_DATA__`, Nuxt, Remix, Apollo…) | 1 request, no browser |
-| 4 | `dom-repeat` | The listing is read off the DOM by finding the repeated card structure, following pagination | Chromium |
+That is a deliberate limit, not a missing feature. The crawling tiers existed,
+worked, and were removed: an embedded-state reader, a repeated-structure DOM
+extractor with pagination, a Chromium pool, and a per-offer detail fetcher. Each
+one worked against live sites, and each one meant knocking on doors that answer
+with a bot challenge. A board we cannot read through an API is not worth the
+rate limits and IP bans that reading it by hand invites.
 
-Rung 4 runs twice if needed: first over the HTML we already fetched (a real DOM,
-no navigation), then — only if that finds nothing — over a live render, which
-covers boards that build their list client-side.
+So coverage grows one way: **add an adapter for a vendor with a public API.**
+Verified: `greenhouse`, `lever`, `ashby`, `smartrecruiters`, `teamtailor`,
+`personio`, `workday`.
 
-### Why structure, not class names
+Which ATS a company uses is settled ahead of time by `vendors.ts`, which asks
+each vendor's API directly rather than reading anybody's HTML — see
+[Seeding boards](#seeding-boards). A company arrives at the pipeline already
+pointed at a board it can read.
 
-Rung 4 does not look for `class="job-card"`. It groups every anchor by the shape
-of its ancestor chain and picks the largest coherent group, scoring on distinct
-titles, job-shaped URLs and the presence of location/date metadata. A careers
-listing is structurally N sibling cards of identical shape, and that holds
-regardless of the vendor's naming — which is what makes it work on sites nobody
-wrote an adapter for.
+### What this costs
 
-## Detecting "new"
+Offers whose vendor ships no description in the listing (SmartRecruiters,
+Workday) are stored without one until their adapter grows a per-posting API
+call. The old detail fetcher filled that gap by requesting each offer's page,
+which is exactly the traffic pattern that gets a crawler blocked.
 
-A posting's identity is its ATS id when the platform exposes one, else its
-normalised URL (`url.ts` strips tracking parameters, so the same job never looks
-new twice). `job_source` stores a `contentHash` over the sorted job keys, plus
-the ETag/Last-Modified of the page.
+Offers are classified on the way in — `classify.ts` reads a `domain`
+(backend, product, ML…) and a `seniority` off the title, so the board can rank
+by what somebody wants to work on rather than by keyword luck.
 
-That gives three ways to skip work, in order:
+## Seeding boards
 
-1. a `304 Not Modified` on the conditional GET — nothing was fetched;
-2. an identical `contentHash` — nothing is written or emailed;
-3. on the frequent poll, adapters are called in `light` mode (no descriptions —
-   often megabytes less) and the full payload is fetched only once the cheap
-   answer proves the job set changed.
+Offers only exist for companies we know about, so there is a discovery step
+before the crawl: `scripts/seed-boards.ts` finds boards across every vendor and
+registers the companies behind them.
 
-Insertion is one `INSERT … ON CONFLICT DO NOTHING … RETURNING`, so the rows
-returned *are* the new ones. Alert emails are built from that list, never from
-"the first N of the listing".
+No ATS publishes a directory of its customers, so "every company on Greenhouse"
+cannot be downloaded. What *can* be done is settle the question for one company
+in one request: each vendor's public API answers with a job array for a real
+board and 404 for anything else. `vendors.ts` holds those endpoints; the script
+generates candidate board names, asks each vendor in turn, and keeps only what
+answers with real open roles. Nothing here reads a page of HTML.
 
-## Scheduling
+```
+pnpm --filter worker seed:boards -- --file src/scripts/boards/verified.txt
+pnpm --filter worker seed:boards -- --yc --limit 400 --dry-run
+pnpm --filter worker seed:boards -- --companies --platform lever
+```
 
-Two crons, both in `ats.worker.ts`:
+Sources:
 
-- **fast** (`*/15 * * * *`) — conditional GETs and light ATS calls, no browser.
-  Sources that can only be read with Chromium are skipped.
-- **full** (`0 */4 * * *`) — the whole ladder.
+- `--file` — a list you control. `boards/verified.txt` ships 149 boards, every
+  one confirmed against its vendor API (~15.8k open roles: 89 Ashby, 48
+  Greenhouse, 8 Lever, 4 SmartRecruiters).
+- `--yc` — Y Combinator's official company directory, paginated JSON.
+- `--companies` — companies already in the database with no board yet.
 
-Per source: exponential backoff after repeated failures, and a periodic
-re-sync (`reconcileIntervalHours`) so a posting lost to a failed insert cannot
-stay missing forever. Per cycle: one shared Chromium, a concurrency cap, a
-per-host request delay, and a wall-clock budget per source so one slow site
-cannot stall the run.
+`--out` writes the confirmed names back to a file, which is how the shipped list
+is grown rather than regenerated by hand.
 
-`robots.txt` is honoured for company sites. It is deliberately **not** applied to
-vendor board APIs (`respectRobotsForAts`, default off): SmartRecruiters serves
-`Disallow: /` on the API host that its own embed widget calls from the visitor's
-browser, so enforcing it there would disable the adapter tier without protecting
-anything.
+**Workday is seeded differently.** The other vendors key a board on one name, so
+a name can be guessed and confirmed in one request. A Workday board is three
+unknowns — tenant, datacenter and site path — which cannot be guessed the same
+way, so `boards/workday.txt` holds full careers URLs added by hand once
+verified. That file covers NVIDIA, Salesforce, HP, Adobe and Intel (~5.7k roles).
+
+### Employers with no public API
+
+Google, Microsoft and Apple are **not** covered, and not for want of an adapter:
+
+- Microsoft's `gcsservices.careers.microsoft.com` serves a `*.azureedge.net`
+  certificate — a genuine hostname mismatch, so it cannot be fetched over
+  verified TLS at all.
+- Apple's `jobs.apple.com` search API answers `401 User Unauthorized`.
+- Google's `careers.google.com` search API answers `404`.
+
+Each could be read by driving a browser at the careers site. That is exactly the
+trade this pipeline exists to refuse.
+
+One list rather than one per vendor: the same name can answer on two platforms,
+and per-vendor files would seed a company under whichever ran last. Probing asks
+the vendors in a fixed order and takes the first that answers, so a board's
+platform is decided once.
+
+### Guessing conservatively
+
+Candidates are the company's whole name, not its first word. "Cosmic Robotics"
+is never shortened to "cosmic", and a single generic word — `agency`, `atlas`,
+`impact` — is never probed alone. Both rules exist because the first version of
+this did the opposite and confidently seeded somebody else's 821-role staffing
+board as a YC startup. A confidently wrong company is worse than a missing one:
+nothing downstream will ever question it.
+
+Companies are keyed by the board name rather than the label we guessed from, so
+a candidate that hits an unrelated board cannot mislabel a real company, and
+seeding is an upsert — re-running corrects rather than duplicates.
 
 ## Adapters
 
-Verified: `greenhouse`, `lever`, `ashby`, `smartrecruiters`, `workday`.
+Verified: `greenhouse`, `lever`, `ashby`, `smartrecruiters`, `teamtailor`,
+`personio`, `workday`.
+
+`teamtailor` and `personio` are the European rungs: both are keyless, both ship
+the full description inline, and each was confirmed against a live board —
+Teamtailor on `polestar` (26 offers), `oatly` (20) and `instabee` (38), Personio
+on `orderbird` (5). Neither vendor publishes JSON *and* pagination the way the
+US vendors do:
+
+- **Teamtailor** answers `/{board}/jobs.json` as a JSON Feed, with a schema.org
+  `JobPosting` per item. The feed never says how many pages exist, so the
+  adapter reads pages until one comes back empty, capped, and calls
+  `markPartial` if the cap is what stopped it.
+- **Personio** answers XML and nothing else — `{tenant}.jobs.personio.{tld}/xml`.
+  It is the one adapter that parses markup, done with a scoped regex reader
+  rather than a parser dependency because the document is one flat level of
+  elements. It carries no link per position, so the offer URL is rebuilt from
+  the tenant and the position id.
 
 To add one, implement `AtsAdapter` (`types.ts`) — `match(url)`, optionally
 `detectInHtml(html)`, and `fetch(target, ctx)` returning `ScrapedJob[]` — then
 register it in `registry.ts`. Honour `ctx.light` if the API can omit
 descriptions. Confirm it against a live board with the probe before landing it.
+
+## Not being blocked
+
+Every request goes through `http.ts`, and its unit of politeness is the
+**vendor**, not the hostname — `registrableDomain` in `url.ts` folds
+`acme.jobs.personio.de` and `other.jobs.personio.de` into `personio.de`.
+
+That distinction is the whole point. A vendor that hands every customer its own
+subdomain looks like hundreds of separate hosts while being one server with one
+rate limit, so throttling per hostname sends it hundreds of times what it
+allows. Per vendor, the client keeps:
+
+- one request in flight, ever;
+- a minimum gap between requests (`WORKERS_SCRAPE_HOST_DELAY_MS`), raised
+  per vendor where the default is too fast — Personio 3s, Teamtailor 1.5s. Both
+  numbers are measured: each answered `429` to a plain sequential probe while
+  its endpoints were being verified;
+- a per-cycle request budget, and a strike count — repeated `429`s, or any
+  answer that looks like a bot filter, drop the vendor for the rest of the cycle
+  rather than retrying into a ban;
+- `Retry-After` honoured when the server sends it.
+
+`robots.txt` cannot go through that queue — it is fetched from inside the
+vendor's own queue slot — so it waits out the vendor gap explicitly and counts
+against the same budget. One board means one robots.txt, and on a
+subdomain-per-customer vendor that is one *per board*.
+
+The crawl runs from whatever IP the worker sits on, which in development is
+somebody's office. Being throttled is one shared IP away from being blocked, so
+a new vendor gets an entry in `DEFAULT_VENDOR_DELAY_MS` the moment it answers a
+`429`, not after it bans us.
 
 ## Probing a source
 
@@ -87,48 +170,56 @@ pnpm --filter worker probe https://example.com/careers --fast --verbose
 pnpm --filter worker probe https://example.com/careers --json
 ```
 
-Prints the platform, the rung that produced the listing, whether Chromium was
-needed, the job count and the content hash. When a watched company reports "no
-jobs found", this says which rung to fix.
-
-Chromium must be installed for the DOM rungs: `pnpm exec playwright install
-chromium`. Without it the worker logs an error and falls back to the
-HTTP-only rungs.
+Prints the platform, the job count and the content hash. When a company reports
+"no jobs found", this says whether an adapter claimed the URL at all.
 
 ## Removed, and why
 
 Built, tested against real sites, and deleted because they never produced a
-listing the rungs above had not already found: JSON-LD `JobPosting` markup,
+*listing* the rungs above had not already found: JSON-LD `JobPosting` markup,
 RSS/Atom/JSON job feeds, sitemap crawling, and capturing the page's own XHR
-responses during a render. Adapters for Workable, Personio, Recruitee, BambooHR,
-Teamtailor, Comeet, Breezy, Rippling, Pinpoint and Jobvite were removed for the
-same reason — no live board was found to confirm them.
+responses during a render. (JSON-LD came back for rung 5, where it reads one
+offer off its own page — a different job, and the one it is actually good at.) Adapters for Workable, Recruitee, BambooHR,
+Comeet, Breezy, Rippling, Pinpoint and Jobvite were removed for the
+same reason — no live board was found to confirm them. Teamtailor and Personio
+were on that list and are back: a live board was found for each, which is the
+only thing that was missing.
 
 They are worth reconsidering one at a time, driven by a real source that needs
 one, rather than kept on spec.
 
 ## Known limitations
 
-- **Index-normalised payloads lose their location.** Stripe's state blob stores
-  jobs as `{title, slug, locationIndices: [95]}` with the place names in a
-  separate sibling array, so rung 3 returns 506 correct titles and URLs with no
-  location. Titles, URLs and change detection are unaffected. Dereferencing
-  sibling arrays generically is deliberately not implemented on a single
-  confirmed instance.
-- **Pagination is capped** at `maxListingPages` (10). A board with more pages
-  than that is truncated, and the cap is logged.
-- **Sites that actively block bots** (Tesla returned 403) are not worked around.
+- **A company with no adapter is not crawled at all.** There is no fallback that
+  reads its page, by design. Coverage comes from adding vendors, not from
+  parsing harder.
+- **Board names are guessed during seeding**, then confirmed by the vendor API.
+  A company whose board name resembles nothing in its own name is missed until
+  somebody adds it to the file by hand.
+- **European coverage is still mostly the existing US vendors.** Greenhouse,
+  Lever, Ashby and SmartRecruiters serve plenty of French and European boards;
+  what is missing is the seed list, not the adapter. `boards/verified.txt` is a
+  YC-shaped list of names.
+- **Vendors looked at and not landed**, so nobody re-derives this: Workable
+  (`apply.workable.com/api/v1/widget/accounts/{token}` answers `200` for names
+  that are not customers at all, and no account was found that returned a
+  non-empty job list — a probe that cannot say "not a board" is worse than
+  none), Recruitee, softgarden and join.com (endpoints alive, no live board
+  found to confirm the payload), Taleez (per-customer API key). Welcome to the
+  Jungle exposes an organisation endpoint but no public jobs endpoint, and its
+  site answers `403` to anything without a browser — its jobs live behind an
+  Algolia index whose key sits in the front-end bundle, which is the trade this
+  pipeline exists to refuse. The official route there is a partner contract.
+- **Aggregators are a different shape, not a missing adapter.** France Travail
+  (~300k French offers, free OAuth2 client-credentials) and Adzuna are *search*
+  APIs keyed by query and region, not boards keyed by company token. They need
+  a source type whose fingerprint is the query, and a redistribution check
+  against each one's terms before offers are shown to users.
 
 ## Gotchas
 
-- **Never pass a function to `page.evaluate`.** Under `tsx` (which `dev:ats`
-  uses) esbuild rewrites the function body to call its `__name` helper, which
-  does not exist in the page — it throws `ReferenceError: __name is not
-  defined`. Pass a self-invoking source string instead, as `dom.ts` and
-  `browser.ts` do.
 - **An over-cap HTTP body is discarded, not truncated.** Half a JSON document
   parses as nothing; a silent half-document would look like an empty board
   instead of a failure worth logging.
-- **Locations from rung 4 are only accepted when the text reads like a place.**
-  The slot next to the title holds the department on plenty of boards, and no
-  location beats a department stored as one.
+- **A vendor that ships no description leaves the offer without one.** Filling
+  it means adding a per-posting API call to that adapter, never a page fetch.

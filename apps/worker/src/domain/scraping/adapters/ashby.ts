@@ -1,5 +1,5 @@
 import type { AtsAdapter, AtsTarget, ScrapedJob } from '../types';
-import { asString, firstMatch, joinLocation, target } from './shared';
+import { asString, firstMatch, target } from './shared';
 
 interface AshbyJob {
   id: string;
@@ -67,10 +67,11 @@ export const ashbyAdapter: AtsAdapter = {
           title: job.title,
           url: (job.jobUrl ?? job.applyUrl) as string,
           description: asString(job.descriptionPlain ?? job.descriptionHtml),
-          location: joinLocation(
+          descriptionHtml: asString(job.descriptionHtml),
+          locations: [
             job.location,
             ...(job.secondaryLocations ?? []).map((entry) => entry.location),
-          ),
+          ].filter((value): value is string => Boolean(value)),
           department: job.department ?? job.team,
           employmentType: job.employmentType,
           remote: job.isRemote,

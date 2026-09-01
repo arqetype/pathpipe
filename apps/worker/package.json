@@ -8,7 +8,8 @@
     "probe": "node --import tsx --no-warnings src/scripts/probe-source.ts",
     "check-types": "tsc --noEmit",
     "build": "tsc -b --clean && tsc && tsc-alias",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "seed:boards": "DOTENV_CONFIG_PATH=../../.env.development.local node --import dotenv/config --import tsx --no-warnings src/scripts/seed-boards.ts"
   },
   "dependencies": {
     "@repo/db": "workspace:*",
@@ -18,7 +19,6 @@
     "dotenv": "^16.4.7",
     "pino": "^9.6.0",
     "pino-pretty": "^12.0.0",
-    "playwright": "^1.62.0",
     "typeorm": "^0.3.28"
   },
   "devDependencies": {

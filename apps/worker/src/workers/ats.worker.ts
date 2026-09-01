@@ -1,22 +1,24 @@
 import { configService } from '@/infrastructure/config/config.service';
 import { apiClient } from '@/infrastructure/api/api.client';
 import { HttpClient } from '@/domain/scraping/http';
-import { BrowserPool } from '@/domain/scraping/browser';
 import { JobDiscoveryService } from '@/domain/scraping/pipeline';
 import { createLimiter } from '@/domain/scraping/limiter';
 import type { ScrapeResult } from '@/domain/scraping/types';
 import { Cron } from 'croner';
 import pino from 'pino';
 import pretty from 'pino-pretty';
-import { createWorker, createQueue, QUEUES, jobAlert } from '@repo/queues';
+import { createWorker, QUEUES } from '@repo/queues';
 import { CreateJobPostingDto } from '@repo/db/dto/job-posting/create-job-posting.dto';
+import { EmploymentType } from '@repo/db/types/job-posting/employment-type';
+import { RemoteType } from '@repo/db/types/job-posting/remote-type';
+import {
+  SeniorityLevel,
+  WorkDomain,
+} from '@repo/db/types/job-posting/work-domain';
 
 const logger = pino(pretty());
 
-interface JobSourceWatcher {
-  userId: string;
-  userEmail: string;
-  userName: string;
+interface JobSourceCompany {
   companyId: string;
   companyName: string;
 }
@@ -34,7 +36,7 @@ interface JobSourceTask {
   lastCheckedAt: string | null;
   lastChangedAt: string | null;
   lastSyncedAt: string | null;
-  watchers: JobSourceWatcher[];
+  companies: JobSourceCompany[];
 }
 
 interface InsertedJob {
@@ -54,6 +56,19 @@ type CycleMode = 'fast' | 'full';
 
 const HOUR_MS = 60 * 60 * 1000;
 
+/** The worker emits enum values as strings; only known ones reach the API. */
+const asEmploymentType = (value: string | undefined): EmploymentType | null =>
+  value && value in EmploymentType ? (value as EmploymentType) : null;
+
+const asRemoteType = (value: string | undefined): RemoteType | null =>
+  value && value in RemoteType ? (value as RemoteType) : null;
+
+const asDomain = (value: string | undefined): WorkDomain | null =>
+  value && value in WorkDomain ? (value as WorkDomain) : null;
+
+const asSeniority = (value: string | undefined): SeniorityLevel | null =>
+  value && value in SeniorityLevel ? (value as SeniorityLevel) : null;
+
 const hoursSince = (iso: string | null): number =>
   iso
     ? (Date.now() - new Date(iso).getTime()) / HOUR_MS
@@ -72,34 +87,17 @@ export async function startAtsWorker() {
     password: redisConfig.password,
   };
 
-  const alertQueue = createQueue<jobAlert.JobAlertJob>(
-    QUEUES.JOB_ALERT,
-    connection,
-  );
-
   const http = new HttpClient({
     userAgent: scraperConfig.userAgent,
     perHostDelayMs: scraperConfig.perHostDelayMs,
     respectRobots: scraperConfig.respectRobots,
-    log: (data, msg) => logger.debug(data, msg),
-  });
-
-  const browser = new BrowserPool({
-    userAgent: scraperConfig.userAgent,
-    concurrency: scraperConfig.browserConcurrency,
-    log: (data, msg) => logger.debug(data, msg),
-    onLaunchError: (err) =>
-      logger.error(
-        { err },
-        'Headless browser failed to launch — JS-rendered boards will be skipped. Run "playwright install chromium".',
-      ),
+    maxRequestsPerHost: scraperConfig.maxRequestsPerHost,
+    maxRateLimitStrikes: scraperConfig.maxRateLimitStrikes,
+    log: (data, msg) => logger.info(data, msg),
   });
 
   const discovery = new JobDiscoveryService({
     http,
-    browser,
-    maxDurationMs: scraperConfig.maxDurationMs,
-    maxListingPages: scraperConfig.maxListingPages,
     respectRobotsForAts: scraperConfig.respectRobotsForAts,
     log: (data, msg) => logger.debug(data, msg),
   });
@@ -169,27 +167,43 @@ export async function startAtsWorker() {
    */
   const SUBMIT_CHUNK_SIZE = 150;
 
-  /** Writes the listing for one watcher and alerts them about what is new. */
-  const syncWatcher = async (
+  /** Writes one board's listing for the company behind it. */
+  const syncCompany = async (
     task: JobSourceTask,
-    watcher: JobSourceWatcher,
+    company: JobSourceCompany,
     result: ScrapeResult,
   ): Promise<number> => {
-    const dtos: CreateJobPostingDto[] = result.jobs.map((job) => ({
+    const source = result.resolvedUrl ?? task.url;
+    const live = result.jobs;
+
+    const dtos: CreateJobPostingDto[] = live.map((job) => ({
       title: job.title,
       url: job.url,
       externalId: job.externalId ?? null,
       description: job.description ?? null,
+      descriptionHtml: job.descriptionHtml ?? null,
       location: job.location ?? null,
+      locations: (job.parsedLocations ?? []).map((place) => ({
+        city: place.city,
+        region: place.region,
+        country: place.country,
+        raw: place.raw,
+      })),
+      department: job.department ?? null,
+      domain: asDomain(job.domain),
+      seniority: asSeniority(job.seniority),
+      employmentType: asEmploymentType(job.employmentType),
+      remoteType: asRemoteType(job.remoteType),
       salaryMin: job.salaryMin ?? null,
       salaryMax: job.salaryMax ?? null,
-      source: result.resolvedUrl ?? task.url,
+      salaryCurrency: job.salaryCurrency ?? null,
+      source,
       postedAt: job.postedAt ?? null,
-      companyId: watcher.companyId,
-      userId: watcher.userId,
+      validThrough: job.validThrough ?? null,
+      companyId: company.companyId,
     }));
 
-    const inserted: InsertedJob[] = [];
+    let inserted = 0;
     let total = 0;
     for (let start = 0; start < dtos.length; start += SUBMIT_CHUNK_SIZE) {
       const chunk = dtos.slice(start, start + SUBMIT_CHUNK_SIZE);
@@ -198,50 +212,53 @@ export async function startAtsWorker() {
           '/job-postings/internal/batch',
           chunk,
         );
-        inserted.push(...response.jobs);
+        inserted += response.jobs.length;
         total += response.total;
       } catch (err) {
         logger.error(
-          { company: watcher.companyName, user: watcher.userId, err },
+          { company: company.companyName, err },
           'Failed to submit jobs to API',
         );
         // A later chunk failing should not lose the ones that already landed.
       }
     }
-    const response: BatchResponse = {
-      inserted: inserted.length,
-      total,
-      jobs: inserted,
-    };
 
-    if (!response.inserted) return 0;
+    // The board is the authority on what is still open: anything stored for
+    // this company and source that the board no longer lists has been taken
+    // down. Only a complete listing may say that — a truncated one would close
+    // half the board.
+    if (!result.partial) {
+      try {
+        await apiClient.post('/internal/v1/job-postings/reconcile', {
+          companyId: company.companyId,
+          source,
+          urls: live.map((job) => job.url),
+          externalIds: live
+            .map((job) => job.externalId)
+            .filter((id): id is string => Boolean(id)),
+        });
+      } catch (err) {
+        logger.warn(
+          { company: company.companyName, err },
+          'Failed to reconcile closed postings',
+        );
+      }
+    }
 
-    logger.info(
-      {
-        company: watcher.companyName,
-        inserted: response.inserted,
-        platform: result.platform,
-        strategy: result.strategy,
-      },
-      'New jobs discovered, enqueuing alert',
-    );
+    if (inserted) {
+      logger.info(
+        {
+          company: company.companyName,
+          inserted,
+          total,
+          platform: result.platform,
+          strategy: result.strategy,
+        },
+        'New offers ingested',
+      );
+    }
 
-    await alertQueue.add('new-job-alert', {
-      type: 'new-job-alert',
-      to: watcher.userEmail,
-      userName: watcher.userName,
-      companyName: watcher.companyName,
-      companyId: watcher.companyId,
-      jobCount: response.inserted,
-      // Exactly the postings that were new, not the first N of the listing.
-      jobs: response.jobs.slice(0, 10).map((job) => ({
-        title: job.title,
-        url: job.url,
-        location: job.location ?? undefined,
-      })),
-    });
-
-    return response.inserted;
+    return inserted;
   };
 
   const processSource = async (
@@ -293,8 +310,8 @@ export async function startAtsWorker() {
     }
 
     let inserted = 0;
-    for (const watcher of task.watchers) {
-      inserted += await syncWatcher(task, watcher, result);
+    for (const company of task.companies) {
+      inserted += await syncCompany(task, company, result);
     }
 
     await reportState(task, {
@@ -304,7 +321,6 @@ export async function startAtsWorker() {
       lastModified: result.fingerprint?.lastModified ?? null,
       contentHash: result.fingerprint?.contentHash ?? null,
       jobCount: result.fingerprint?.jobCount ?? result.jobs.length,
-      requiresBrowser: Boolean(result.usedBrowser),
       changed: task.contentHash !== result.fingerprint?.contentHash,
       synced: true,
       error: null,
@@ -320,6 +336,9 @@ export async function startAtsWorker() {
     }
     cycleRunning = true;
     const startedAt = Date.now();
+    // Per-host budgets and rate-limit strikes are per cycle: a host that told
+    // us to back off gets its next chance hours from now, not seconds.
+    http.beginCycle();
 
     try {
       let tasks: JobSourceTask[];
@@ -353,21 +372,56 @@ export async function startAtsWorker() {
         ),
       );
 
+      const inserted = results.reduce((sum, r) => sum + r.inserted, 0);
+
+      const paused = http.pausedHosts();
       logger.info(
         {
           mode,
           sources: tasks.length,
           skipped: results.filter((r) => r.skipped).length,
-          inserted: results.reduce((sum, r) => sum + r.inserted, 0),
+          inserted,
+          // Silence about a host we stopped talking to would read as "that
+          // board has no jobs" rather than "we were asked to stop".
+          backedOffHosts: paused.length ? paused : undefined,
           seconds: Math.round((Date.now() - startedAt) / 1000),
         },
         'Job discovery cycle complete',
       );
+
+      await expireDatedOffers();
+
+      // Who to tell about a new offer is a question about profiles, which live
+      // in the API — the worker only says that new offers landed.
+      if (inserted) {
+        try {
+          await apiClient.post('/internal/v1/job-postings/notify', {});
+        } catch (err) {
+          logger.warn({ err }, 'Failed to trigger match notifications');
+        }
+      }
     } finally {
       cycleRunning = false;
-      // The pool also self-closes when idle; closing here releases Chromium
-      // immediately between cycles.
-      await browser.close();
+    }
+  }
+
+  /**
+   * Closes offers that dated themselves out.
+   *
+   * The probe that used to fetch each offer's page is gone with the rest of the
+   * crawling: an offer disappearing from its board is what reconciliation
+   * already catches, and it catches it through the vendor's API rather than by
+   * knocking on a page that may answer with a bot challenge.
+   */
+  async function expireDatedOffers(): Promise<void> {
+    try {
+      const { closed } = await apiClient.post<{ closed: number }>(
+        '/internal/v1/job-postings/expire',
+        {},
+      );
+      if (closed) logger.info({ closed }, 'Closed offers past their end date');
+    } catch (err) {
+      logger.warn({ err }, 'Failed to close expired offers');
     }
   }
 
@@ -432,8 +486,6 @@ export async function startAtsWorker() {
     logger.info('Shutting down ATS worker...');
     fastCron.stop();
     fullCron.stop();
-    await browser.close();
-    await alertQueue.close();
     await triggerWorker.close();
     process.exit(0);
   };

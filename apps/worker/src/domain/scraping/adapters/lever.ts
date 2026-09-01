@@ -1,5 +1,5 @@
 import type { AtsAdapter, AtsTarget, ScrapedJob } from '../types';
-import { asString, firstMatch, joinLocation, target } from './shared';
+import { asString, firstMatch, target } from './shared';
 
 interface LeverPosting {
   id: string;
@@ -32,6 +32,14 @@ const TOKEN_PATTERNS = [
 const RESERVED = new Set(['v0', 'postings']);
 
 /** Lever boards. `mode=json` on the public postings endpoint returns everything. */
+const WORKPLACE_TYPES: Record<string, string | undefined> = {
+  remote: 'REMOTE',
+  hybrid: 'HYBRID',
+  onsite: 'ON_SITE',
+  'on-site': 'ON_SITE',
+  unspecified: undefined,
+};
+
 export const leverAdapter: AtsAdapter = {
   platform: 'lever',
 
@@ -72,13 +80,17 @@ export const leverAdapter: AtsAdapter = {
         title: posting.text,
         url: (posting.hostedUrl ?? posting.applyUrl) as string,
         description: asString(posting.descriptionPlain ?? posting.description),
-        location: joinLocation(
+        descriptionHtml: asString(posting.description),
+        locations: [
           posting.categories?.location,
           ...(posting.categories?.allLocations ?? []),
-        ),
+        ].filter((value): value is string => Boolean(value)),
         department: posting.categories?.team ?? posting.categories?.department,
         employmentType: posting.categories?.commitment,
         remote: /remote/i.test(posting.workplaceType ?? ''),
+        // Lever states the work model outright, which beats inferring it.
+        remoteType:
+          WORKPLACE_TYPES[(posting.workplaceType ?? '').toLowerCase()],
         salaryMin: posting.salaryRange?.min,
         salaryMax: posting.salaryRange?.max,
         salaryCurrency: posting.salaryRange?.currency,

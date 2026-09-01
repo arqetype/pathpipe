@@ -64,11 +64,14 @@ export const smartRecruitersAdapter: AtsAdapter = {
           externalId: posting.id ?? posting.uuid,
           title: posting.name,
           url: `https://jobs.smartrecruiters.com/${identifier}/${posting.id}`,
-          location: joinLocation(
-            posting.location?.city,
-            posting.location?.region,
-            posting.location?.country?.toUpperCase(),
-          ),
+          // Already broken out by the API, so it composes into exactly one place.
+          locations: [
+            joinLocation(
+              posting.location?.city,
+              posting.location?.region,
+              posting.location?.country?.toUpperCase(),
+            ),
+          ].filter((value): value is string => Boolean(value)),
           department: posting.department?.label,
           employmentType: posting.typeOfEmployment?.label,
           remote: posting.location?.remote,

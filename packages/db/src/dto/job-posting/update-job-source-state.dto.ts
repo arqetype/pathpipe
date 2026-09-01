@@ -1,10 +1,4 @@
-import {
-  IsBoolean,
-  IsInt,
-  IsOptional,
-  IsString,
-  IsUrl,
-} from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class UpdateJobSourceStateDto {
   @IsUrl({ require_tld: false })

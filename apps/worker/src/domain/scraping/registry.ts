@@ -4,6 +4,8 @@ import { leverAdapter } from './adapters/lever';
 import { ashbyAdapter } from './adapters/ashby';
 import { smartRecruitersAdapter } from './adapters/smartrecruiters';
 import { workdayAdapter } from './adapters/workday';
+import { teamtailorAdapter } from './adapters/teamtailor';
+import { personioAdapter } from './adapters/personio';
 
 /**
  * Order matters: the first adapter that claims a URL or a page wins, so the
@@ -18,6 +20,8 @@ export const ADAPTERS: AtsAdapter[] = [
   leverAdapter,
   ashbyAdapter,
   smartRecruitersAdapter,
+  teamtailorAdapter,
+  personioAdapter,
   workdayAdapter,
 ];
 

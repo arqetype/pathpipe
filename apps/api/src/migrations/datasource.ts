@@ -9,6 +9,9 @@ import { Application } from '@repo/db/entities/application';
 import { Company } from '@repo/db/entities/company';
 import { CompanyWatch } from '@repo/db/entities/company-watch';
 import { JobPosting } from '@repo/db/entities/job-posting';
+import { JobPostingLocation } from '@repo/db/entities/job-posting-location';
+import { JobPostingInteraction } from '@repo/db/entities/job-posting-interaction';
+import { JobPreference } from '@repo/db/entities/job-preference';
 import { JobSource } from '@repo/db/entities/job-source';
 import { ApiKey } from '@repo/db/entities/api-key';
 
@@ -28,6 +31,9 @@ export const AppDataSource = new DataSource({
     Company,
     CompanyWatch,
     JobPosting,
+    JobPostingLocation,
+    JobPostingInteraction,
+    JobPreference,
     JobSource,
     ApiKey,
   ],

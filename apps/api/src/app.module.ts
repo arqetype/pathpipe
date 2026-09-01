@@ -20,9 +20,13 @@ import { Application } from '@repo/db/entities/application';
 import { Company } from '@repo/db/entities/company';
 import { CompanyWatch } from '@repo/db/entities/company-watch';
 import { JobPosting } from '@repo/db/entities/job-posting';
+import { JobPostingLocation } from '@repo/db/entities/job-posting-location';
+import { JobPostingInteraction } from '@repo/db/entities/job-posting-interaction';
+import { JobPreference } from '@repo/db/entities/job-preference';
 import { JobSource } from '@repo/db/entities/job-source';
 import { ApiKey } from '@repo/db/entities/api-key';
 import { JobPostingModule } from './features/job-posting/job-posting.module';
+import { JobPreferenceModule } from './features/job-preference/job-preference.module';
 import { AdminModule } from './features/admin/admin.module';
 import { InternalModule } from './internal/internal.module';
 import { resolve } from 'node:path';
@@ -59,6 +63,9 @@ import { ThrottlerModule } from '@nestjs/throttler';
           Company,
           CompanyWatch,
           JobPosting,
+          JobPostingLocation,
+          JobPostingInteraction,
+          JobPreference,
           JobSource,
           ApiKey,
         ],
@@ -76,6 +83,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     ApplicationModule,
     CompanyModule,
     JobPostingModule,
+    JobPreferenceModule,
     AdminModule,
     InternalModule,
 

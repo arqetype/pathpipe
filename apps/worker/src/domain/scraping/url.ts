@@ -80,6 +80,56 @@ export const hostOf = (raw: string): string => {
 };
 
 /**
+ * Public suffixes made of two labels, so `careers.example.co.uk` is not read as
+ * belonging to a vendor called `co.uk`.
+ *
+ * Deliberately short: only the suffixes job boards are actually served under. A
+ * full public suffix list would be a dependency and a monthly update for a
+ * handful of hostnames.
+ */
+const TWO_LABEL_SUFFIXES = new Set([
+  'co.uk',
+  'org.uk',
+  'ac.uk',
+  'gov.uk',
+  'co.jp',
+  'co.nz',
+  'co.za',
+  'co.in',
+  'com.au',
+  'com.br',
+  'com.mx',
+  'com.tr',
+  'com.sg',
+  'com.es',
+  'com.pl',
+  'com.pt',
+  'com.ua',
+]);
+
+/**
+ * The vendor behind a hostname: `acme.jobs.personio.de` and
+ * `other.jobs.personio.de` both answer `personio.de`.
+ *
+ * This is the unit rate limits are actually enforced on. A vendor that gives
+ * every customer its own subdomain — Personio, Teamtailor, Workday — looks like
+ * hundreds of separate hosts while being one server with one budget, so
+ * throttling per hostname sends it hundreds of times what it allows.
+ */
+export const registrableDomain = (raw: string): string => {
+  const host = hostOf(raw).toLowerCase().replace(/\.$/, '');
+  if (!host.includes('.')) return host;
+  // An IP address is its own vendor; there is nothing to strip.
+  if (/^\d+(\.\d+){3}$/.test(host)) return host;
+  const parts = host.split('.');
+  const lastTwo = parts.slice(-2).join('.');
+  if (parts.length > 2 && TWO_LABEL_SUFFIXES.has(lastTwo)) {
+    return parts.slice(-3).join('.');
+  }
+  return lastTwo;
+};
+
+/**
  * Identity of a posting. An ATS id beats a URL: boards routinely change their
  * slugs (title edits) while keeping the requisition id.
  */

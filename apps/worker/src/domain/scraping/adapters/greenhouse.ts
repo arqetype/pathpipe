@@ -1,5 +1,6 @@
 import type { AtsAdapter, AtsTarget, ScrapedJob } from '../types';
-import { asString, firstMatch, joinLocation, target } from './shared';
+import { asString, firstMatch, target } from './shared';
+import { decodeEntities } from '../sanitize';
 
 interface GreenhouseJob {
   id: number | string;
@@ -57,17 +58,24 @@ export const greenhouseAdapter: AtsAdapter = {
     );
     if (!payload?.jobs) return [];
 
-    return payload.jobs.map((job) => ({
-      externalId: String(job.id),
-      title: job.title,
-      url: job.absolute_url,
-      description: asString(job.content),
-      location: joinLocation(
-        job.location?.name,
-        ...(job.offices ?? []).map((office) => office.name),
-      ),
-      department: job.departments?.[0]?.name,
-      postedAt: job.first_published ?? job.updated_at,
-    }));
+    return payload.jobs.map((job) => {
+      // Greenhouse ships the description as entity-encoded markup, so it has to
+      // be decoded once before anything downstream can see tags at all.
+      const content = asString(job.content);
+      const markup = content ? decodeEntities(content) : undefined;
+      return {
+        externalId: String(job.id),
+        title: job.title,
+        url: job.absolute_url,
+        description: markup,
+        descriptionHtml: markup,
+        locations: [
+          job.location?.name,
+          ...(job.offices ?? []).map((office) => office.name),
+        ].filter((value): value is string => Boolean(value)),
+        department: job.departments?.[0]?.name,
+        postedAt: job.first_published ?? job.updated_at,
+      };
+    });
   },
 };
