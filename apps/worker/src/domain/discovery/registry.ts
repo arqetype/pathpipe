@@ -7,14 +7,6 @@ import { workdayAdapter } from './adapters/workday';
 import { teamtailorAdapter } from './adapters/teamtailor';
 import { personioAdapter } from './adapters/personio';
 
-/**
- * Order matters: the first adapter that claims a URL or a page wins, so the
- * ones with the tightest patterns come first.
- *
- * Every adapter here has been verified against a live board. Adding a vendor
- * means writing the adapter and confirming it with `pnpm --filter worker probe`
- * before it lands.
- */
 export const ADAPTERS: AtsAdapter[] = [
   greenhouseAdapter,
   leverAdapter,
@@ -30,7 +22,6 @@ export interface AdapterMatch {
   target: AtsTarget;
 }
 
-/** Identifies the ATS from the URL alone — no network access needed. */
 export const matchAdapterByUrl = (rawUrl: string): AdapterMatch | null => {
   let url: URL;
   try {

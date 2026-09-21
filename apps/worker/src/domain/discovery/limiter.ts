@@ -1,7 +1,3 @@
-/**
- * Runs tasks with a cap on how many are in flight, so a large watch list does
- * not open hundreds of sockets at once.
- */
 export const createLimiter = (concurrency: number) => {
   const max = Math.max(1, concurrency);
   let active = 0;

@@ -18,11 +18,26 @@ export const STRONG_MATCH_SCORE = 70;
  */
 export const STALE_AFTER_DAYS = 14;
 
+/** Applications a week that keeps a search moving. */
+export const WEEKLY_GOAL = 10;
+
+/** Days of history behind the activity chart. */
+export const ACTIVITY_DAYS = 30;
+
+/** One day of the activity chart; every day in the window has a row. */
+export interface DashboardActivityDay {
+  /** YYYY-MM-DD. */
+  date: string;
+  sent: number;
+}
+
 /** One application, reduced to what the home page shows. */
 export interface DashboardApplication {
   id: string;
   position: string;
   companyName: string | null;
+  /** Carried so the row can show the company's logo, not just its name. */
+  companyId: string | null;
   url: string | null;
   status: ApplicationStatus;
   tier: ApplicationTier;
@@ -60,6 +75,13 @@ export interface DashboardStats {
    * bad one.
    */
   responseRate: number | null;
+  /**
+   * Consecutive days ending today with at least one application sent.
+   *
+   * Today counts as unbroken while it is still empty, so the number does not
+   * drop to zero every morning.
+   */
+  streakDays: number;
 
   // --- the offers
   /** Open offers over {@link STRONG_MATCH_SCORE} not yet on the board. */
@@ -75,6 +97,8 @@ export interface DashboardStats {
 
 export interface DashboardResponse {
   stats: DashboardStats;
+  /** Applications sent per day over the last {@link ACTIVITY_DAYS} days. */
+  activity: DashboardActivityDay[];
   /** The best open offers the user has not acted on. */
   topMatches: JobPostingResponse[];
   /** Bookmarked offers still waiting for a yes or a no. */

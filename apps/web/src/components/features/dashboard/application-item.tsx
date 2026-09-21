@@ -5,9 +5,9 @@ import { cn } from '@repo/ui/lib/utils';
 import type { DashboardApplication } from '@repo/db/query/dashboard';
 import { ApplicationTier } from '@repo/db/types/application/tier';
 import { TIER_CONFIG } from '@/components/features/applications/constants/tier';
+import { CompanyLogo } from '@/components/shared/company-logo';
 import { applicationDetail } from './links';
 
-/** How long it has been sitting there, in the units the board thinks in. */
 const age = (days: number): string => {
   if (days <= 0) return 'today';
   if (days === 1) return '1 day';
@@ -18,16 +18,9 @@ const age = (days: number): string => {
 
 interface ApplicationItemProps {
   application: DashboardApplication;
-  /** The words on the action button, e.g. "Open offer". */
   actionLabel: string;
 }
 
-/**
- * One application.
- *
- * The row is not one big link: the title opens the record, and the offer's own
- * page is a second target. Nesting the two would make one of them unreachable.
- */
 export function ApplicationItem({
   application,
   actionLabel,
@@ -39,6 +32,13 @@ export function ApplicationItem({
 
   return (
     <div className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-accent/50">
+      <CompanyLogo
+        companyId={application.companyId ?? undefined}
+        name={application.companyName ?? 'Unknown'}
+        size={28}
+        className="size-7 shrink-0 rounded-md"
+      />
+
       <Link
         href={applicationDetail(application.id)}
         className="min-w-0 flex-1 focus-visible:outline-none"

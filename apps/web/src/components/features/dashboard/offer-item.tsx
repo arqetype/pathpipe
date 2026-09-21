@@ -6,14 +6,9 @@ import type { JobPostingResponse } from '@repo/db/query/job-posting';
 import type { RemoteType } from '@repo/db/types/job-posting/remote-type';
 import { formatSalary, relativeDate } from '@/utils/applications-utils';
 import { REMOTE_TYPE_LABELS } from '@/components/features/job-matches/constants';
+import { CompanyLogo } from '@/components/shared/company-logo';
 import { jobDetail } from './links';
 
-/**
- * One offer.
- *
- * Shorter than the board's own row: the score, the company, and the two facts
- * people decide on — where it is and what it pays.
- */
 export function OfferItem({ job }: { job: JobPostingResponse }) {
   const salary = formatSalary(job.salaryMin, job.salaryMax);
   const posted = relativeDate(job.postedAt ?? job.createdAt);
@@ -23,6 +18,13 @@ export function OfferItem({ job }: { job: JobPostingResponse }) {
       href={jobDetail(job.id)}
       className="flex items-start gap-3 px-4 py-2.5 transition-colors hover:bg-accent/50"
     >
+      <CompanyLogo
+        companyId={job.companyId}
+        name={job.companyName}
+        size={28}
+        className="size-7 shrink-0 rounded-md"
+      />
+
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{job.title}</p>
         <p className="truncate text-sm text-muted-foreground">

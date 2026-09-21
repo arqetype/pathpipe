@@ -32,7 +32,6 @@ const TOKEN_PATTERNS = [
   /ashbyhq\.com\/embed\?[^"']*jobBoardName=([a-z0-9._-]+)/i,
 ];
 
-/** Ashby boards. The posting API is public and needs no key. */
 export const ashbyAdapter: AtsAdapter = {
   platform: 'ashby',
 

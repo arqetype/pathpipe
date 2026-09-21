@@ -4,95 +4,29 @@ import type {
   HttpRequestOptions,
   HttpResponse,
 } from '@/domain/discovery/types';
+import {
+  DEFAULT_TIMEOUT_MS,
+  MAX_RETRIES,
+  VENDOR_DELAY_MS,
+  isChallenge,
+  retryAfterMs,
+  sleep,
+  type HostState,
+} from './limits';
+import { readCapped } from './body';
+import { parseRobots, robotsAllows, type RobotsRules } from './robots';
+
+export { VENDOR_DELAY_MS };
 
 export interface HttpClientOptions {
   userAgent: string;
-  /**
-   * Minimum delay between two requests to the same vendor, in ms.
-   *
-   * "Vendor" rather than "host": see `registrableDomain`. Every board on
-   * Teamtailor gets its own subdomain, and all of them are one server.
-   */
   perHostDelayMs?: number;
   respectRobots?: boolean;
-  /**
-   * Requests allowed to one vendor per cycle. Reached, the vendor is left alone
-   * until the next cycle.
-   *
-   * A single vendor can be behind hundreds of boards, so a per-source budget
-   * does not bound what any one vendor actually receives from us. This does.
-   */
   maxRequestsPerHost?: number;
-  /** Consecutive rate-limit answers before a host is dropped for the cycle. */
   maxRateLimitStrikes?: number;
   log?: (data: Record<string, unknown>, msg: string) => void;
 }
 
-/** What we know about how a vendor is currently treating us. */
-interface HostState {
-  /** Epoch ms until which the vendor is left alone entirely. */
-  pausedUntil: number;
-  /** Consecutive 429s; enough of them and the vendor is dropped for the cycle. */
-  strikes: number;
-  /** Requests sent this cycle. */
-  requests: number;
-  /** Set once the host is out for the rest of the cycle. */
-  droppedForCycle: boolean;
-}
-
-/**
- * Status codes and body markers that mean "a bot filter answered", not "the
- * server had a problem".
- *
- * The distinction matters: a 503 from an overloaded origin is worth retrying,
- * a 503 carrying a Cloudflare challenge is a door being held shut, and retrying
- * it is what turns a soft block into a hard one.
- */
-const CHALLENGE_MARKERS =
-  /(just a moment|attention required|checking your browser|cf-browser-verification|cf_chl_|enable javascript and cookies to continue|__cf_chl|access denied.*cloudflare|error 1015|you have been blocked)/i;
-
-/**
- * Vendors that answer 429 at the default pace, with the pace they tolerate.
- *
- * Measured, not guessed: each of these rate-limited a plain sequential probe
- * while its endpoints were being verified. Being throttled is one shared IP
- * away from being blocked, and the IP we crawl from is somebody's office.
- */
-export const VENDOR_DELAY_MS: Record<string, number> = {
-  'personio.de': 3000,
-  'personio.com': 3000,
-  'teamtailor.com': 1500,
-  // `Crawl-delay: 1`, published in their robots.txt. Both are called with
-  // `skipRobots` (the seeder reads feeds, the adapter reads the postings API),
-  // so the delay they asked for is honoured here instead of being lost with
-  // the rest of the robots file.
-  'remoteok.com': 1000,
-  'lever.co': 1000,
-};
-
-const MAX_RETRIES = 2;
-const DEFAULT_TIMEOUT_MS = 20_000;
-/**
- * Large boards legitimately return tens of megabytes: an ATS listing endpoint
- * ships every posting's description in one document.
- */
-const MAX_BODY_BYTES = 48 * 1024 * 1024;
-
-const sleep = (ms: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, ms));
-
-/** Minimal robots.txt model: the disallow prefixes that apply to us. */
-interface RobotsRules {
-  disallow: string[];
-  allow: string[];
-  crawlDelayMs: number | null;
-}
-
-/**
- * HTTP client tuned for polite vendor APIs: one in-flight request per host, a floor on
- * the gap between requests to the same host, retry with backoff on transient
- * failures, and a robots.txt gate.
- */
 export class HttpClient implements HttpFetcher {
   private readonly userAgent: string;
   private readonly perHostDelayMs: number;
@@ -102,7 +36,6 @@ export class HttpClient implements HttpFetcher {
   private readonly maxRequestsPerHost: number;
   private readonly maxRateLimitStrikes: number;
 
-  /** Tail of the per-host request chain, used to serialise requests. */
   private readonly hostChain = new Map<string, Promise<unknown>>();
   private readonly lastHit = new Map<string, number>();
   private readonly robotsCache = new Map<string, Promise<RobotsRules | null>>();
@@ -117,12 +50,6 @@ export class HttpClient implements HttpFetcher {
     this.log = options.log ?? (() => {});
   }
 
-  /**
-   * Starts a new cycle: per-vendor budgets and strikes reset.
-   *
-   * A vendor dropped for being unhappy with us gets another chance next cycle,
-   * which is hours away — not the few seconds a retry loop would give it.
-   */
   beginCycle(): void {
     for (const [host, state] of this.hostState) {
       this.hostState.set(host, {
@@ -134,7 +61,6 @@ export class HttpClient implements HttpFetcher {
     }
   }
 
-  /** Vendors currently being left alone, for the cycle log. */
   pausedHosts(): string[] {
     const now = Date.now();
     return [...this.hostState.entries()]
@@ -155,30 +81,6 @@ export class HttpClient implements HttpFetcher {
     return fresh;
   }
 
-  /**
-   * `Retry-After`, in ms, when the server said how long to wait.
-   *
-   * Both forms are legal — a delay in seconds or an HTTP date — and ignoring
-   * the header is the surest way to turn a polite rate-limit into a ban.
-   */
-  private retryAfterMs(header: string | null): number | null {
-    if (!header) return null;
-    const seconds = Number(header.trim());
-    if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
-    const date = Date.parse(header);
-    if (Number.isNaN(date)) return null;
-    return Math.max(0, date - Date.now());
-  }
-
-  /** True when the answer came from a bot filter rather than the application. */
-  private isChallenge(response: HttpResponse): boolean {
-    if (response.status === 403 || response.status === 503) {
-      return response.status === 403 || CHALLENGE_MARKERS.test(response.body);
-    }
-    return false;
-  }
-
-  /** Stops sending to a vendor for the rest of this cycle. */
   private dropHost(host: string, reason: string, url: string): void {
     const state = this.stateFor(host);
     state.droppedForCycle = true;
@@ -192,13 +94,12 @@ export class HttpClient implements HttpFetcher {
     url: string,
     options: HttpRequestOptions = {},
   ): Promise<HttpResponse> {
-    // Keyed by vendor: one in-flight request per vendor, not per subdomain.
+    // Keyed by vendor, not by subdomain.
     const host = registrableDomain(url);
     const previous = this.hostChain.get(host) ?? Promise.resolve();
     const task = previous
       .catch(() => undefined)
       .then(() => this.throttledRequest(host, url, options));
-    // Keep the chain alive regardless of individual failures.
     this.hostChain.set(
       host,
       task.catch(() => undefined),
@@ -237,13 +138,9 @@ export class HttpClient implements HttpFetcher {
 
     const state = this.stateFor(host);
 
-    // A vendor that has told us to stop is not asked again this cycle. Answering
-    // 429 with another request is what escalates a rate-limit into a block.
     if (state.droppedForCycle) return this.emptyResponse(url, 429);
     if (state.pausedUntil > Date.now()) {
       const waitMs = state.pausedUntil - Date.now();
-      // A short pause is worth waiting out inline; a long one means the vendor is
-      // done with us for now and the cycle should move on.
       if (waitMs > 60_000) return this.emptyResponse(url, 429);
       await sleep(waitMs);
     }
@@ -270,20 +167,16 @@ export class HttpClient implements HttpFetcher {
       try {
         const response = await this.execute(url, options);
 
-        // A bot filter answered. Retrying is exactly the wrong move: the filter
-        // is not going to change its mind within seconds, and repeating the
-        // request is the behaviour that earns a longer ban.
-        if (this.isChallenge(response)) {
+        // Never retry a challenge: it bans.
+        if (isChallenge(response)) {
           this.dropHost(host, `challenged with ${response.status}`, url);
           return response;
         }
 
         if (response.status === 429) {
           state.strikes += 1;
-          const askedFor = this.retryAfterMs(response.retryAfter);
+          const askedFor = retryAfterMs(response.retryAfter);
           if (askedFor !== null) {
-            // Honour what the server asked for, up to the point where waiting
-            // stops being a pause and starts being a stall.
             state.pausedUntil = Date.now() + Math.min(askedFor, 10 * 60_000);
             this.log(
               { host, url, retryAfterMs: askedFor },
@@ -309,8 +202,6 @@ export class HttpClient implements HttpFetcher {
           continue;
         }
 
-        // A clean answer clears the slate: strikes are about a host that is
-        // currently unhappy, not a permanent record.
         if (response.ok) state.strikes = 0;
         return response;
       } catch (err) {
@@ -345,7 +236,7 @@ export class HttpClient implements HttpFetcher {
       signal: AbortSignal.timeout(options.timeoutMs ?? DEFAULT_TIMEOUT_MS),
     });
 
-    const body = await this.readCapped(response);
+    const body = await readCapped(response, this.log);
 
     return {
       status: response.status,
@@ -354,46 +245,6 @@ export class HttpClient implements HttpFetcher {
       body,
       retryAfter: response.headers.get('retry-after'),
     };
-  }
-
-  /**
-   * Guards against a runaway response wedging the worker.
-   *
-   * An over-cap body is discarded rather than truncated: half a JSON document
-   * parses as nothing anyway, and a silent half-document would look like an
-   * empty board instead of a failure worth logging.
-   */
-  private async readCapped(response: Response): Promise<string> {
-    const declared = Number(response.headers.get('content-length') ?? '0');
-    if (declared > MAX_BODY_BYTES) {
-      this.log(
-        { url: response.url, bytes: declared, cap: MAX_BODY_BYTES },
-        'Response exceeds size cap, discarded',
-      );
-      return '';
-    }
-    if (!response.body) return response.text();
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder('utf-8');
-    let size = 0;
-    let text = '';
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      size += value.byteLength;
-      if (size > MAX_BODY_BYTES) {
-        await reader.cancel().catch(() => undefined);
-        this.log(
-          { url: response.url, cap: MAX_BODY_BYTES },
-          'Response exceeds size cap, discarded',
-        );
-        return '';
-      }
-      text += decoder.decode(value, { stream: true });
-    }
-    text += decoder.decode();
-    return text;
   }
 
   private emptyResponse(url: string, status: number): HttpResponse {
@@ -409,52 +260,9 @@ export class HttpClient implements HttpFetcher {
   private async isAllowed(url: string): Promise<boolean> {
     const rules = await this.robotsFor(url);
     if (!rules) return true;
-
-    const path = (() => {
-      try {
-        const parsed = new URL(url);
-        return `${parsed.pathname}${parsed.search}`;
-      } catch {
-        return '/';
-      }
-    })();
-
-    const matchLength = (patterns: string[]): number => {
-      let best = -1;
-      for (const pattern of patterns) {
-        if (this.robotsPathMatches(pattern, path) && pattern.length > best) {
-          best = pattern.length;
-        }
-      }
-      return best;
-    };
-
-    const disallowed = matchLength(rules.disallow);
-    if (disallowed < 0) return true;
-    // Longest match wins, matching the de-facto robots.txt semantics.
-    return matchLength(rules.allow) >= disallowed;
+    return robotsAllows(rules, url);
   }
 
-  private robotsPathMatches(pattern: string, path: string): boolean {
-    if (!pattern) return false;
-    if (!pattern.includes('*') && !pattern.endsWith('$')) {
-      return path.startsWith(pattern);
-    }
-    const anchored = pattern.endsWith('$');
-    const body = anchored ? pattern.slice(0, -1) : pattern;
-    const escaped = body
-      .split('*')
-      .map((part) => part.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
-      .join('.*');
-    return new RegExp(`^${escaped}${anchored ? '$' : ''}`).test(path);
-  }
-
-  /**
-   * Waits out the vendor's minimum gap, then books this moment as its last hit.
-   *
-   * Used for the requests that cannot pass through the per-vendor queue, so
-   * they still count towards the pace and the cycle budget.
-   */
   private async awaitVendorGap(host: string): Promise<void> {
     const delay = Math.max(this.perHostDelayMs, VENDOR_DELAY_MS[host] ?? 0);
     const since = Date.now() - (this.lastHit.get(host) ?? 0);
@@ -480,58 +288,13 @@ export class HttpClient implements HttpFetcher {
   }
 
   private async fetchRobots(origin: string): Promise<RobotsRules | null> {
-    // robots.txt cannot go through `request`: it is fetched from inside the
-    // vendor's own queue slot, so re-entering that queue would wait on itself.
-    // It still has to respect the vendor's pace — one robots.txt per board is
-    // one extra request per board, and a vendor that hands every customer a
-    // subdomain sees all of them.
+    // Outside `request`: that queue would self-wait.
     await this.awaitVendorGap(registrableDomain(origin));
     const response = await this.execute(`${origin}/robots.txt`, {
       skipRobots: true,
       timeoutMs: 8000,
     }).catch(() => null);
     if (!response || !response.ok || !response.body) return null;
-    return this.parseRobots(response.body);
-  }
-
-  private parseRobots(text: string): RobotsRules {
-    const rules: RobotsRules = { disallow: [], allow: [], crawlDelayMs: null };
-    // Only the wildcard group applies to us; a named group for our UA overrides it.
-    let inScope = false;
-    let sawNamedGroup = false;
-
-    for (const rawLine of text.split(/\r?\n/)) {
-      const line = rawLine.split('#')[0]?.trim() ?? '';
-      if (!line) continue;
-      const separator = line.indexOf(':');
-      if (separator < 0) continue;
-      const field = line.slice(0, separator).trim().toLowerCase();
-      const value = line.slice(separator + 1).trim();
-
-      if (field === 'user-agent') {
-        const agent = value.toLowerCase();
-        const isOurs = agent.includes('pathpipe');
-        if (isOurs && !sawNamedGroup) {
-          // A rule set aimed at us replaces anything collected from '*'.
-          sawNamedGroup = true;
-          rules.disallow.length = 0;
-          rules.allow.length = 0;
-        }
-        inScope = isOurs || (agent === '*' && !sawNamedGroup);
-        continue;
-      }
-
-      if (!inScope) continue;
-      if (field === 'disallow' && value) rules.disallow.push(value);
-      if (field === 'allow' && value) rules.allow.push(value);
-      if (field === 'crawl-delay') {
-        const seconds = Number.parseFloat(value);
-        if (Number.isFinite(seconds)) {
-          rules.crawlDelayMs = Math.min(10000, seconds * 1000);
-        }
-      }
-    }
-
-    return rules;
+    return parseRobots(response.body);
   }
 }

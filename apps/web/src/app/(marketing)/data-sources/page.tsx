@@ -1,6 +1,4 @@
 import type { Metadata } from 'next';
-import { MarketingNavbar } from '@/components/marketing/navbar';
-import { Footer } from '@/components/marketing/footer';
 
 export const metadata: Metadata = {
   title: 'Data sources — pathpipe',
@@ -48,43 +46,39 @@ function SourceList({ items }: { items: { name: string; href: string }[] }) {
 
 export default function DataSourcesPage() {
   return (
-    <>
-      <MarketingNavbar />
-      <main className="mx-auto max-w-3xl px-6 pb-16 pt-24 md:pt-32">
-        <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Data sources
-        </h1>
-        <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
-          pathpipe does not write job postings. Everything it shows comes from
-          the sources below, and this page credits them.
+    <div className="mx-auto max-w-3xl px-6 pb-16 pt-24 md:pt-32">
+      <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+        Data sources
+      </h1>
+      <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
+        pathpipe does not write job postings. Everything it shows comes from the
+        sources below, and this page credits them.
+      </p>
+
+      <section className="mt-12">
+        <h2 className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Applicant tracking systems
+        </h2>
+        <p className="mt-3 text-sm leading-relaxed text-foreground/80">
+          Job postings are read from each vendor&apos;s own public job board
+          API, one employer&apos;s board at a time. The posting itself belongs
+          to the employer that published it; the vendor hosts it.
         </p>
+        <SourceList items={ATS} />
+      </section>
 
-        <section className="mt-12">
-          <h2 className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Applicant tracking systems
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-foreground/80">
-            Job postings are read from each vendor&apos;s own public job board
-            API, one employer&apos;s board at a time. The posting itself belongs
-            to the employer that published it; the vendor hosts it.
-          </p>
-          <SourceList items={ATS} />
-        </section>
-
-        <section className="mt-12">
-          <h2 className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Company discovery feeds
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-foreground/80">
-            These four job boards are read only for the names of companies that
-            are currently hiring. Their postings are not copied, stored or shown
-            in pathpipe — once a company name is known, its postings are read
-            from that company&apos;s own applicant tracking system.
-          </p>
-          <SourceList items={FEEDS} />
-        </section>
-      </main>
-      <Footer />
-    </>
+      <section className="mt-12">
+        <h2 className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Company discovery feeds
+        </h2>
+        <p className="mt-3 text-sm leading-relaxed text-foreground/80">
+          These four job boards are read only for the names of companies that
+          are currently hiring. Their postings are not copied, stored or shown
+          in pathpipe — once a company name is known, its postings are read from
+          that company&apos;s own applicant tracking system.
+        </p>
+        <SourceList items={FEEDS} />
+      </section>
+    </div>
   );
 }

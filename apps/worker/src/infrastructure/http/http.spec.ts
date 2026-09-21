@@ -1,13 +1,7 @@
 import { HttpClient, VENDOR_DELAY_MS } from './http';
 import type { HttpRequestOptions } from '@/domain/discovery/types';
 
-/**
- * Every test here drives a fake `fetch`. The client's own pacing is real, so
- * the delays are set to a few milliseconds rather than the production 800.
- *
- * A `Response` body can only be read once, so each answer is built fresh per
- * call rather than handed out as one shared object.
- */
+// Bodies read once: rebuild per call.
 const fetchMock = jest.fn();
 
 beforeEach(() => {
@@ -39,7 +33,6 @@ const client = (
     ...over,
   });
 
-/** The robots.txt gate has its own describe; everything else opts out of it. */
 const get = (http: HttpClient, url: string, options: HttpRequestOptions = {}) =>
   http.request(url, { skipRobots: true, ...options });
 
@@ -72,8 +65,6 @@ describe('request', () => {
     );
   });
 
-  // Today's behaviour: `respectRobots: false` turns off the *gate*, not the
-  // fetch — robots.txt is still read once per origin for its crawl-delay.
   it('still reads robots.txt when the gate is off and the caller did not skip it', async () => {
     always('User-agent: *\nDisallow: /');
 
@@ -201,8 +192,6 @@ describe('rate limiting', () => {
     const first = await get(http, 'https://example.com/a');
     const second = await get(http, 'https://example.com/b');
 
-    // The 429 that earned the strike comes back as it was sent; nothing after
-    // it is sent at all.
     expect(first.status).toBe(429);
     expect(urlsFetched()).toEqual(['https://example.com/a']);
     expect(second).toMatchObject({ status: 429, body: '' });
@@ -299,7 +288,6 @@ describe('the body size cap', () => {
       headers: { 'content-length': String(64 * 1024 * 1024) },
     });
 
-    // Discarded rather than truncated: half a JSON document parses as nothing.
     expect((await get(client(), 'https://example.com/a')).body).toBe('');
   });
 });
@@ -372,8 +360,7 @@ describe('robots.txt', () => {
 });
 
 describe('VENDOR_DELAY_MS', () => {
-  // Both are called with `skipRobots`, so their published `Crawl-delay: 1` is
-  // only honoured if it is in this table.
+  // Skips robots, so this table is authoritative.
   it('honours the crawl delay published by Remote OK and Lever', () => {
     expect(VENDOR_DELAY_MS['remoteok.com']).toBeGreaterThanOrEqual(1000);
     expect(VENDOR_DELAY_MS['lever.co']).toBeGreaterThanOrEqual(1000);

@@ -7,6 +7,7 @@ import {
 } from '@repo/db/query/dashboard';
 import { ApplicationStatus } from '@repo/db/types/application/status';
 import { APPLICATION_STATUS_OPTIONS } from '@/components/features/applications/constants/status';
+import { ActivityChart } from './activity-chart';
 import { ApplicationItem } from './application-item';
 import {
   ALL_MATCHES_URL,
@@ -22,13 +23,13 @@ import { OfferItem } from './offer-item';
 import { Panel } from './panel';
 import { StatTile } from './stat-tile';
 
-/** The board's own colour for a column, so the figures match the kanban. */
 const dotOf = (status: ApplicationStatus): string | undefined =>
   APPLICATION_STATUS_OPTIONS.find((option) => option.status === status)
     ?.dotClass;
 
 export function HomeDashboard({ dashboard }: { dashboard: DashboardResponse }) {
-  const { stats, topMatches, savedOffers, wishlistApplications } = dashboard;
+  const { stats, activity, topMatches, savedOffers, wishlistApplications } =
+    dashboard;
 
   return (
     <ScrollArea className="h-full w-full">
@@ -72,13 +73,11 @@ export function HomeDashboard({ dashboard }: { dashboard: DashboardResponse }) {
           </div>
 
           <p className="mt-2 text-xs text-muted-foreground">
-            Sent this week: {stats.appliedThisWeek} · Week before:{' '}
-            {stats.appliedLastWeek} · Reply rate:{' '}
+            Week before: {stats.appliedLastWeek} · Reply rate:{' '}
             {stats.responseRate === null ? 'n/a' : `${stats.responseRate}%`}
           </p>
         </div>
 
-        {/* Only when it changes what the scores are worth. */}
         {(!stats.hasProfile || stats.profileCompleteness < 60) && (
           <p className="rounded-lg border px-4 py-2.5 text-sm text-muted-foreground">
             {stats.hasProfile
@@ -92,6 +91,14 @@ export function HomeDashboard({ dashboard }: { dashboard: DashboardResponse }) {
             </Link>
           </p>
         )}
+
+        <Panel title="Activity" seeAllHref={APPLIED_URL} seeAllLabel="Board">
+          <ActivityChart
+            activity={activity}
+            thisWeek={stats.appliedThisWeek}
+            streakDays={stats.streakDays}
+          />
+        </Panel>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <Panel

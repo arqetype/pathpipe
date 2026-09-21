@@ -2,17 +2,6 @@ import { existsSync } from 'node:fs';
 import { seedBoards } from '@/domain/discovery/seed';
 import { VENDORS } from '@/domain/discovery/vendors';
 
-/**
- * Command line front for board seeding. The work itself lives in
- * `domain/discovery/seed.ts`, which the ATS worker's daily cron calls too — the
- * schedule and this script run the same code.
- *
- *   pnpm --filter worker seed:boards -- --file src/scripts/boards/verified.txt
- *   pnpm --filter worker seed:boards -- --yc --limit 400 --dry-run
- *   pnpm --filter worker seed:boards -- --feeds --limit 5000
- *   pnpm --filter worker seed:boards -- --companies --platform lever
- */
-
 const usage = `
 Usage: pnpm --filter worker seed:boards -- [options]
 

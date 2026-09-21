@@ -18,8 +18,8 @@ import { UpdateJobSourceStateDto } from '@repo/db/dto/job-posting/update-job-sou
 import {
   JobPostingLifecycleService,
   StalePostingSummary,
-} from '../features/job-posting/job-posting-lifecycle.service';
-import { JobAlertService } from '../features/job-posting/job-alert.service';
+} from '../features/job-posting/ingest/job-posting-lifecycle.service';
+import { JobAlertService } from '../features/job-posting/alert/job-alert.service';
 import { ReconcileJobPostingsDto } from '@repo/db/dto/job-posting/reconcile-job-postings.dto';
 import { ReportJobPostingValidityDto } from '@repo/db/dto/job-posting/job-posting-validity.dto';
 import { SeedCompaniesDto } from '@repo/db/dto/company/seed-companies.dto';

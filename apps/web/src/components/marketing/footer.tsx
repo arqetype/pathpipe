@@ -1,13 +1,14 @@
 import Link from 'next/link';
 import { Logo } from '@repo/ui/branding/logo';
 import { RiGithubFill, RiHeart2Line, RiDrinksLine } from '@remixicon/react';
+import { GITHUB_URL } from '@/lib/site';
 
 const sections = [
   {
     label: 'Product',
     links: [
-      { label: 'Features', href: '' },
-      { label: 'How it works', href: '' },
+      { label: 'Features', href: '/#features' },
+      { label: 'How it works', href: '/#how-it-works' },
       { label: 'Pricing', href: '/pricing' },
       { label: 'Changelog', href: '/changelog' },
     ],
@@ -22,10 +23,9 @@ const sections = [
   {
     label: 'Legal',
     links: [
-      { label: 'Privacy', href: '#' },
-      { label: 'Terms', href: '#' },
-      { label: 'Cookies', href: '#' },
-      { label: 'Security', href: '#' },
+      { label: 'Privacy', href: '/legal/privacy' },
+      { label: 'Terms', href: '/legal/terms' },
+      { label: 'Cookies', href: '/legal/cookies' },
       { label: 'Data sources', href: '/data-sources' },
     ],
   },
@@ -34,7 +34,7 @@ const sections = [
 const socials = [
   {
     icon: RiGithubFill,
-    href: 'https://github.com/arqetype/pathpipe',
+    href: GITHUB_URL,
     label: 'GitHub',
   },
 ];

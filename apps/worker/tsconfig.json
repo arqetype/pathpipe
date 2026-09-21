@@ -11,5 +11,10 @@
   },
   // The build emits from this same config, so the specs are kept out of `dist`.
   // They are still type-checked: ts-jest runs full diagnostics on every run.
-  "exclude": ["dist", "node_modules", "**/*.spec.ts"],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "**/*.spec.ts",
+    "**/fake-http.ts",
+  ],
 }

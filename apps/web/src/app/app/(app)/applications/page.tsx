@@ -28,13 +28,23 @@ export default async function AppMainPage({
   );
   const view = (str(params.view) as 'kanban' | 'table' | null) ?? 'kanban';
 
+  // Hiding a column is a filter like any other, so the count in the bar follows
+  // it. The filtering moves to the API rather than the two views, which is what
+  // makes the number and the rows answer the same question.
+  const visibleStatuses = Object.values(ApplicationStatus).filter(
+    (status) => !hiddenStatuses.has(status),
+  );
   const { result } = await fetchApplicationsAction({
     search,
     sortBy,
     sortOrder,
+    status: hiddenStatuses.size ? visibleStatuses : undefined,
   });
-  const applications = result.ok ? result.data.data : [];
-  const total = result.ok ? result.data.total : 0;
+  // Nothing visible is a question the API cannot be asked — an empty status
+  // list reads as "no filter" — so it is answered here instead.
+  const hasVisible = visibleStatuses.length > 0;
+  const applications = hasVisible && result.ok ? result.data.data : [];
+  const total = hasVisible && result.ok ? result.data.total : 0;
 
   return (
     <>

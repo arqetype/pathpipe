@@ -50,7 +50,7 @@ export function TriggerDiscovery() {
         </Button>
         {result && (
           <p
-            className={`text-sm ${result.status === 'triggered' ? 'text-green-600' : 'text-red-600'}`}
+            className={`text-sm ${result.status === 'triggered' ? 'text-status-success-fg' : 'text-status-danger-fg'}`}
           >
             {result.status === 'triggered'
               ? `Discovery triggered successfully at ${result.time}`

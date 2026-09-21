@@ -5,10 +5,6 @@ import { seedBoards } from './seed';
 import { apiClient } from '@/infrastructure/api/api.client';
 import type { HttpRequestOptions, HttpResponse } from './types';
 
-/**
- * The seeder builds its own HTTP client, so the client itself is replaced: the
- * fake answers from a table and records every URL asked for. No network.
- */
 jest.mock('@/infrastructure/http/http', () => {
   const answers = new Map<string, unknown>();
   const requested: string[] = [];
@@ -42,7 +38,9 @@ jest.mock('@/infrastructure/api/api.client', () => ({
   apiClient: { post: jest.fn(), get: jest.fn() },
 }));
 
-const { answers, requested } = jest.requireMock('@/infrastructure/http/http') as {
+const { answers, requested } = jest.requireMock(
+  '@/infrastructure/http/http',
+) as {
   answers: Map<string, unknown>;
   requested: string[];
 };
@@ -79,8 +77,6 @@ beforeEach(() => {
 
 describe('seedBoards from a file', () => {
   it('confirms one board when two spellings of its name both answer', async () => {
-    // A board answers to its name whatever the case — probing both spellings
-    // would otherwise register two companies for one board.
     ashbyBoard('everai');
     ashbyBoard('EverAI');
 
@@ -120,7 +116,6 @@ describe('seedBoards from a file', () => {
       log: () => {},
     });
 
-    // Sorted by how many roles are open behind each board.
     expect(confirmed.map((hit) => hit.token)).toEqual(['northwind', 'everai']);
   });
 
@@ -169,13 +164,10 @@ describe('seedBoards from a file', () => {
 
 describe('seedBoards from the public job feeds', () => {
   const FEED_HOSTS = /himalayas|arbeitnow|remoteok|jobicy/;
-  /** Only the feed reads; the board probes that follow are a separate step. */
   const feedNames = (): string[] =>
     requested.filter((url) => FEED_HOSTS.test(url));
 
   it('splits the budget evenly across the four feeds instead of first-come', async () => {
-    // Budget 8 over 4 feeds is a share of 2 names each: Himalayas alone could
-    // otherwise fill it.
     answers.set('https://himalayas.app/jobs/api?limit=20', {
       jobs: [{ companySlug: 'alpha' }],
       nextCursor: 'c2',

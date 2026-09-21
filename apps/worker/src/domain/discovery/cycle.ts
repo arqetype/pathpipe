@@ -1,21 +1,11 @@
 import { planSource, type CycleMode, type SchedulePolicy } from './schedule';
 import type { DiscoverOptions, DiscoveryResult } from './types';
 
-/**
- * One pass over every known job source.
- *
- * The rules live here — what to ask a source for, what its answer means, what
- * to write back. Everything that talks to the outside world arrives as a
- * function on `DiscoveryCycleDeps`, so the entry point is left with wiring and
- * this file is left with decisions.
- */
-
 export interface SourceCompany {
   companyId: string;
   companyName: string;
 }
 
-/** A job source as the API hands it over. */
 export interface JobSource {
   url: string;
   platform: string | null;
@@ -34,11 +24,8 @@ export interface JobSource {
 
 export interface SourceStore {
   list(): Promise<JobSource[]>;
-  /** Persist what this run learned about a source. */
   saveState(url: string, patch: Record<string, unknown>): Promise<void>;
-  /** Tell the API new offers landed; who to notify is its question, not ours. */
   notifyNewOffers(): Promise<void>;
-  /** Close offers that dated themselves out. Returns how many. */
   expireDatedOffers(): Promise<number>;
 }
 
@@ -51,15 +38,12 @@ export interface CycleLog {
 export interface DiscoveryCycleDeps {
   sources: SourceStore;
   discover(url: string, options: DiscoverOptions): Promise<DiscoveryResult>;
-  /** Per-cycle budgets and rate-limit strikes held by the HTTP client. */
   http: { beginCycle(): void; pausedHosts(): string[] };
-  /** Writes one board's listing for one company; returns the new offers. */
   ingest(
     company: SourceCompany,
     result: DiscoveryResult,
     listingUrl: string,
   ): Promise<number>;
-  /** Caps how many sources are read at once. */
   limit<T>(task: () => Promise<T>): Promise<T>;
   policy: SchedulePolicy;
   log: CycleLog;
@@ -112,9 +96,7 @@ const processSource = async (
   }
 
   if (!result.jobs.length) {
-    // An error means the board could not be read; no error means it was read
-    // and has nothing open. Only the first backs a source off — a company with
-    // no vacancies is not a broken source.
+    // Only an error backs off.
     const failed = Boolean(result.error);
     await deps.sources.saveState(source.url, {
       error: result.error ?? null,
@@ -152,14 +134,11 @@ const processSource = async (
   return { inserted, skipped: false, failed: false };
 };
 
-/** Reads every source that is due, writes what it found, and reports. */
 export const runDiscoveryCycle = async (
   deps: DiscoveryCycleDeps,
   mode: CycleMode,
 ): Promise<CycleSummary | null> => {
   const startedAt = (deps.now ?? Date.now)();
-  // Per-host budgets and rate-limit strikes are per cycle: a host that told us
-  // to back off gets its next chance hours from now, not seconds.
   deps.http.beginCycle();
 
   let sources: JobSource[];
@@ -201,8 +180,6 @@ export const runDiscoveryCycle = async (
     skipped: results.filter((r) => r.skipped).length,
     failed: results.filter((r) => r.failed).length,
     inserted,
-    // Silence about a host we stopped talking to would read as "that board has
-    // no jobs" rather than "we were asked to stop".
     backedOffHosts: deps.http.pausedHosts(),
     seconds: Math.round(((deps.now ?? Date.now)() - startedAt) / 1000),
   };

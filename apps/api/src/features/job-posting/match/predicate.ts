@@ -17,15 +17,6 @@ import {
   type MatchPredicate,
 } from './shared';
 
-/**
- * The hard requirements, for the opt-in "only matches" toggle.
- *
- * Ranking keywords are deliberately absent: they are a ranking signal, and one
- * typo in a profile should not empty the board. Required keywords are the
- * exception, because a user who marks a term required has said the opposite.
- * Excluded keywords and companies are applied separately and always, because
- * asking not to see something is unambiguous.
- */
 export const buildMatchPredicate = (
   preference: JobPreference | null,
 ): MatchPredicate | null => {
@@ -62,8 +53,6 @@ export const buildMatchPredicate = (
   const cities = lower(preference.cities ?? []);
   const countries = upper(preference.countries ?? []);
   const remoteTypes = preference.remoteTypes ?? [];
-  // Somebody willing to move has said no place disqualifies an offer, so the
-  // location clause would only contradict them.
   if (
     (cities.length || countries.length) &&
     !preference.openToRelocation &&
@@ -78,8 +67,6 @@ export const buildMatchPredicate = (
         cities.length ? cityMatchSql : null,
         countries.length ? countryMatchSql : null,
         acceptsRemote ? `job."remoteType" = 'REMOTE'` : null,
-        // An offer whose location we failed to read is not evidence of a
-        // mismatch, so it stays visible.
         `NOT ${hasLocationSql}`,
       ]
         .filter(Boolean)

@@ -24,12 +24,6 @@ export async function setJobMatchSavedAction(
   return result.data;
 }
 
-/**
- * Pushes an offer onto the applications board.
- *
- * Returns the application it landed on, whether it was created now or on an
- * earlier click, so the caller can link straight to it.
- */
 export async function trackJobMatchAction(
   id: string,
   status: ApplicationStatus = ApplicationStatus.WISHLIST,

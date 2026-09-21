@@ -17,6 +17,23 @@ import { User } from '@repo/db/entities/user';
 import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
 import { Company } from '@repo/db/entities/company';
 import { CompanyService } from '../company/company.service';
+import { UserFileService } from '../user/file/user-file.service';
+import { UserFileKind } from '@repo/db/types/user-file/kind';
+import { UserFile } from '@repo/db/entities/user-file';
+import { JobEvent } from '@repo/db/entities/job-event';
+import { JobEventType } from '@repo/db/types/job-event/type';
+import {
+  EVENT_FOR_STATUS,
+  JobEventService,
+  type JobDescriptionSnapshot,
+} from '../job-event/job-event.service';
+
+/** What an edit may carry, beyond the columns of the row itself. */
+type ApplicationUpdate = Partial<Application> & {
+  companyName?: string;
+  resumeFileId?: string | null;
+  coverLetterFileId?: string | null;
+};
 
 /** A query value that may arrive once or several times over. */
 const toList = (value: string | string[] | undefined): string[] =>
@@ -33,6 +50,8 @@ export class ApplicationService {
     private readonly applicationsRepository: Repository<Application>,
     @Inject(forwardRef(() => CompanyService))
     private readonly companyService: CompanyService,
+    private readonly userFileService: UserFileService,
+    private readonly jobEventService: JobEventService,
   ) {}
 
   async findMany(
@@ -67,7 +86,13 @@ export class ApplicationService {
     const qb = this.applicationsRepository
       .createQueryBuilder('application')
       .leftJoin('application.user', 'user')
-      .leftJoinAndSelect('application.company', 'company');
+      .leftJoinAndSelect('application.company', 'company')
+      // Joined by hand because a query builder ignores `eager` — without
+      // these, the board's own list reports every application as having no
+      // CV attached, whatever is actually stored against it. The file bytes
+      // stay behind: `content` is a `select: false` column.
+      .leftJoinAndSelect('application.resumeFile', 'resumeFile')
+      .leftJoinAndSelect('application.coverLetterFile', 'coverLetterFile');
 
     if (userId) qb.where('user.id = :userId', { userId });
 
@@ -205,46 +230,180 @@ export class ApplicationService {
       appliedAt: dto.appliedAt ? new Date(dto.appliedAt) : undefined,
       user,
     });
-    return this.applicationsRepository.save(newApplication);
+    const saved = await this.applicationsRepository.save(newApplication);
+
+    await this.jobEventService.record({
+      userId: user.id,
+      applicationId: saved.id,
+      type: JobEventType.APPLICATION_CREATED,
+      occurredAt: saved.created_at,
+    });
+    // Somebody adding a row they already sent gives the date; it belongs on the
+    // event, not on today.
+    await this.recordStatusChange(
+      saved.id,
+      user.id,
+      ApplicationStatus.WISHLIST,
+      saved.status,
+      saved.appliedAt ?? undefined,
+    );
+
+    // Re-read: the status change above may have dated the row.
+    return this.findById(saved.id);
   }
 
-  private async buildUpdatePayload(
-    data: Partial<Application> & { companyName?: string },
-  ) {
-    const { companyName, ...rest } = data as Partial<Application> & {
-      companyName?: string;
-    };
+  /**
+   * Turn a status change into the event behind it.
+   *
+   * Every path that writes `status` comes through here, including the generic
+   * PATCH — that route takes an untyped body, so a card can be moved across the
+   * board without ever touching `updateStatus`, and an event emitted only there
+   * would miss most of what actually happens.
+   *
+   * A status re-applied to itself is not news and records nothing.
+   */
+  private async recordStatusChange(
+    applicationId: string,
+    ownerId: string,
+    from: ApplicationStatus | undefined,
+    to: ApplicationStatus | undefined,
+    occurredAt?: Date,
+  ): Promise<void> {
+    if (!to || from === to) return;
+
+    const type = EVENT_FOR_STATUS[to];
+    if (!type) return;
+
+    if (type === JobEventType.APPLICATION_SENT) {
+      await this.stampAppliedAt(applicationId, occurredAt ?? new Date());
+      await this.jobEventService.recordApplicationSent(
+        ownerId,
+        applicationId,
+        occurredAt,
+      );
+      return;
+    }
+
+    await this.jobEventService.record({
+      userId: ownerId,
+      applicationId,
+      type,
+      occurredAt,
+    });
+  }
+
+  /**
+   * Date an application the day it goes out, unless it already carries one.
+   *
+   * The `IS NULL` lives in the statement rather than in a read-then-write: a
+   * card dragged back and forth across the board would otherwise keep
+   * re-dating itself to today, and the day somebody actually applied is the
+   * one number the activity chart and the "no reply for 14 days" panel are
+   * both counting from.
+   */
+  private async stampAppliedAt(
+    applicationId: string,
+    when: Date,
+  ): Promise<void> {
+    await this.applicationsRepository
+      .createQueryBuilder()
+      .update(Application)
+      .set({ appliedAt: when })
+      .where('id = :id', { id: applicationId })
+      .andWhere('"appliedAt" IS NULL')
+      .execute();
+  }
+
+  /**
+   * Turn a document id from the request into a relation, having checked it.
+   *
+   * An id in a body is a claim about a file, not proof of one: without the
+   * owner check, anybody could attach — and then read back through the
+   * download route — a CV belonging to somebody else. `null` detaches.
+   */
+  private async resolveFileLink(
+    fileId: string | null | undefined,
+    ownerId: string,
+    kind: UserFileKind,
+  ): Promise<UserFile | null | undefined> {
+    if (fileId === undefined) return undefined;
+    if (fileId === null) return null;
+    await this.userFileService.assertAttachable(fileId, ownerId, kind);
+    return { id: fileId } as UserFile;
+  }
+
+  private async buildUpdatePayload(data: ApplicationUpdate, ownerId: string) {
+    const { companyName, resumeFileId, coverLetterFileId, ...rest } = data;
     const payload: Record<string, unknown> = { ...rest };
+
+    // Dropped rather than forwarded: this route takes an unvalidated body, so
+    // a caller could otherwise set the relation directly and attach a file the
+    // owner check below would have refused. The `*FileId` fields are the only
+    // way in.
+    delete payload.resumeFile;
+    delete payload.coverLetterFile;
     if (companyName !== undefined) {
       payload.company = companyName
         ? await this.companyService.findOrCreate(companyName)
         : null;
     }
+
+    const resumeFile = await this.resolveFileLink(
+      resumeFileId,
+      ownerId,
+      UserFileKind.RESUME,
+    );
+    if (resumeFile !== undefined) payload.resumeFile = resumeFile;
+
+    const coverLetterFile = await this.resolveFileLink(
+      coverLetterFileId,
+      ownerId,
+      UserFileKind.COVER_LETTER,
+    );
+    if (coverLetterFile !== undefined)
+      payload.coverLetterFile = coverLetterFile;
+
     return payload;
   }
 
-  async update(
-    id: string,
-    data: Partial<Application> & { companyName?: string },
-  ): Promise<Application> {
-    await this.findById(id);
+  /** Who owns an application, for checks that must not trust the caller. */
+  private async ownerOf(id: string): Promise<string> {
+    const row = await this.applicationsRepository
+      .createQueryBuilder('application')
+      .select('application.id')
+      .leftJoin('application.user', 'user')
+      .addSelect('user.id')
+      .where('application.id = :id', { id })
+      .getOne();
+    if (!row?.user) throw new NotFoundException();
+    return row.user.id;
+  }
+
+  async update(id: string, data: ApplicationUpdate): Promise<Application> {
+    const before = await this.findById(id);
+    // An admin editing somebody else's board still may only attach that
+    // person's documents, so the owner — not the caller — is what is checked.
+    // The event is recorded against that owner too: it is their history.
+    const ownerId = await this.ownerOf(id);
     await this.applicationsRepository.update(
       id,
-      await this.buildUpdatePayload(data),
+      await this.buildUpdatePayload(data, ownerId),
     );
+    await this.recordStatusChange(id, ownerId, before.status, data.status);
     return this.findById(id);
   }
 
   async updateByUser(
     id: string,
     userId: string,
-    data: Partial<Application> & { companyName?: string },
+    data: ApplicationUpdate,
   ): Promise<Application> {
-    await this.findByIdAndUser(id, userId);
+    const before = await this.findByIdAndUser(id, userId);
     await this.applicationsRepository.update(
       id,
-      await this.buildUpdatePayload(data),
+      await this.buildUpdatePayload(data, userId),
     );
+    await this.recordStatusChange(id, userId, before.status, data.status);
     return this.findById(id);
   }
 
@@ -252,8 +411,14 @@ export class ApplicationService {
     id: string,
     status: ApplicationStatus,
   ): Promise<Application> {
-    await this.findById(id);
+    const before = await this.findById(id);
     await this.applicationsRepository.update(id, { status });
+    await this.recordStatusChange(
+      id,
+      await this.ownerOf(id),
+      before.status,
+      status,
+    );
     return this.findById(id);
   }
 
@@ -262,9 +427,48 @@ export class ApplicationService {
     userId: string,
     status: ApplicationStatus,
   ): Promise<Application> {
-    await this.findByIdAndUser(id, userId);
+    const before = await this.findByIdAndUser(id, userId);
     await this.applicationsRepository.update(id, { status });
+    await this.recordStatusChange(id, userId, before.status, status);
     return this.findById(id);
+  }
+
+  /**
+   * Everything that happened to one application.
+   *
+   * Ownership is checked here rather than in the controller so that no route can
+   * read somebody else's history by knowing an id.
+   */
+  async timeline(id: string, userId: string): Promise<JobEvent[]> {
+    await this.findByIdAndUser(id, userId);
+    return this.jobEventService.timelineForApplication(userId, id);
+  }
+
+  /** The description as it read the day this application went out. */
+  async snapshot(
+    id: string,
+    userId: string,
+  ): Promise<JobDescriptionSnapshot | null> {
+    await this.findByIdAndUser(id, userId);
+    return this.jobEventService.snapshotForApplication(userId, id);
+  }
+
+  /** A follow-up, an interview, an answer — the things only the user knows. */
+  async recordEvent(
+    id: string,
+    userId: string,
+    type: JobEventType,
+    occurredAt?: Date,
+    note?: string,
+  ): Promise<JobEvent> {
+    await this.findByIdAndUser(id, userId);
+    return this.jobEventService.recordUserEvent(
+      userId,
+      id,
+      type,
+      occurredAt,
+      note,
+    );
   }
 
   async remove(id: string): Promise<void> {

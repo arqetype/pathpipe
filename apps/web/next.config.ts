@@ -13,6 +13,8 @@ const workspaceRoot = path.join(
 
 const nextConfig: NextConfig = {
   turbopack: { root: workspaceRoot },
+  // Same flag as the API reads, inlined so client components can hide the CTAs.
+  env: { SIGNUP_CLOSED: process.env.SIGNUP_CLOSED ?? '' },
   output: 'standalone',
   reactStrictMode: true,
   transpilePackages: ['@repo/ui'],

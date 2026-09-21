@@ -25,10 +25,6 @@ const TOKEN_PATTERNS = [
 
 const RESERVED = new Set(['embed', 'job_board', 'js', 'v1', 'boards']);
 
-/**
- * Greenhouse job boards. The public board API returns the full posting list in
- * one request, including the requisition id we use as a stable job key.
- */
 export const greenhouseAdapter: AtsAdapter = {
   platform: 'greenhouse',
 
@@ -45,16 +41,13 @@ export const greenhouseAdapter: AtsAdapter = {
     const token = atsTarget.params['token'];
     if (!token) return [];
 
-    // `content=true` inlines every posting's full description, which dominates
-    // the response size on a large board.
     const payload = await ctx.http.json<{ jobs?: GreenhouseJob[] }>(
       `https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(token)}/jobs${ctx.light ? '' : '?content=true'}`,
     );
     if (!payload?.jobs) return [];
 
     return payload.jobs.map((job) => {
-      // Greenhouse ships the description as entity-encoded markup, so it has to
-      // be decoded once before anything downstream can see tags at all.
+      // Greenhouse entity-encodes its markup.
       const content = asString(job.content);
       const markup = content ? decodeEntities(content) : undefined;
       return {

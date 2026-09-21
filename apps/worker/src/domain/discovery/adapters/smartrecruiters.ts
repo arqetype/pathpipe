@@ -28,7 +28,6 @@ const TOKEN_PATTERNS = [
   /smartrecruiters\.com\/embed[^"']*company=([A-Za-z0-9._-]+)/i,
 ];
 
-/** SmartRecruiters postings API, paged 100 at a time. */
 export const smartRecruitersAdapter: AtsAdapter = {
   platform: 'smartrecruiters',
 
@@ -59,7 +58,6 @@ export const smartRecruitersAdapter: AtsAdapter = {
           externalId: posting.id ?? posting.uuid,
           title: posting.name,
           url: `https://jobs.smartrecruiters.com/${identifier}/${posting.id}`,
-          // Already broken out by the API, so it composes into exactly one place.
           locations: strings(
             joinLocation(
               posting.location?.city,

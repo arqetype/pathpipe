@@ -11,23 +11,10 @@ interface WorkdayPosting {
 }
 
 const HOST_PATTERN = /^([a-z0-9-]+)\.(wd\d+)\.myworkdayjobs\.com$/i;
-const EMBED_PATTERN =
-  /https?:\/\/([a-z0-9-]+)\.(wd\d+)\.myworkdayjobs\.com\/(?:[a-z]{2}-[A-Z]{2}\/)?([A-Za-z0-9_-]+)/;
-
-// Tenants reject a larger page than this outright, so 20 it is; paging then
-// advances by however many postings actually came back.
 const PAGE_SIZE = 20;
-/**
- * Enough for a 3000-posting board. Big tenants (NVIDIA, Salesforce) run past
- * 1500, and stopping early is not a cosmetic loss: reconciliation would read
- * the short listing as proof the rest were taken down.
- */
+// Stopping early closes live postings.
 const MAX_PAGES = 150;
 
-/**
- * Workday tenants. The CXS endpoint behind every Workday careers site accepts
- * an unauthenticated POST and pages 20 postings at a time.
- */
 export const workdayAdapter: AtsAdapter = {
   platform: 'workday',
 
@@ -74,7 +61,6 @@ export const workdayAdapter: AtsAdapter = {
       const postings = payload?.jobPostings;
       if (!postings?.length) break;
 
-      // Last allowed page, and the tenant says there is more to come.
       if (
         page === MAX_PAGES - 1 &&
         (payload.total ?? 0) > offset + postings.length
@@ -87,13 +73,10 @@ export const workdayAdapter: AtsAdapter = {
       for (const posting of postings) {
         if (!posting.externalPath) continue;
         jobs.push({
-          // The requisition id is the last path segment after the final underscore.
           externalId: posting.externalPath.split('_').pop(),
           title: posting.title,
           url: `https://${host}/en-US/${site}${posting.externalPath}`,
           location: posting.locationsText,
-          // Workday reports "Posted 3 Days Ago" rather than a date; keep the
-          // absolute start date when present and let the DB fall back to null.
           postedAt: posting.startDate,
         });
       }

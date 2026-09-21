@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -16,6 +17,7 @@ import {
   type LocationSuggestion,
 } from '@repo/db/query/application';
 import { ApplicationStatus } from '@repo/db/types/application/status';
+import { JobEventType } from '@repo/db/types/job-event/type';
 import { UserRole } from '@repo/db/types/user/roles';
 import { Application } from '@repo/db/entities/application';
 import { CreateApplicationDto } from '@repo/db/dto/application/create-application.dto';
@@ -62,6 +64,56 @@ export class ApplicationController {
       return this.applicationService.findById(id);
     }
     return this.applicationService.findByIdAndUser(id, user.id);
+  }
+
+  /** Everything that has happened to this application, oldest first. */
+  @HttpCode(HttpStatus.OK)
+  @Get(':id/events')
+  getEvents(@CurrentUser() user: User, @Param('id') id: string) {
+    return this.applicationService.timeline(id, user.id);
+  }
+
+  /**
+   * The job description as it read the day this application went out.
+   *
+   * Not a fetch of the offer's current page: boards edit postings in place and
+   * take them down, so what is live today is no evidence of what was answered.
+   */
+  @HttpCode(HttpStatus.OK)
+  @Get(':id/snapshot')
+  getSnapshot(@CurrentUser() user: User, @Param('id') id: string) {
+    return this.applicationService.snapshot(id, user.id);
+  }
+
+  /**
+   * Record a follow-up, an interview, or an answer.
+   *
+   * One route for every event a user may state, rather than one route each:
+   * which types are acceptable is a rule about the log, and it lives with the
+   * log. `occurredAt` is optional and may be in the past — chasing a company on
+   * Tuesday and writing it down on Friday is the normal case — but never in the
+   * future, which is a typo, not a memory.
+   */
+  @HttpCode(HttpStatus.CREATED)
+  @Post(':id/events')
+  recordEvent(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body('type') type: JobEventType,
+    @Body('occurredAt') occurredAt?: string,
+    @Body('note') note?: string,
+  ) {
+    let when: Date | undefined;
+    if (occurredAt) {
+      when = new Date(occurredAt);
+      if (Number.isNaN(when.getTime())) {
+        throw new BadRequestException('occurredAt is not a date');
+      }
+      if (when.getTime() > Date.now()) {
+        throw new BadRequestException('occurredAt is in the future');
+      }
+    }
+    return this.applicationService.recordEvent(id, user.id, type, when, note);
   }
 
   @HttpCode(HttpStatus.CREATED)

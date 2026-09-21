@@ -27,7 +27,7 @@ const EMPTY_PAGE: JobMatchPage = {
   hasProfile: false,
 };
 
-/** Repeated keys are how the API receives a multi-value filter. */
+// Repeated keys, not comma-joined
 const toSearchParams = (query: JobPostingsQuery): string => {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
@@ -46,8 +46,6 @@ export async function fetchJobMatchesAction(
 ): Promise<JobMatchPage> {
   const qs = toSearchParams(query);
   const result = await get<JobMatchPage>(`/job-postings${qs ? `?${qs}` : ''}`);
-  // A failed load must not blank the page: the filter bar stays usable and the
-  // list simply shows as empty.
   if (!result.ok) return EMPTY_PAGE;
   return result.data;
 }

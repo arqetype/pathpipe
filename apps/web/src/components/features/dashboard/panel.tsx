@@ -3,22 +3,14 @@ import type { ReactNode } from 'react';
 
 interface PanelProps {
   title: string;
-  /** Shown next to the title when there is more than what fits below. */
   count?: number;
   seeAllHref?: string;
   seeAllLabel?: string;
-  /** What the panel says when it has nothing. */
   empty?: ReactNode;
   isEmpty?: boolean;
   children: ReactNode;
 }
 
-/**
- * A titled list.
- *
- * Rows sit flush against the edges rather than in padded cards: a row here is
- * one click, and a row that reads as a card invites reading instead.
- */
 export function Panel({
   title,
   count,

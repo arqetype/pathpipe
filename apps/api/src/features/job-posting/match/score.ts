@@ -1,7 +1,9 @@
 import { JobPreference } from '@repo/db/entities/job-preference';
 import { RemoteType } from '@repo/db/types/job-posting/remote-type';
 import {
+  IMPORTANCE_MULTIPLIER,
   MatchCriterion,
+  MatchImportance,
   importanceOf,
 } from '@repo/db/types/job-preference/importance';
 import {
@@ -17,11 +19,8 @@ import {
   upper,
 } from './shared';
 
-/** The score an offer earns against one profile, as a SQL expression. */
-
 export interface MatchContext {
   preference: JobPreference | null;
-  /** The user follows at least one company, so the bonus can be earned. */
   followsAny: boolean;
 }
 
@@ -45,20 +44,12 @@ const WEIGHTS = {
   followed: 8,
 } as const;
 
-/**
- * Text-rank credit, as a share of `hit`.
- *
- * `ts_rank_cd` with normalisation 32 lands in [0, 1), and a term found only in
- * a description (weight C) ranks around 0.17 where the same term in the title
- * ranks 0.5. Scaling by 4 means a real hit in the body earns most of the
- * criterion and a title hit earns all of it — at the previous factor of 2 no
- * description match could ever pay more than a third, which is what kept whole
- * profiles from reaching the board's own "strong fit" band.
- */
+// Below the strong-fit band.
+const ESSENTIAL_MISS_CEILING = 69;
+
 const rankSql = (hit: number, param: string): string =>
   `LEAST(${hit}, ${hit} * ts_rank_cd(job."searchVector", to_tsquery('simple', ${param}), 32) * 4)`;
 
-/** `%term%` patterns for a title match, with LIKE's own wildcards escaped. */
 const toLikePatterns = (values: string[]): string[] =>
   [
     ...new Set(
@@ -70,7 +61,6 @@ const toLikePatterns = (values: string[]): string[] =>
   ].map((value) => `%${value}%`);
 
 export interface MatchSql {
-  /** Expression producing a 0–100 integer. */
   score: string;
   params: Record<string, unknown>;
 }
@@ -80,12 +70,6 @@ const followedSql = `EXISTS (
   WHERE mw."companyId" = job."companyId" AND mw."userId" = :matchUserId
 )`;
 
-/**
- * The score expression, and the parameters it needs.
- *
- * Returns null when the profile expresses nothing — the caller then leaves the
- * score out of the response entirely rather than showing everyone 0%.
- */
 export const buildMatchSql = (
   userId: string,
   { preference, followsAny }: MatchContext,
@@ -93,17 +77,8 @@ export const buildMatchSql = (
   if (!preference || !isConfigured(preference)) return null;
 
   const parts: string[] = [];
-  /**
-   * What this offer could have scored, term by term.
-   *
-   * Per row rather than per profile: a board that did not say whether a role is
-   * remote, or what it pays, must not cost the offer the points it never had a
-   * chance to earn. A criterion the offer says nothing about drops out of both
-   * sides of the ratio, so the score reads "of what could be checked, this much
-   * matched" — which is the only reading under which a genuine fit reaches the
-   * high numbers the board's own bands promise.
-   */
   const maxParts: string[] = [];
+  const caps: string[] = [];
   const params: Record<string, unknown> = { matchUserId: userId };
 
   const add = (points: string, ceiling: string | number): void => {
@@ -114,8 +89,16 @@ export const buildMatchSql = (
   const weightFor = (criterion: MatchCriterion): number =>
     importanceOf(preference.weights, criterion);
 
-  // What they want to work on is the strongest single signal a profile carries,
-  // so it is weighted above everything else.
+  const isEssential = (criterion: MatchCriterion): boolean =>
+    weightFor(criterion) >= IMPORTANCE_MULTIPLIER[MatchImportance.ESSENTIAL];
+
+  const capIfEssential = (criterion: MatchCriterion, missed: string): void => {
+    if (!isEssential(criterion)) return;
+    caps.push(
+      `CASE WHEN ${missed} THEN ${ESSENTIAL_MISS_CEILING} ELSE 100 END`,
+    );
+  };
+
   const domains = preference.domains ?? [];
   const domainWeight = weightFor(MatchCriterion.DOMAIN);
   if (domains.length && domainWeight > 0) {
@@ -124,6 +107,10 @@ export const buildMatchSql = (
     add(
       `CASE WHEN job."domain" = ANY(:matchDomains) THEN ${hit} ELSE 0 END`,
       `CASE WHEN job."domain" IS NULL THEN 0 ELSE ${hit} END`,
+    );
+    capIfEssential(
+      MatchCriterion.DOMAIN,
+      `job."domain" IS NOT NULL AND NOT (job."domain" = ANY(:matchDomains))`,
     );
   }
 
@@ -136,6 +123,10 @@ export const buildMatchSql = (
       `CASE WHEN job."seniority" = ANY(:matchSeniorities) THEN ${hit} ELSE 0 END`,
       `CASE WHEN job."seniority" IS NULL THEN 0 ELSE ${hit} END`,
     );
+    capIfEssential(
+      MatchCriterion.SENIORITY,
+      `job."seniority" IS NOT NULL AND NOT (job."seniority" = ANY(:matchSeniorities))`,
+    );
   }
 
   const motivationWeight = weightFor(MatchCriterion.MOTIVATION);
@@ -146,8 +137,6 @@ export const buildMatchSql = (
     add(rankSql(hit, ':matchMotivations'), hit);
   }
 
-  // The CV is a weaker signal than a stated preference — it says what somebody
-  // has done, not what they want next — so it ranks rather than decides.
   const resumeWeight = weightFor(MatchCriterion.RESUME);
   const resumeQuery = keywordsToTsQuery(preference.resumeKeywords ?? []);
   if (resumeQuery && resumeWeight > 0) {
@@ -165,6 +154,10 @@ export const buildMatchSql = (
       `CASE WHEN job."employmentType" = ANY(:matchTypes) THEN ${hit} ELSE 0 END`,
       `CASE WHEN job."employmentType" IS NULL THEN 0 ELSE ${hit} END`,
     );
+    capIfEssential(
+      MatchCriterion.EMPLOYMENT_TYPE,
+      `job."employmentType" IS NOT NULL AND NOT (job."employmentType" = ANY(:matchTypes))`,
+    );
   }
 
   const cities = lower(preference.cities ?? []);
@@ -174,15 +167,11 @@ export const buildMatchSql = (
   if ((cities.length || countries.length) && locationWeight > 0) {
     params.matchCities = cities.length ? cities : [''];
     params.matchCountries = countries.length ? countries : [''];
-    // Somebody who says they will work remotely is served by a remote offer
-    // anywhere, so it scores nearly as well as the city they asked for.
     const acceptsRemote =
       !remoteTypes.length || remoteTypes.includes(RemoteType.REMOTE);
     const city = WEIGHTS.city * locationWeight;
     const country = WEIGHTS.country * locationWeight;
     const remote = WEIGHTS.remoteFallback * locationWeight;
-    // Somebody open to moving is not mismatched by an address, only less well
-    // served than by the places they named.
     const elsewhere = preference.openToRelocation
       ? WEIGHTS.relocation * locationWeight
       : 0;
@@ -196,6 +185,18 @@ export const buildMatchSql = (
        END`,
       `CASE WHEN NOT ${hasLocationSql} THEN 0 ELSE ${city} END`,
     );
+    if (!preference.openToRelocation) {
+      capIfEssential(
+        MatchCriterion.LOCATION,
+        `${hasLocationSql} AND NOT (${[
+          cities.length ? cityMatchSql : null,
+          countries.length ? countryMatchSql : null,
+          acceptsRemote ? `job."remoteType" = 'REMOTE'` : null,
+        ]
+          .filter(Boolean)
+          .join(' OR ')})`,
+      );
+    }
   }
 
   const remoteWeight = weightFor(MatchCriterion.REMOTE_TYPE);
@@ -206,11 +207,12 @@ export const buildMatchSql = (
       `CASE WHEN job."remoteType" = ANY(:matchRemote) THEN ${hit} ELSE 0 END`,
       `CASE WHEN job."remoteType" IS NULL THEN 0 ELSE ${hit} END`,
     );
+    capIfEssential(
+      MatchCriterion.REMOTE_TYPE,
+      `job."remoteType" IS NOT NULL AND NOT (job."remoteType" = ANY(:matchRemote))`,
+    );
   }
 
-  // A title match is the closest thing to the user naming the job outright, so
-  // it is checked against the title column instead of the whole document: a
-  // description that merely mentions "data engineer" is not the same offer.
   const titleWeight = weightFor(MatchCriterion.TITLE);
   const titlePatterns = toLikePatterns(preference.titles ?? []);
   if (titlePatterns.length && titleWeight > 0) {
@@ -230,9 +232,6 @@ export const buildMatchSql = (
     add(rankSql(hit, ':matchKeywords'), hit);
   }
 
-  // Required terms score all or nothing, with no credit for a missing value:
-  // "must mention" is a statement about the offer's text, and text is never
-  // missing the way a structured field is.
   const requiredQuery = keywordsToRequiredTsQuery(
     preference.requiredKeywords ?? [],
   );
@@ -262,8 +261,6 @@ export const buildMatchSql = (
   if (preference.minSalary && salaryWeight > 0) {
     params.matchSalary = preference.minSalary;
     const hit = WEIGHTS.salary * salaryWeight;
-    // Comparing 45000 EUR to 45000 CZK is worse than not comparing at all, so
-    // an offer priced in another currency is treated as unpriced.
     const currency = preference.salaryCurrency?.trim().toUpperCase();
     const comparable = currency
       ? `(job."salaryCurrency" IS NULL OR upper(job."salaryCurrency") = :matchCurrency)`
@@ -279,8 +276,6 @@ export const buildMatchSql = (
     );
   }
 
-  // Freshness decays rather than cuts off: an offer one day past the window is
-  // not the same as one from last quarter, and neither should vanish.
   const freshnessWeight = weightFor(MatchCriterion.FRESHNESS);
   if (preference.maxAgeDays && freshnessWeight > 0) {
     params.matchMaxAge = preference.maxAgeDays;
@@ -305,10 +300,9 @@ export const buildMatchSql = (
 
   if (!parts.length) return null;
 
-  // NULLIF guards the offer that said nothing this profile asks about: it
-  // scores 0 rather than dividing by zero.
+  // LEAST skips NULL: cap outside COALESCE.
   return {
-    score: `LEAST(100, GREATEST(0, COALESCE(round(
+    score: `LEAST(100, ${caps.length ? `${caps.join(', ')}, ` : ''}GREATEST(0, COALESCE(round(
       (${parts.join(' + ')}) * 100.0 / NULLIF(${maxParts.join(' + ')}, 0)
     ), 0)))::int`,
     params,

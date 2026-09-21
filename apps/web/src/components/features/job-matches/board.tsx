@@ -26,6 +26,7 @@ import {
   RiSearchLine,
   RiSparkling2Line,
 } from '@remixicon/react';
+import { STRONG_FIT_SCORE } from '@repo/db/query/job-posting';
 import type { JobMatchItem, JobMatchPage } from '@/actions/job-match/fetch';
 import { JobFilters } from './filters';
 import { JobMatchList } from './list';
@@ -38,13 +39,6 @@ interface JobBoardProps {
   selected: JobMatchItem | null;
 }
 
-/**
- * The board: filters, results, and the selected offer side by side.
- *
- * On a narrow screen the three panes become one — picking an offer replaces the
- * list, and the filters move into a sheet — so the same URL renders sensibly
- * everywhere.
- */
 export function JobBoard({ page, selected }: JobBoardProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -61,8 +55,6 @@ export function JobBoard({ page, selected }: JobBoardProps) {
     router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   };
 
-  // Mirrors the API's default so the control never disagrees with the order on
-  // screen: searching sorts by relevance unless the user says otherwise.
   const sortBy =
     value('sortBy') ||
     (value('search') ? 'relevance' : page.hasProfile ? 'match' : 'postedAt');
@@ -74,7 +66,15 @@ export function JobBoard({ page, selected }: JobBoardProps) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-baseline gap-2">
             <h1 className="text-2xl font-semibold">Job Matches</h1>
-            {page.newCount > 0 && <Badge>{page.newCount} new</Badge>}
+            {page.newCount > 0 && (
+              <Badge
+                title={`Offers you have not opened yet, scoring ${STRONG_FIT_SCORE}% or more`}
+              >
+                {page.hasProfile
+                  ? `${page.newCount} new strong fits`
+                  : `${page.newCount} new`}
+              </Badge>
+            )}
           </div>
           <span className="text-sm text-muted-foreground">
             {page.total} offer{page.total === 1 ? '' : 's'}
@@ -165,17 +165,17 @@ export function JobBoard({ page, selected }: JobBoardProps) {
       </header>
 
       <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,26rem)_minmax(0,1fr)]">
+        {/* overflow-y alone makes x auto */}
         <JobFilters
           facets={page.facets}
           hasProfile={page.hasProfile}
-          className="hidden overflow-y-auto pr-2 lg:flex"
+          className="hidden min-w-0 overflow-y-auto overflow-x-hidden pr-2 lg:flex"
         />
 
         <div
           className={cn(
             'min-h-0 overflow-hidden rounded-lg border',
             isPending && 'opacity-60 transition-opacity',
-            // On a narrow screen the detail takes the place of the list.
             selected && 'hidden xl:block',
           )}
         >
@@ -191,9 +191,7 @@ export function JobBoard({ page, selected }: JobBoardProps) {
 
         {selected ? (
           <div className="min-h-0 overflow-hidden rounded-lg border">
-            {/* Keyed by the offer so picking another one mounts a fresh pane:
-                the description starts at the top rather than where the last
-                one was left. */}
+            {/* Fresh pane resets scroll */}
             <JobDetail key={selected.id} job={selected} onBack={closeDetail} />
           </div>
         ) : (

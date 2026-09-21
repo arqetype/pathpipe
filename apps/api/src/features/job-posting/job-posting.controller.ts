@@ -10,8 +10,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { JobPostingService } from './job-posting.service';
-import { JobPostingIngestService } from './job-posting-ingest.service';
-import { JobPostingInteractionService } from './job-posting-interaction.service';
+import { JobPostingIngestService } from './ingest/job-posting-ingest.service';
+import { JobPostingInteractionService } from './interaction/job-posting-interaction.service';
 import { CreateJobPostingDto } from '@repo/db/dto/job-posting/create-job-posting.dto';
 import {
   type JobPostingResponse,
@@ -48,7 +48,6 @@ export class JobPostingController {
     return this.jobPostingService.findMany(user.id, query);
   }
 
-  /** Open offers matching the user's profile that they have never opened. */
   @HttpCode(HttpStatus.OK)
   @Get('count')
   async countNew(@CurrentUser() user: User): Promise<{ count: number }> {
@@ -85,7 +84,6 @@ export class JobPostingController {
     return this.interactionService.setSaved(user.id, id, Boolean(saved));
   }
 
-  /** Pushes the offer onto the applications board, or returns the existing one. */
   @HttpCode(HttpStatus.CREATED)
   @Post(':id/application')
   async track(

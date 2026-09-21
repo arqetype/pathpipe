@@ -17,7 +17,6 @@ import { countryName } from '@/components/features/job-matches/constants';
 
 export interface LocationValue {
   city: string;
-  /** ISO 3166-1 alpha-2, or empty. */
   country: string;
 }
 
@@ -30,19 +29,9 @@ interface SelectLocationProps {
 
 const DEBOUNCE_MS = 300;
 
-/** "Paris, France", "France", or "Paris" — whichever halves exist. */
 export const formatLocation = ({ city, country }: LocationValue): string =>
   [city, country ? countryName(country) : ''].filter(Boolean).join(', ');
 
-/**
- * Where a job is, picked from what other postings already say.
- *
- * The suggestions come from the offers we have scraped and from the user's own
- * applications, so a place is spelled the way the boards spell it and sorting by
- * city groups what belongs together. Typing something we have never seen is
- * still allowed — it lands as a city with no country, which is what somebody
- * typing "Remote — EMEA" means anyway.
- */
 export default function SelectLocation({
   value,
   onChange,
@@ -54,8 +43,7 @@ export default function SelectLocation({
   const [open, setOpen] = React.useState(false);
   const [draft, setDraft] = React.useState(() => formatLocation(value));
 
-  // The parent owns the value, so an edit loaded after mount has to reach the
-  // box; the user's own typing is what `draft` protects in the meantime.
+  // Skip sync while user types
   React.useEffect(() => {
     if (!focused) setDraft(formatLocation(value));
   }, [value, focused]);
@@ -104,8 +92,6 @@ export default function SelectLocation({
         }}
         onBlur={() => {
           setFocused(false);
-          // Whatever is in the box wins on the way out: an unmatched place is a
-          // city we have simply never seen, not an error to discard.
           const typed = draft.trim();
           if (!typed) {
             onChange({ city: '', country: '' });

@@ -3,12 +3,6 @@
 import { get } from '@/lib/fetch';
 import type { DashboardResponse } from '@repo/db/query/dashboard';
 
-/**
- * What the home page shows when the API cannot be reached.
- *
- * Zeroes rather than an error page: the navigation and the calls to action stay
- * usable, and every tile simply reads as empty.
- */
 const EMPTY: DashboardResponse = {
   stats: {
     wishlist: 0,
@@ -22,11 +16,13 @@ const EMPTY: DashboardResponse = {
     appliedThisWeek: 0,
     appliedLastWeek: 0,
     responseRate: null,
+    streakDays: 0,
     strongMatches: 0,
     savedUndecided: 0,
     hasProfile: false,
     profileCompleteness: 0,
   },
+  activity: [],
   topMatches: [],
   savedOffers: [],
   wishlistApplications: [],

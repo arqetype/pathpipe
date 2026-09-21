@@ -9,34 +9,20 @@ import {
   WorkDomain,
 } from '@repo/db/types/job-posting/work-domain';
 
-/**
- * Writing a board's listing to the API.
- *
- * Kept away from the worker's scheduling: everything here is about what our own
- * API is told, not about when a board is read.
- */
-
 interface BatchResponse {
   inserted: number;
   total: number;
   jobs: Array<{ id: string }>;
 }
 
-/**
- * Postings per HTTP request to the API. A full board's descriptions can run
- * several megabytes; chunking keeps each request well under any reasonable
- * body-size limit regardless of how large a single company's listing gets.
- */
 const SUBMIT_CHUNK_SIZE = 150;
 
-/** The worker emits enum values as strings; only known ones reach the API. */
 const asEnum = <T extends Record<string, string>>(
   members: T,
   value: string | undefined,
 ): T[keyof T] | null =>
   value && value in members ? (value as T[keyof T]) : null;
 
-/** Writes one board's listing for the company behind it, and returns new offers. */
 export const ingestListing = async (
   company: { companyId: string; companyName: string },
   result: DiscoveryResult,
@@ -88,14 +74,10 @@ export const ingestListing = async (
         { company: company.companyName, err },
         'Failed to submit jobs to API',
       );
-      // A later chunk failing should not lose the ones that already landed.
     }
   }
 
-  // The board is the authority on what is still open: anything stored for
-  // this company and source that the board no longer lists has been taken
-  // down. Only a complete listing may say that — a truncated one would close
-  // half the board.
+  // Never reconcile a partial listing.
   if (!result.partial) {
     try {
       await apiClient.post('/internal/v1/job-postings/reconcile', {

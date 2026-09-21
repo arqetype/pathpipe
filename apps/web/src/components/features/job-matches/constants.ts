@@ -32,7 +32,6 @@ export const STATUS_LABELS: Record<JobPostingStatus, string> = {
   [JobPostingStatus.DISMISSED]: 'Dismissed',
 };
 
-/** Why an offer is no longer available, in the words shown to the user. */
 export const CLOSED_REASON_LABELS: Record<JobPostingClosedReason, string> = {
   [JobPostingClosedReason.REMOVED_FROM_LISTING]:
     'This offer was taken off the company’s job board.',
@@ -82,9 +81,7 @@ export const POSTED_WITHIN_OPTIONS = [
 ];
 
 export const SORT_OPTIONS = [
-  /** Needs a profile; the API falls back to freshness without one. */
   { value: 'match', label: 'Best fit' },
-  /** Only meaningful with a search term; the API falls back to freshness. */
   { value: 'relevance', label: 'Most relevant' },
   { value: 'postedAt', label: 'Most recent' },
   { value: 'salaryMax', label: 'Highest salary' },
@@ -97,7 +94,6 @@ const REGION_NAMES =
     ? new Intl.DisplayNames(['en'], { type: 'region' })
     : null;
 
-/** "FR" reads as "France" everywhere it is shown. */
 export const countryName = (code: string): string => {
   if (!code) return code;
   try {

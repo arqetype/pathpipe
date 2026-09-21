@@ -3,12 +3,6 @@
 import { useCallback, useTransition } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-/**
- * Filters live in the URL.
- *
- * That keeps the whole board server-rendered — a filtered view is a plain
- * navigation — and makes any state of the board a link the user can keep.
- */
 export function useJobFilters() {
   const router = useRouter();
   const pathname = usePathname();
@@ -17,7 +11,7 @@ export function useJobFilters() {
 
   const commit = useCallback(
     (params: URLSearchParams) => {
-      // Any change to what is being filtered invalidates the page number.
+      // Filter change resets pagination
       params.delete('page');
       const qs = params.toString();
       startTransition(() => {
@@ -47,7 +41,7 @@ export function useJobFilters() {
     [commit, searchParams],
   );
 
-  /** Several keys in one navigation, so two ends of a range cannot race. */
+  // One navigation: ends cannot race
   const setMany = useCallback(
     (entries: Record<string, string | null>) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -74,7 +68,6 @@ export function useJobFilters() {
     [commit, searchParams],
   );
 
-  /** Keeps the selected offer — only the filtering is cleared. */
   const clear = useCallback(() => {
     const params = new URLSearchParams();
     const selected = searchParams.get('job');
@@ -89,8 +82,6 @@ export function useJobFilters() {
       else params.delete('page');
       const qs = params.toString();
       startTransition(() => {
-        // Nothing scrolls at the window level here — the list pane resets
-        // itself (see JobMatchList).
         router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
       });
     },
@@ -109,7 +100,6 @@ export function useJobFilters() {
     [pathname, router, searchParams],
   );
 
-  /** How many filters are active, for the "clear" affordance. */
   const activeCount = Array.from(searchParams.entries()).filter(
     ([key]) => key !== 'job' && key !== 'page' && key !== 'sortBy',
   ).length;

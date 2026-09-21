@@ -110,7 +110,6 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
   return (
     <div className="flex items-center justify-between gap-4 p-4 shrink-0">
       <div className="flex items-center gap-2">
-        {/* Search */}
         <Field className="max-w-sm">
           <InputGroup>
             <InputGroupInput
@@ -124,7 +123,6 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
           </InputGroup>
         </Field>
 
-        {/* Sort */}
         <ButtonGroup>
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -162,7 +160,6 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
           </Button>
         </ButtonGroup>
 
-        {/* Status filter */}
         <DropdownMenu>
           <DropdownMenuTrigger
             render={

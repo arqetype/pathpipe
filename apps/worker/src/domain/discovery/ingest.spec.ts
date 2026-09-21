@@ -31,7 +31,6 @@ const result = (
   ...over,
 });
 
-/** The batch endpoint, answering "everything landed". */
 const acceptAll = () => {
   post.mockImplementation((path: string, body: unknown) => {
     if (path === '/job-postings/internal/batch') {

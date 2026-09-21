@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { fold } from '../../features/job-posting/dedup-key';
+import { fold } from '../../features/job-posting/ingest/dedup-key';
 
 interface Row {
   id: string;

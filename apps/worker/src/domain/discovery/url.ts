@@ -1,10 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { DiscoveredJob } from './types';
 
-/**
- * Query parameters that identify a visitor or a campaign rather than a job.
- * Leaving them in means the same posting looks "new" on every crawl.
- */
 const TRACKING_PARAMS = [
   /^utm_/i,
   /^_hs/i,
@@ -23,10 +19,6 @@ const TRACKING_PARAMS = [
 const isTracking = (key: string): boolean =>
   TRACKING_PARAMS.some((p) => p.test(key));
 
-/**
- * Canonical form of a URL for identity comparisons. Same posting reached by two
- * different links must normalise to the same string.
- */
 export const normalizeUrl = (raw: string): string => {
   let url: URL;
   try {
@@ -60,14 +52,6 @@ export const normalizeUrl = (raw: string): string => {
   return url.toString();
 };
 
-/**
- * Public suffixes made of two labels, so `careers.example.co.uk` is not read as
- * belonging to a vendor called `co.uk`.
- *
- * Deliberately short: only the suffixes job boards are actually served under. A
- * full public suffix list would be a dependency and a monthly update for a
- * handful of hostnames.
- */
 const TWO_LABEL_SUFFIXES = new Set([
   'co.uk',
   'org.uk',
@@ -96,19 +80,10 @@ const hostOf = (raw: string): string => {
   }
 };
 
-/**
- * The vendor behind a hostname: `acme.jobs.personio.de` and
- * `other.jobs.personio.de` both answer `personio.de`.
- *
- * This is the unit rate limits are actually enforced on. A vendor that gives
- * every customer its own subdomain — Personio, Teamtailor, Workday — looks like
- * hundreds of separate hosts while being one server with one budget, so
- * throttling per hostname sends it hundreds of times what it allows.
- */
+// Rate limits are per vendor domain.
 export const registrableDomain = (raw: string): string => {
   const host = hostOf(raw).toLowerCase().replace(/\.$/, '');
   if (!host.includes('.')) return host;
-  // An IP address is its own vendor; there is nothing to strip.
   if (/^\d+(\.\d+){3}$/.test(host)) return host;
   const parts = host.split('.');
   const lastTwo = parts.slice(-2).join('.');
@@ -118,10 +93,6 @@ export const registrableDomain = (raw: string): string => {
   return lastTwo;
 };
 
-/**
- * Identity of a posting. An ATS id beats a URL: boards routinely change their
- * slugs (title edits) while keeping the requisition id.
- */
 export const jobKey = (job: DiscoveredJob, platform?: string | null): string =>
   job.externalId
     ? `${platform ?? 'ats'}:${job.externalId}`
@@ -130,7 +101,6 @@ export const jobKey = (job: DiscoveredJob, platform?: string | null): string =>
 export const sha1 = (value: string): string =>
   createHash('sha1').update(value).digest('hex');
 
-/** Stable hash of a job set — the cheap "did anything change?" signal. */
 export const fingerprintJobs = (
   jobs: DiscoveredJob[],
   platform?: string | null,

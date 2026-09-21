@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company, CompanyStatus } from '@repo/db/entities/company';
 import { SeedCompanyDto } from '@repo/db/dto/company/seed-companies.dto';
+import { capitalize, isSlugCased } from './company-name';
 
 /**
  * Registers companies found by a discovery run.
@@ -42,8 +43,13 @@ export class CompanySeedService {
     let unchanged = 0;
 
     for (const entry of entries) {
-      const name = entry.name.trim();
-      if (!name) continue;
+      const trimmed = entry.name.trim();
+      if (!trimmed) continue;
+      // Discovery names a company after its board token, which is a slug. It is
+      // the name users read everywhere in the app, so it gets a capital here —
+      // at the one door every discovered company comes through — rather than in
+      // each place that displays it.
+      const name = isSlugCased(trimmed) ? capitalize(trimmed) : trimmed;
 
       // Case-insensitively: a board answers to "nvidia" and "NVIDIA" alike, so
       // both spellings reach here for the same company.
@@ -68,13 +74,25 @@ export class CompanySeedService {
         continue;
       }
 
-      // A careers URL somebody set by hand outranks one a discovery guessed.
-      if (existing.careersUrl && existing.careersUrl !== entry.careersUrl) {
-        unchanged += 1;
-        continue;
-      }
-      if (existing.careersUrl === entry.careersUrl) {
-        unchanged += 1;
+      // The rule holds for what is already on file: a company seeded before it
+      // existed is still one discovery named. Matching is case-insensitive, so
+      // the row found here may well be the lowercase one written last month.
+      const renamed = isSlugCased(existing.name) && existing.name !== name;
+      if (renamed) existing.name = name;
+
+      // A careers URL somebody set by hand outranks one a discovery guessed,
+      // and a URL that did not move is nothing to write.
+      const keepsUrl =
+        (existing.careersUrl && existing.careersUrl !== entry.careersUrl) ||
+        existing.careersUrl === entry.careersUrl;
+
+      if (keepsUrl) {
+        if (!renamed) {
+          unchanged += 1;
+          continue;
+        }
+        await this.companyRepository.save(existing);
+        updated += 1;
         continue;
       }
 

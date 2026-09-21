@@ -13,16 +13,9 @@ import pino from 'pino';
 import pretty from 'pino-pretty';
 import { createWorker, QUEUES } from '@repo/queues';
 
-/**
- * Entry point for job discovery: config in, dependencies built, cron and queue
- * wired to one domain call. Every rule about when a source is due, what its
- * answer means and what gets written back lives in `domain/discovery/cycle.ts`
- * and `domain/discovery/schedule.ts`.
- */
-
 const logger = pino(pretty());
 
-/** The API, in the shape the cycle asks for. Failures here never fail a cycle. */
+// Store failures never fail a cycle.
 const apiSourceStore: SourceStore = {
   list: () => apiClient.get<JobSource[]>('/internal/v1/job-sources'),
 
@@ -42,14 +35,6 @@ const apiSourceStore: SourceStore = {
     }
   },
 
-  /**
-   * Closes offers that dated themselves out.
-   *
-   * The probe that used to fetch each offer's page is gone with the rest of the
-   * crawling: an offer disappearing from its board is what reconciliation
-   * already catches, and it catches it through the vendor's API rather than by
-   * knocking on a page that may answer with a bot challenge.
-   */
   expireDatedOffers: async () => {
     try {
       const { closed } = await apiClient.post<{ closed: number }>(
@@ -115,13 +100,6 @@ export async function startAtsWorker() {
     }
   };
 
-  /**
-   * Refills the company list discovery works from.
-   *
-   * Companies are only read once somebody knows their board exists, and the
-   * roster of who is hiring moves every day — so the same seeding the CLI runs
-   * happens on a schedule. Safe to repeat: the API call behind it is an upsert.
-   */
   const runSeeding = async (): Promise<void> => {
     logger.info('Starting board discovery');
     try {
@@ -156,8 +134,7 @@ export async function startAtsWorker() {
   const schedule = (
     expression: string,
     run: () => Promise<void>,
-    // `runDiscovery` keeps its own guard, and says so in the log when a tick
-    // lands on a running cycle. Seeding has no such guard, so croner holds it.
+    // runDiscovery guards itself; seeding does not.
     protect = false,
   ): Cron =>
     new Cron(

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Logo } from '@repo/ui/branding/logo';
+import { SIGNUP_CLOSED } from '@/lib/signup-closed';
 import { buttonVariants } from '@repo/ui/components/button';
 import {
   NavigationMenu,
@@ -20,15 +21,33 @@ const NAV_SECTIONS = [
     label: 'Product',
     dropdown: true,
     links: [
-      { href: '/feature-1', label: 'Features', description: 'Description' },
-      { href: '/feature-2', label: 'Test', description: 'Description' },
+      {
+        href: '/#features',
+        label: 'Features',
+        description: 'Matches, pipeline, companies, documents',
+      },
+      {
+        href: '/#how-it-works',
+        label: 'How it works',
+        description: 'From your CV to your first scored matches',
+      },
+      {
+        href: '/data-sources',
+        label: 'Data sources',
+        description: 'Every job board pathpipe reads, credited',
+      },
+      {
+        href: '/changelog',
+        label: 'Changelog',
+        description: 'What shipped, newest first',
+      },
     ],
   },
   {
     label: 'Company',
     links: [
       { href: '/pricing', label: 'Pricing' },
-      { href: '/changelog', label: 'Now' },
+      { href: '/about', label: 'About' },
       { href: '/contact', label: 'Contact' },
     ],
   },
@@ -119,12 +138,14 @@ export function MarketingNavbar() {
             >
               Sign in
             </Link>
-            <Link
-              href="/app/sign-up"
-              className={buttonVariants({ size: 'lg' })}
-            >
-              Sign up
-            </Link>
+            {!SIGNUP_CLOSED && (
+              <Link
+                href="/app/sign-up"
+                className={buttonVariants({ size: 'lg' })}
+              >
+                Sign up
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
@@ -134,12 +155,14 @@ export function MarketingNavbar() {
             >
               Sign in
             </Link>
-            <Link
-              href="/app/sign-up"
-              className={buttonVariants({ size: 'sm' })}
-            >
-              Sign up
-            </Link>
+            {!SIGNUP_CLOSED && (
+              <Link
+                href="/app/sign-up"
+                className={buttonVariants({ size: 'sm' })}
+              >
+                Sign up
+              </Link>
+            )}
             <button
               className="flex size-9 items-center justify-center rounded-md text-foreground transition-colors hover:bg-accent"
               aria-label={open ? 'Close menu' : 'Open menu'}

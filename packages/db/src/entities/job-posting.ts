@@ -72,6 +72,18 @@ export class JobPosting {
   @Column({ type: 'text' })
   dedupKey: string;
 
+  /**
+   * Digest of everything a re-read of this posting could change.
+   *
+   * A crawl re-reads the same board every few hours and almost nothing on it
+   * moves. Comparing this against the incoming digest is what lets the merge
+   * touch only `lastSeenAt` for an unchanged offer — no column rewrite, no
+   * location resync, no re-classification, no tsvector rebuild. That is where
+   * the steady-state cost of watching a board goes to nearly zero.
+   */
+  @Column({ type: 'text', nullable: true })
+  contentHash: string | null;
+
   @Column({ nullable: true })
   department: string | null;
 
@@ -177,6 +189,13 @@ export class JobPosting {
   })
   locations: JobPostingLocation[];
 
+  /**
+   * When we first saw this opening — first-seen, not "row written".
+   *
+   * The two are the same thing on purpose: deduplication keeps the oldest row
+   * and merges the newer copy into it, so a role cross-posted to a second board
+   * in March still dates from when the first board published it.
+   */
   @CreateDateColumn()
   createdAt: Date;
 

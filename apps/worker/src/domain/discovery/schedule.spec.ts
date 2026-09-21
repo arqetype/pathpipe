@@ -86,8 +86,9 @@ describe('planSource', () => {
 });
 
 describe('SCHEDULED_SEED', () => {
-  it('reads the public feeds and the companies we already know', () => {
+  it('reads YC, the public feeds and the companies we already know', () => {
     expect(SCHEDULED_SEED).toEqual({
+      yc: true,
       feeds: true,
       companies: true,
       limit: 5000,

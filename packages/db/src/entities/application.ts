@@ -13,6 +13,7 @@ import { ApplicationStatus } from '../types/application/status';
 import { User } from './user';
 import { Company } from './company';
 import { ApplicationTier } from '../types/application/tier';
+import { UserFile } from './user-file';
 
 @Entity()
 @Index(['city'])
@@ -80,6 +81,31 @@ export class Application {
 
   @Column({ nullable: true })
   appliedAt: Date;
+
+  /**
+   * The CV and the letter this application was sent with.
+   *
+   * A reference to the shared document store rather than a copy: the same CV
+   * backs thirty applications, and answering "which one did I send them?" six
+   * weeks later is the whole point of recording it. Eager, because an
+   * application is almost always read to be shown, and the two rows it pulls
+   * carry no file bytes.
+   */
+  @ManyToOne(() => UserFile, {
+    nullable: true,
+    eager: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'resumeFileId' })
+  resumeFile: UserFile | null;
+
+  @ManyToOne(() => UserFile, {
+    nullable: true,
+    eager: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'coverLetterFileId' })
+  coverLetterFile: UserFile | null;
 
   @CreateDateColumn()
   created_at: Date;

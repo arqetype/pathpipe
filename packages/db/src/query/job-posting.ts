@@ -3,6 +3,16 @@ import { JobPostingClosedReason } from '../types/job-posting/closed-reason';
 import { EmploymentType } from '../types/job-posting/employment-type';
 import { RemoteType } from '../types/job-posting/remote-type';
 
+/**
+ * The score at which an offer counts as a strong fit.
+ *
+ * One number for the whole product: the board's "Strong fit" preset, the count
+ * on the header badge and anything else that claims an offer is worth dropping
+ * what you are doing for. A badge that counts a different population from the
+ * filter it sits above is worse than no badge.
+ */
+export const STRONG_FIT_SCORE = 70;
+
 /** Which slice of the board to show — the filter bar. */
 export interface JobPostingsQuery {
   /** Free text over title, location, department and description. */
@@ -156,7 +166,11 @@ export interface PaginatedJobPostings {
   page: number;
   limit: number;
   facets: JobPostingFacets;
-  /** Open offers the user has never opened, first seen in the last week. */
+  /**
+   * Offers the user has never opened, first seen in the last week, that score
+   * at least `STRONG_FIT_SCORE`. Without a profile there is no score, and it
+   * counts everything new instead.
+   */
   newCount: number;
   /** True when the user has a profile, so the UI can offer to set one up. */
   hasProfile: boolean;

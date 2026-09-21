@@ -31,7 +31,6 @@ const TOKEN_PATTERNS = [
 
 const RESERVED = new Set(['v0', 'postings']);
 
-/** Lever boards. `mode=json` on the public postings endpoint returns everything. */
 const WORKPLACE_TYPES: Record<string, string | undefined> = {
   remote: 'REMOTE',
   hybrid: 'HYBRID',
@@ -79,7 +78,6 @@ export const leverAdapter: AtsAdapter = {
         department: posting.categories?.team ?? posting.categories?.department,
         employmentType: posting.categories?.commitment,
         remote: /remote/i.test(posting.workplaceType ?? ''),
-        // Lever states the work model outright, which beats inferring it.
         remoteType:
           WORKPLACE_TYPES[(posting.workplaceType ?? '').toLowerCase()],
         salaryMin: posting.salaryRange?.min,

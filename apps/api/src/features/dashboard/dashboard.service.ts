@@ -5,6 +5,7 @@ import { Application } from '@repo/db/entities/application';
 import { ApplicationStatus } from '@repo/db/types/application/status';
 import { JobPostingStatus } from '@repo/db/types/job-posting/status';
 import {
+  ACTIVITY_DAYS,
   STALE_AFTER_DAYS,
   STRONG_MATCH_SCORE,
   type DashboardApplication,
@@ -13,14 +14,13 @@ import {
 } from '@repo/db/query/dashboard';
 import type { JobPostingResponse } from '@repo/db/query/job-posting';
 import { JobPostingService } from '../job-posting/job-posting.service';
+import { buildActivity, streakOf } from './activity';
 import { completenessOf, isConfigured } from '../job-posting/match/shared';
 
 const DAY_MS = 86_400_000;
 
-/** How many rows each list on the home page carries. */
 const LIST_SIZE = 5;
 
-/** Statuses that are still moving — everything else is a closed thread. */
 const OPEN_STATUSES = [
   ApplicationStatus.WISHLIST,
   ApplicationStatus.APPLIED,
@@ -28,14 +28,13 @@ const OPEN_STATUSES = [
   ApplicationStatus.OFFER,
 ];
 
-/** A reply of any kind, good or bad — proof the application was read. */
+/** A reply of any kind. */
 const ANSWERED_STATUSES = [
   ApplicationStatus.INTERVIEW,
   ApplicationStatus.OFFER,
   ApplicationStatus.REJECTED,
 ];
 
-/** What a skipped offer query returns, typed so the payload stays inferable. */
 const NO_HIGHLIGHTS: { data: JobPostingResponse[]; total: number } = {
   data: [],
   total: 0,
@@ -47,14 +46,6 @@ const daysSince = (date: Date | string | null | undefined): number => {
   return elapsed > 0 ? Math.floor(elapsed / DAY_MS) : 0;
 };
 
-/**
- * The home page, in one request.
- *
- * It is a read-only composition over the boards the user already has, which is
- * why it owns no entity of its own: every number here is also reachable through
- * `/applications` or `/job-postings`, and the point of this endpoint is to not
- * make the home page fetch both boards in full to count their rows.
- */
 @Injectable()
 export class DashboardService {
   constructor(
@@ -64,14 +55,13 @@ export class DashboardService {
   ) {}
 
   async overview(userId: string): Promise<DashboardResponse> {
-    // The viewer carries the profile the scores are built from, so it is loaded
-    // once here rather than by each offer query below.
     const viewer = await this.jobPostingService.viewer(userId);
     const hasProfile = isConfigured(viewer.preference);
 
     const staleBefore = new Date(Date.now() - STALE_AFTER_DAYS * DAY_MS);
     const weekAgo = new Date(Date.now() - 7 * DAY_MS);
     const twoWeeksAgo = new Date(Date.now() - 14 * DAY_MS);
+    const activityFrom = new Date(Date.now() - ACTIVITY_DAYS * DAY_MS);
 
     const [
       byStatus,
@@ -80,6 +70,7 @@ export class DashboardService {
       appliedLastWeek,
       answered,
       everSent,
+      sentPerDay,
       topMatches,
       savedOffers,
       wishlistApplications,
@@ -90,12 +81,9 @@ export class DashboardService {
       this.countSentBetween(userId, weekAgo, null),
       this.countSentBetween(userId, twoWeeksAgo, weekAgo),
       this.countIn(userId, ANSWERED_STATUSES),
-      // Anything answered has necessarily been sent, even if it never carried
-      // an `appliedAt` — hence the union rather than a count of `APPLIED`.
       this.countSent(userId),
-      // Without a profile nothing carries a score, and a score filter with no
-      // score behind it would match the entire board — so the whole slice is
-      // empty rather than everything. The page then asks for a profile instead.
+      this.sentPerDay(userId, activityFrom),
+      // No profile: scores match everything.
       hasProfile
         ? this.jobPostingService.highlights(
             userId,
@@ -125,6 +113,8 @@ export class DashboardService {
       this.listStale(userId, staleBefore),
     ]);
 
+    const activity = buildActivity(sentPerDay, new Date());
+
     const count = (status: ApplicationStatus) => byStatus.get(status) ?? 0;
     const totalApplications = OPEN_STATUSES.concat(
       ApplicationStatus.REJECTED,
@@ -143,6 +133,7 @@ export class DashboardService {
       appliedThisWeek,
       appliedLastWeek,
       responseRate: everSent ? Math.round((answered / everSent) * 100) : null,
+      streakDays: streakOf(activity),
       strongMatches: topMatches.total,
       savedUndecided: savedOffers.total,
       hasProfile,
@@ -151,6 +142,7 @@ export class DashboardService {
 
     return {
       stats,
+      activity,
       topMatches: topMatches.data,
       savedOffers: savedOffers.data,
       wishlistApplications,
@@ -158,9 +150,6 @@ export class DashboardService {
     };
   }
 
-  // ----------------------------------------------------------------- counting
-
-  /** Every column of the board in one pass rather than one query per status. */
   private async countByStatus(
     userId: string,
   ): Promise<Map<ApplicationStatus, number>> {
@@ -182,13 +171,7 @@ export class DashboardService {
       .getCount();
   }
 
-  /**
-   * Applications that were actually sent.
-   *
-   * A row can carry a reply without an `appliedAt` — the date is only stamped
-   * when the move happens in the app — so "sent" is either the date or a status
-   * that could not have been reached without sending.
-   */
+  // Answered rows may lack appliedAt.
   private countSent(userId: string): Promise<number> {
     return this.scoped(userId)
       .andWhere(
@@ -216,11 +199,24 @@ export class DashboardService {
     return qb.getCount();
   }
 
+  // GROUP BY alias, Postgres only.
+  private async sentPerDay(
+    userId: string,
+    from: Date,
+  ): Promise<Map<string, number>> {
+    const rows = await this.scoped(userId)
+      .select(`to_char(application."appliedAt", 'YYYY-MM-DD')`, 'day')
+      .addSelect('COUNT(*)', 'count')
+      .andWhere('application.appliedAt >= :from', { from })
+      .groupBy('day')
+      .getRawMany<{ day: string; count: string }>();
+
+    return new Map(rows.map((row) => [row.day, Number(row.count)]));
+  }
+
   private countStale(userId: string, before: Date): Promise<number> {
     return this.staleQuery(userId, before).getCount();
   }
-
-  // ------------------------------------------------------------------ listing
 
   private async listByStatus(
     userId: string,
@@ -229,8 +225,6 @@ export class DashboardService {
     const rows = await this.scoped(userId)
       .leftJoinAndSelect('application.company', 'company')
       .andWhere('application.status = :status', { status })
-      // Tier first: a wishlist is a ranked list, and the S-tier row is the one
-      // the user meant to apply to.
       .addSelect(
         `CASE application.tier WHEN 'S_TIER' THEN 1 WHEN 'A_TIER' THEN 2 WHEN 'B_TIER' THEN 3 ELSE 4 END`,
         'tier_rank',
@@ -249,7 +243,6 @@ export class DashboardService {
   ): Promise<DashboardApplication[]> {
     const rows = await this.staleQuery(userId, before)
       .leftJoinAndSelect('application.company', 'company')
-      // Quietest first — that is the one about to go cold.
       .orderBy('application.appliedAt', 'ASC')
       .limit(LIST_SIZE)
       .getMany();
@@ -257,9 +250,6 @@ export class DashboardService {
     return rows.map(toDashboardApplication);
   }
 
-  // ------------------------------------------------------------------ helpers
-
-  /** Sent, still waiting, and nothing has moved for long enough to chase. */
   private staleQuery(userId: string, before: Date) {
     return this.scoped(userId)
       .andWhere('application.status = :status', {
@@ -269,12 +259,7 @@ export class DashboardService {
       .andWhere('application.appliedAt < :before', { before });
   }
 
-  /**
-   * Every query here reads one user's board.
-   *
-   * Soft-deleted rows are excluded by the query builder itself, so a deleted
-   * application never shows up in a count.
-   */
+  /** One user's board; soft-deletes excluded. */
   private scoped(userId: string) {
     return this.applicationRepository
       .createQueryBuilder('application')
@@ -289,6 +274,7 @@ const toDashboardApplication = (
   id: application.id,
   position: application.position,
   companyName: application.company?.name ?? null,
+  companyId: application.company?.id ?? null,
   url: application.url ?? null,
   status: application.status,
   tier: application.tier,

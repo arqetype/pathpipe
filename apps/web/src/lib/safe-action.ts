@@ -130,6 +130,7 @@ class ActionClientBuilder<TInput = unknown, TOutput = unknown> {
             'Invalid output',
           );
 
+          // Output DTO failure masks success
           if (!outputValidationResult.valid) {
             return {
               success: false,

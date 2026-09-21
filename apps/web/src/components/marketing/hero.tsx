@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { RiArrowRightLine, RiCheckboxCircleFill } from '@remixicon/react';
+import { SIGNUP_CLOSED } from '@/lib/signup-closed';
 import { buttonVariants } from '@repo/ui/components/button';
 import { cn } from '@repo/ui/lib/utils';
 
@@ -34,16 +35,18 @@ export function Hero() {
 
         {/* CTAs */}
         <div className="mt-8 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row sm:gap-4">
-          <Link
-            href="/app/sign-up"
-            className={cn(
-              buttonVariants({ size: 'lg' }),
-              'h-11 w-full gap-2.5 bg-gradient-to-br from-emerald-600 to-emerald-800 px-6 text-base text-background transition-all hover:from-emerald-500 hover:to-emerald-700 hover:shadow-[0_0_24px_rgba(16,185,129,0.4)] dark:from-emerald-400 dark:to-emerald-600 dark:hover:from-emerald-300 dark:hover:to-emerald-500 sm:w-auto',
-            )}
-          >
-            Get Started Free
-            <RiArrowRightLine className="size-4" />
-          </Link>
+          {!SIGNUP_CLOSED && (
+            <Link
+              href="/app/sign-up"
+              className={cn(
+                buttonVariants({ size: 'lg' }),
+                'h-11 w-full gap-2.5 bg-gradient-to-br from-emerald-600 to-emerald-800 px-6 text-base text-background transition-all hover:from-emerald-500 hover:to-emerald-700 hover:shadow-[0_0_24px_rgba(16,185,129,0.4)] dark:from-emerald-400 dark:to-emerald-600 dark:hover:from-emerald-300 dark:hover:to-emerald-500 sm:w-auto',
+              )}
+            >
+              Get Started Free
+              <RiArrowRightLine className="size-4" />
+            </Link>
+          )}
           <Link
             href="#features"
             className={cn(

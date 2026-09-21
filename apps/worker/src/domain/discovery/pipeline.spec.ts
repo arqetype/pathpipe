@@ -14,7 +14,6 @@ const ghJob = (id: string, title = `Engineer ${id}`) => ({
   location: { name: 'Paris, France' },
 });
 
-/** A fetcher standing in for the real client; nothing here touches the network. */
 const fakeClient = (
   answer: (url: string, options?: HttpRequestOptions) => unknown,
 ) => {
@@ -77,8 +76,6 @@ describe('JobDiscoveryService.discover', () => {
     expect(calls).toEqual([]);
   });
 
-  // An empty board and an unreachable one must not look alike: the back-off
-  // keys off the error, and a company with no vacancies is not a broken source.
   it('reports no error when the board is read and lists nothing', async () => {
     const { client } = fakeClient(() => ({ jobs: [] }));
 

@@ -1,10 +1,6 @@
 import type { AtsAdapter, AtsTarget, DiscoveredJob } from '../types';
 import { asString, joinLocation, strings, target } from './shared';
 
-/**
- * Teamtailor publishes each board as a JSON Feed at `/jobs.json`, with the
- * schema.org JobPosting for every item inlined under `_jobposting`.
- */
 interface TeamtailorItem {
   id?: string;
   title?: string;
@@ -34,12 +30,8 @@ const TOKEN_PATTERNS = [
   /teamtailor\.com\/widget\/[^"']*[?&]company=([a-z0-9-]+)/i,
 ];
 
-/**
- * Hostnames under teamtailor.com that are the product, not a customer board.
- */
 const RESERVED = new Set(['www', 'app', 'api', 'assets', 'cdn', 'support']);
 
-/** The feed pages, and a page is never bigger than this. */
 const MAX_PAGES = 20;
 
 const tokenFrom = (text: string): string | null => {
@@ -50,12 +42,6 @@ const tokenFrom = (text: string): string | null => {
   return null;
 };
 
-/**
- * Teamtailor boards (Stockholm; most used by Nordic and European employers).
- *
- * The feed is public and needs no key. It carries the full description inline,
- * so an offer is complete after one request — no per-posting fetch.
- */
 export const teamtailorAdapter: AtsAdapter = {
   platform: 'teamtailor',
 
@@ -71,10 +57,7 @@ export const teamtailorAdapter: AtsAdapter = {
 
     const base = `https://${token}.teamtailor.com/jobs.json`;
     const jobs: DiscoveredJob[] = [];
-    // The feed does not say how many pages there are, and a page repeats
-    // nothing, so the only end signal is an empty page. Ids are tracked anyway:
-    // a board that answered page 2 with page 1 would otherwise loop to the cap
-    // and store every offer twice.
+    // Only an empty page ends paging.
     const seen = new Set<string>();
 
     for (let page = 1; page <= MAX_PAGES; page++) {
@@ -110,8 +93,6 @@ export const teamtailorAdapter: AtsAdapter = {
           descriptionHtml: markup,
           locations: strings(
             ...(posting?.jobLocation ?? []).map((place) =>
-              // The region is a sales territory on these boards ("EMEA"), which
-              // is not a place a location filter can resolve, so it is dropped.
               joinLocation(
                 place.address?.addressLocality ?? undefined,
                 place.address?.addressCountry ?? undefined,

@@ -36,7 +36,6 @@ const EMPTY: JobPreferenceResponse = {
 
 export async function fetchJobPreferenceAction(): Promise<JobPreferenceResponse> {
   const result = await get<JobPreferenceResponse>('/job-preferences');
-  // Not having a profile yet is a normal state, not a failure to report.
   if (!result.ok) return EMPTY;
   return result.data;
 }
@@ -49,12 +48,6 @@ export async function updateJobPreferenceAction(
   return result.data;
 }
 
-/**
- * Send a CV file for the API to read.
- *
- * Takes the `FormData` straight from the browser rather than a parsed file, so
- * the bytes are never copied through a serialisable action argument.
- */
 export async function uploadResumeAction(
   formData: FormData,
 ): Promise<JobPreferenceResponse> {
@@ -63,8 +56,6 @@ export async function uploadResumeAction(
     formData,
   );
   if (!result.ok) {
-    // The API's own wording is the useful part here — "no text in that file"
-    // tells somebody what to do next, "upload failed" does not.
     const message = Array.isArray(result.data?.message)
       ? result.data.message[0]
       : result.data?.message;
@@ -73,12 +64,6 @@ export async function uploadResumeAction(
   return result.data;
 }
 
-/**
- * Build the profile out of the CV already saved.
- *
- * Only the blanks are filled, so this is safe to run again after correcting the
- * text — which is exactly what somebody does when a PDF came out garbled.
- */
 export async function applyResumeToProfileAction(): Promise<ResumeProfileApplied> {
   const result = await post<ResumeProfileApplied>(
     '/job-preferences/resume/apply',

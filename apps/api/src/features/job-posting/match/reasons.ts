@@ -7,13 +7,6 @@ import {
 import type { JobMatchReason } from '@repo/db/query/job-posting';
 import { isConfigured, lower, upper } from './shared';
 
-/**
- * Why an offer scored what it did, in the words the card shows.
- *
- * Computed in TypeScript from the row we already loaded rather than returned
- * from SQL: the reasons are per-offer prose, and pulling six extra expressions
- * through every query to build them would cost more than it explains.
- */
 export const buildMatchReasons = (
   posting: JobPosting & {
     locations?: Array<{ city: string; country: string }>;

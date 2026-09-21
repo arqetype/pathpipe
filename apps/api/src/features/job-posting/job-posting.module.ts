@@ -8,10 +8,11 @@ import { CompanyWatch } from '@repo/db/entities/company-watch';
 import { Application } from '@repo/db/entities/application';
 import { JobPostingController } from './job-posting.controller';
 import { JobPostingService } from './job-posting.service';
-import { JobPostingIngestService } from './job-posting-ingest.service';
-import { JobPostingInteractionService } from './job-posting-interaction.service';
-import { JobPostingLifecycleService } from './job-posting-lifecycle.service';
-import { JobAlertService } from './job-alert.service';
+import { JobPostingIngestService } from './ingest/job-posting-ingest.service';
+import { JobPostingInteractionService } from './interaction/job-posting-interaction.service';
+import { JobPostingLifecycleService } from './ingest/job-posting-lifecycle.service';
+import { JobAlertService } from './alert/job-alert.service';
+import { JobEventModule } from '../job-event/job-event.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { JobAlertService } from './job-alert.service';
       CompanyWatch,
       Application,
     ]),
+    JobEventModule,
   ],
   controllers: [JobPostingController],
   providers: [

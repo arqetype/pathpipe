@@ -1,7 +1,6 @@
 import { JobPreference } from '@repo/db/entities/job-preference';
 import { keywordsToTsQuery, type MatchPredicate } from './shared';
 
-/** The always-on exclusions, independent of the "only matches" toggle. */
 export const buildExclusionPredicate = (
   preference: JobPreference | null,
 ): MatchPredicate | null => {

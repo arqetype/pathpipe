@@ -2,14 +2,6 @@ import type { AtsAdapter, AtsTarget, DiscoveredJob } from '../types';
 import { asString, strings, target } from './shared';
 import { decodeEntities } from '@repo/db/parsing/sanitize';
 
-/**
- * Personio boards. Every tenant publishes its open positions as XML at
- * `{tenant}.jobs.personio.{tld}/xml` — public, no key, full descriptions
- * inline.
- *
- * The feed is the only machine-readable view Personio offers: there is no JSON
- * equivalent, so this adapter reads XML where every other one reads JSON.
- */
 interface PersonioPosition {
   id?: string;
   title?: string;
@@ -26,17 +18,8 @@ const TOKEN_PATTERNS = [
   /jobs\.personio\.(?:de|com|eu)\/([a-z0-9-]+)/i,
 ];
 
-/** Subdomains under jobs.personio.* that are the product, not a tenant. */
 const RESERVED = new Set(['www', 'api', 'app', 'assets', 'cdn']);
 
-/**
- * Text of the first `<tag>` in a block, CDATA unwrapped and entities decoded.
- *
- * A regex reader rather than an XML parser: the feed is one flat level of
- * elements with no attributes and no namespaces, so a parser would be a
- * dependency bought for nothing. Anything richer than this shape belongs in a
- * real parser, not in a longer regex.
- */
 const tagText = (block: string, tag: string): string | undefined => {
   const match = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, 'i').exec(block);
   const raw = match?.[1];
@@ -45,7 +28,6 @@ const tagText = (block: string, tag: string): string | undefined => {
   return unwrapped ? decodeEntities(unwrapped) : undefined;
 };
 
-/** Every `<tag>` in a block, in document order. */
 const tagTexts = (block: string, tag: string): string[] => {
   const found: string[] = [];
   const pattern = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, 'gi');
@@ -56,14 +38,6 @@ const tagTexts = (block: string, tag: string): string[] => {
   return found;
 };
 
-/**
- * The team the position sits in.
- *
- * `department` is the org chart and `recruitingCategory` is the grouping shown
- * on the board, but tenants number the latter to force a display order
- * ("002_Sales & Growth"), so the org chart is preferred and the ordering prefix
- * is stripped when it is all there is.
- */
 const department = (block: string): string | undefined => {
   const own = tagText(block, 'department');
   if (own) return own;
@@ -71,13 +45,7 @@ const department = (block: string): string | undefined => {
   return category?.replace(/^\d+\s*[_-]\s*/, '') || undefined;
 };
 
-/**
- * One position, read from its XML block.
- *
- * Order matters here: `<name>` names the position at the top level and names a
- * description section inside `<jobDescriptions>`, so the nested block is taken
- * out of the way before the title is read.
- */
+// Strip nested blocks before reading title.
 const parsePosition = (block: string, light: boolean): PersonioPosition => {
   const descriptionsBlock =
     /<jobDescriptions>([\s\S]*?)<\/jobDescriptions>/i.exec(block)?.[1] ?? '';
@@ -89,9 +57,6 @@ const parsePosition = (block: string, light: boolean): PersonioPosition => {
     .replace(/<jobDescriptions>[\s\S]*?<\/jobDescriptions>/i, '')
     .replace(/<additionalOffices>[\s\S]*?<\/additionalOffices>/i, '');
 
-  // Personio splits a description into titled sections ("Introduction", "Your
-  // tasks"). Rejoining them with their headings keeps the offer readable, which
-  // a bare concatenation of the bodies would not be.
   const descriptionHtml = light
     ? undefined
     : [
@@ -117,9 +82,6 @@ const parsePosition = (block: string, light: boolean): PersonioPosition => {
     office: tagText(flat, 'office'),
     offices: tagTexts(officesBlock, 'office'),
     department: department(flat),
-    // Two fields describe one thing: "permanent" plus "part-time". Joined so
-    // the normaliser sees both, and in this order because a part-time contract
-    // is more specific than a permanent one.
     employmentType: [contract, schedule].filter(Boolean).join(' ') || undefined,
     descriptionHtml,
     createdAt: tagText(flat, 'createdAt'),
@@ -163,8 +125,6 @@ export const personioAdapter: AtsAdapter = {
         {
           externalId: position.id,
           title: position.title,
-          // The feed carries no link; Personio serves every position under the
-          // tenant's own board at this path.
           url: `https://${host}/job/${position.id}`,
           description: position.descriptionHtml,
           descriptionHtml: position.descriptionHtml,

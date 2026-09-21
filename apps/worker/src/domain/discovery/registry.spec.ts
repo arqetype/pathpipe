@@ -50,8 +50,6 @@ describe('matchAdapterByUrl', () => {
       'https://nvidia.wd5.myworkdayjobs.com/',
     ],
     ['something that is not a URL at all', 'not a url'],
-    // Today's behaviour: the token patterns all want the board name in the
-    // path, so a per-customer Greenhouse subdomain carries no readable token.
     [
       'a Greenhouse embed subdomain with an empty path',
       'https://acme.grnhse.io/',
@@ -74,8 +72,6 @@ describe('matchAdapterByUrl', () => {
   });
 
   it('stops at the first adapter that claims the URL', () => {
-    // Every adapter gates on the hostname first, so only one can ever answer —
-    // this pins that the sweep does not fall through to a later, looser one.
     const claimants = ADAPTERS.filter((adapter) =>
       adapter.match(new URL('https://jobs.ashbyhq.com/acme')),
     ).map((adapter) => adapter.platform);

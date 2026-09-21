@@ -10,10 +10,9 @@ import {
   ResumeProfileApplied,
 } from '@repo/db/query/job-preference';
 import { completenessOf, isConfigured } from '../job-posting/match/shared';
-import { extractResumeKeywords, normalizeResumeText } from './resume';
-import { extractResumeProfile } from './resume-profile';
+import { extractResumeKeywords, normalizeResumeText } from './resume/keywords';
+import { extractResumeProfile } from './resume/profile';
 
-/** Trimmed, deduped, and capped — a profile is a set, not a paste buffer. */
 const cleanList = (values: string[] | undefined, max: number): string[] =>
   values === undefined
     ? []
@@ -32,25 +31,11 @@ export class JobPreferenceService {
     private readonly companyRepository: Repository<Company>,
   ) {}
 
-  /**
-   * The user's profile, or an empty one.
-   *
-   * Never throws for a user who has not set anything up: the board asks for
-   * this on every load, and "no profile yet" is a normal state rather than an
-   * error to handle.
-   */
   async find(userId: string): Promise<JobPreferenceResponse> {
     const preference = await this.repository.findOne({ where: { userId } });
     return this.toResponse(preference);
   }
 
-  /**
-   * Replace the CV with the text read out of an uploaded file.
-   *
-   * Separate from `update` because a file arrives as multipart and the rest of
-   * the profile does not: keeping one endpoint for each means a failed upload
-   * cannot take a form full of unsaved answers down with it.
-   */
   async replaceResume(
     userId: string,
     text: string,
@@ -58,14 +43,7 @@ export class JobPreferenceService {
     return this.update(userId, { resumeText: text });
   }
 
-  /**
-   * Build the profile out of the CV already on file.
-   *
-   * Only empty fields are filled. A CV describes what somebody has done and the
-   * profile describes what they want next — close enough to propose, not close
-   * enough to overwrite an answer they gave on purpose. Everything it writes is
-   * an ordinary profile value afterwards, editable like any other.
-   */
+  // Fills empty fields only; never overwrites.
   async applyResume(userId: string): Promise<ResumeProfileApplied> {
     const preference = await this.repository.findOne({ where: { userId } });
     const text = preference?.resumeText;
@@ -80,8 +58,6 @@ export class JobPreferenceService {
     const skipped: string[] = [];
     const dto: UpdateJobPreferenceDto = {};
 
-    // One rule for every field: propose where the user said nothing, report
-    // where they did, and stay quiet where the CV had nothing to say.
     const propose = <K extends keyof UpdateJobPreferenceDto>(
       field: K,
       current: unknown[],
@@ -113,9 +89,7 @@ export class JobPreferenceService {
     );
     propose('cities', preference.cities, read.cities, 'cities');
     propose('countries', preference.countries, read.countries, 'countries');
-    // `keywords` is deliberately not proposed: the CV's skills already land in
-    // `resumeKeywords` on every save, and copying them into a second criterion
-    // would weigh the same words twice.
+    // Skills already land in resumeKeywords.
 
     const updated = Object.keys(dto).length
       ? await this.update(userId, dto)
@@ -190,8 +164,7 @@ export class JobPreferenceService {
     if (dto.resumeText !== undefined) {
       const text = dto.resumeText ? normalizeResumeText(dto.resumeText) : '';
       preference.resumeText = text || null;
-      // Re-derived on every save, so improving the extraction — or the user
-      // fixing their own text — takes effect without a migration.
+      // Re-derived on every save.
       preference.resumeKeywords = text ? extractResumeKeywords(text) : [];
       preference.resumeUpdatedAt = text ? new Date() : null;
     }
@@ -255,13 +228,7 @@ export class JobPreferenceService {
     };
   }
 
-  /**
-   * The excluded companies, named.
-   *
-   * A row can survive the company it points at, so the ids that no longer
-   * resolve are dropped from the response rather than shown as blanks — the
-   * next save then cleans them out of the profile for good.
-   */
+  // Unresolved ids are dropped silently.
   private async namesFor(
     ids: string[] | undefined,
   ): Promise<ExcludedCompany[]> {

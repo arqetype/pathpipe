@@ -1,6 +1,5 @@
 import type { AtsTarget } from '../types';
 
-/** First capture group of the first pattern that hits, lowercased. */
 export const firstMatch = (text: string, patterns: RegExp[]): string | null => {
   for (const pattern of patterns) {
     const match = pattern.exec(text);
@@ -19,7 +18,6 @@ export const target = (
     Object.entries(params).filter(([, value]) => Boolean(value)),
   ) as Record<string, string>,
 });
-/** Left-most label of a hostname, e.g. "acme" in acme.workable.com. */
 export const subdomain = (url: URL): string | null => {
   const parts = url.hostname
     .toLowerCase()
@@ -30,7 +28,6 @@ export const subdomain = (url: URL): string | null => {
   return first && first !== 'jobs' && first !== 'careers' ? first : null;
 };
 
-/** The arguments that are non-empty strings, in order. */
 export const strings = (
   ...values: Array<string | null | undefined>
 ): string[] => values.filter((value): value is string => Boolean(value));
@@ -41,7 +38,6 @@ export const asString = (value: unknown): string | undefined => {
   return undefined;
 };
 
-/** Joins the populated parts of a location object into one label. */
 export const joinLocation = (
   ...parts: Array<string | undefined | null>
 ): string | undefined => {

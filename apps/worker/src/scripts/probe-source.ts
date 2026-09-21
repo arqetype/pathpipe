@@ -1,14 +1,4 @@
-/**
- * Runs the discovery pipeline against one URL and prints what it found.
- *
- * Usage:
- *   pnpm --filter worker probe https://boards.greenhouse.io/acme
- *   pnpm --filter worker probe https://acme.com/careers --fast --json
- *
- * This is the fastest way to check a company that reports "no jobs found":
- * the output names the rung of the ladder that produced the listing, so a bad
- * result points straight at the strategy that needs work.
- */
+// Usage: probe <careers-url> [--fast] [--json] [--verbose]
 import pino from 'pino';
 import pretty from 'pino-pretty';
 import { HttpClient } from '@/infrastructure/http/http';

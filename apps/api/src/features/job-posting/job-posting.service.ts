@@ -13,17 +13,17 @@ import {
   JobPostingResponse,
   JobPostingsQuery,
   PaginatedJobPostings,
+  STRONG_FIT_SCORE,
 } from '@repo/db/query/job-posting';
 import { buildExclusionPredicate } from './match/exclusion';
 import { buildMatchPredicate } from './match/predicate';
 import { buildMatchSql } from './match/score';
 import { isConfigured } from './match/shared';
 import { buildMatchReasons } from './match/reasons';
+import { toArray, toBoolean, toInt, toTsQuery } from './query-params';
 
-/** How far back an offer counts as "new" on the board. */
 const NEW_WINDOW_DAYS = 7;
 
-/** Filter dimensions, so a facet can exclude its own. */
 type FilterDimension =
   | 'companyId'
   | 'city'
@@ -32,57 +32,12 @@ type FilterDimension =
   | 'employmentType'
   | 'remoteType';
 
-/** The per-user context every board query is answered in. */
 interface Viewer {
   userId: string;
   preference: JobPreference | null;
   followsAny: boolean;
 }
 
-const toArray = <T>(value: T | T[] | undefined): T[] =>
-  value === undefined ? [] : Array.isArray(value) ? value : [value];
-
-const toBoolean = (
-  value: boolean | string | undefined,
-): boolean | undefined => {
-  if (value === undefined || value === '') return undefined;
-  if (typeof value === 'boolean') return value;
-  return value === 'true' || value === '1';
-};
-
-const toInt = (value: number | string | undefined): number | undefined => {
-  if (value === undefined || value === '') return undefined;
-  const parsed = typeof value === 'number' ? value : Number.parseInt(value, 10);
-  return Number.isFinite(parsed) ? parsed : undefined;
-};
-
-/** Terms honoured in one search; beyond this the query stops discriminating. */
-const MAX_SEARCH_TERMS = 8;
-
-/**
- * A `tsquery` from whatever the user typed.
- *
- * Every term is stripped to letters, digits and the few symbols that carry
- * meaning in a job title (`c++`, `node.js`), then quoted — so nothing the user
- * types can be read as a `tsquery` operator. Each term is prefix-matched, which
- * is what makes "engineer" find "engineers" under the unstemmed 'simple'
- * dictionary, and makes the search feel live as the user types.
- *
- * Terms are ANDed: adding a word narrows, which is what a filter bar implies.
- */
-const toTsQuery = (raw: string): string | null => {
-  const terms = raw
-    .toLowerCase()
-    .split(/[^\p{L}\p{N}+#.]+/u)
-    .map((term) => term.replace(/^[.+#]+|[.+#]+$/g, ''))
-    .filter((term) => term.length > 0)
-    .slice(0, MAX_SEARCH_TERMS);
-
-  if (!terms.length) return null;
-  return terms.map((term) => `'${term}':*`).join(' & ');
-};
-
-/** Reading the board: filters, facets, ranking and one offer's detail. */
 @Injectable()
 export class JobPostingService {
   constructor(
@@ -98,7 +53,6 @@ export class JobPostingService {
     private readonly companyWatchRepository: Repository<CompanyWatch>,
   ) {}
 
-  /** Everything about the viewer that every board query needs. */
   async viewer(userId: string): Promise<Viewer> {
     const [preference, follows] = await Promise.all([
       this.preferenceRepository.findOne({ where: { userId } }),
@@ -107,7 +61,6 @@ export class JobPostingService {
     return { userId, preference, followsAny: follows > 0 };
   }
 
-  /** Applies every active filter except the dimensions named in `skip`. */
   private buildQuery(
     viewer: Viewer,
     query: JobPostingsQuery,
@@ -133,8 +86,7 @@ export class JobPostingService {
       qb.andWhere('job.closedAt IS NULL');
     }
 
-    // An offer nobody has touched reads as NEW, which is the state that has no
-    // interaction row at all — hence the COALESCE rather than a plain compare.
+    // No interaction row means NEW.
     const statuses = toArray(query.status);
     if (statuses.length) {
       qb.andWhere(`COALESCE(interaction."status", 'NEW') IN (:...statuses)`, {
@@ -188,7 +140,6 @@ export class JobPostingService {
 
     const salaryMin = toInt(query.salaryMin);
     if (salaryMin !== undefined) {
-      // An offer with no salary published is not evidence that it pays less.
       qb.andWhere(
         '(job.salaryMax >= :salaryMin OR job.salaryMin >= :salaryMin)',
         { salaryMin },
@@ -198,7 +149,6 @@ export class JobPostingService {
     const postedWithinDays = toInt(query.postedWithinDays);
     if (postedWithinDays !== undefined && postedWithinDays > 0) {
       const since = new Date(Date.now() - postedWithinDays * 86_400_000);
-      // Offers with no publication date fall back to when we first saw them.
       qb.andWhere('COALESCE(job.postedAt, job.createdAt) >= :since', { since });
     }
 
@@ -224,8 +174,6 @@ export class JobPostingService {
       );
     }
 
-    // Asking not to see something is unambiguous, so exclusions apply whether
-    // or not the "only matches" toggle is on.
     const exclusion = buildExclusionPredicate(viewer.preference);
     if (exclusion) {
       qb.andWhere(exclusion.sql, exclusion.params);
@@ -236,9 +184,6 @@ export class JobPostingService {
       if (predicate) qb.andWhere(`(${predicate.sql})`, predicate.params);
     }
 
-    // The band is applied to the same expression the list is ranked by, so what
-    // the slider says and what the rows show can never disagree. Without a
-    // profile there is no score to band, and the filter is simply ignored.
     const minScore = toInt(query.minScore);
     const maxScore = toInt(query.maxScore);
     if (match && (minScore !== undefined || maxScore !== undefined)) {
@@ -256,9 +201,6 @@ export class JobPostingService {
     if (search) {
       qb.andWhere(
         new Brackets((w) => {
-          // The company sits in another table, so it cannot be part of the
-          // offer's generated vector — but there are few companies and they are
-          // already joined, so a LIKE over them costs nothing.
           w.where('company.name ILIKE :searchLike', {
             searchLike: `%${search}%`,
           });
@@ -277,7 +219,6 @@ export class JobPostingService {
     return qb;
   }
 
-  /** The `tsquery` the current search resolves to, or null when there is none. */
   private tsQueryOf(query: JobPostingsQuery): string | null {
     const search = query.search?.trim();
     return search ? toTsQuery(search) : null;
@@ -291,8 +232,6 @@ export class JobPostingService {
     const direction = query.sortOrder === 'asc' ? 'ASC' : 'DESC';
     const tsquery = this.tsQueryOf(query);
 
-    // Defaults, in the order a job seeker wants them: what you typed, then how
-    // well it fits you, then how fresh it is.
     const requested =
       query.sortBy ?? (tsquery ? 'relevance' : hasMatch ? 'match' : 'postedAt');
 
@@ -310,7 +249,6 @@ export class JobPostingService {
       )
         .setParameter('tsquery', tsquery)
         .orderBy('search_rank', 'DESC')
-        // Two offers of equal rank are ordered by freshness, never arbitrarily.
         .addOrderBy('COALESCE(job.postedAt, job.createdAt)', 'DESC')
         .addOrderBy('job.id', 'ASC');
       return;
@@ -330,8 +268,6 @@ export class JobPostingService {
         qb.orderBy('job.createdAt', direction);
         break;
       default:
-        // Freshness is what the board is for; offers with no published date sit
-        // where we first saw them rather than at the bottom forever.
         qb.orderBy('COALESCE(job.postedAt, job.createdAt)', direction);
     }
     qb.addOrderBy('job.id', 'ASC');
@@ -347,11 +283,7 @@ export class JobPostingService {
 
     const match = buildMatchSql(userId, viewer);
 
-    // `offset`/`limit` rather than `skip`/`take`: every join here is
-    // many-to-one and so cannot multiply rows, and this avoids the DISTINCT
-    // subquery `skip`/`take` builds, which cannot carry the expressions this
-    // list is ordered by. The offers' places are loaded separately for the same
-    // reason — that one *is* a one-to-many.
+    // skip/take would break this ordering.
     const qb = this.buildQuery(viewer, query, [], true)
       .addSelect('interaction.status', 'i_status')
       .addSelect('interaction.saved', 'i_saved')
@@ -394,7 +326,6 @@ export class JobPostingService {
     };
   }
 
-  /** Places for a page of offers, in one query rather than one per offer. */
   private async locationsFor(
     ids: string[],
   ): Promise<Map<string, JobPostingLocation[]>> {
@@ -425,13 +356,6 @@ export class JobPostingService {
     );
   }
 
-  /**
-   * Counts per filter value.
-   *
-   * Each dimension is counted with its own filter lifted, so ticking one
-   * company still shows the others with their counts — a filter bar that
-   * empties itself as soon as it is used is unusable.
-   */
   private async facets(
     viewer: Viewer,
     query: JobPostingsQuery,
@@ -459,7 +383,6 @@ export class JobPostingService {
       }));
     };
 
-    /** Places live in a child table, so their facets need the join. */
     const countPlaces = async (
       dimension: 'city' | 'country',
     ): Promise<JobPostingFacet[]> => {
@@ -506,13 +429,6 @@ export class JobPostingService {
     };
   }
 
-  /**
-   * A short, ranked slice of the board.
-   *
-   * Same filters and same ranking as {@link findMany}, without the facets or
-   * the "new" count: a home page shows three offers and has no filter bar, and
-   * those aggregates are the expensive half of a board query.
-   */
   async highlights(
     userId: string,
     query: JobPostingsQuery,
@@ -533,8 +449,6 @@ export class JobPostingService {
     }
     this.applySort(qb, query, Boolean(match));
 
-    // `getCount` drops the limit, so a tile can say "12 waiting" above a list
-    // that only shows three.
     const [{ entities, raw }, total] = await Promise.all([
       qb.getRawAndEntities<Record<string, unknown>>(),
       qb.getCount(),
@@ -586,13 +500,6 @@ export class JobPostingService {
     });
   }
 
-  /**
-   * Offers worth telling the user about: open, matching their profile, first
-   * seen in the last week, and never opened.
-   *
-   * "Never opened" is the absence of an interaction row, which is why this is a
-   * NOT EXISTS rather than a status compare.
-   */
   async countNew(userId: string, preloaded?: Viewer): Promise<number> {
     const viewer = preloaded ?? (await this.viewer(userId));
     const since = new Date(Date.now() - NEW_WINDOW_DAYS * 86_400_000);
@@ -614,6 +521,13 @@ export class JobPostingService {
 
     const exclusion = buildExclusionPredicate(viewer.preference);
     if (exclusion) qb.andWhere(exclusion.sql, exclusion.params);
+
+    const match = buildMatchSql(userId, viewer);
+    if (match) {
+      qb.setParameters(match.params).andWhere(`${match.score} >= :strongFit`, {
+        strongFit: STRONG_FIT_SCORE,
+      });
+    }
 
     return qb.getCount();
   }

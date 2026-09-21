@@ -4,6 +4,7 @@ import {
   IsString,
   IsNumber,
   IsDate,
+  IsUUID,
   Length,
   MaxLength,
 } from 'class-validator';
@@ -73,4 +74,18 @@ export class UpdateApplicationDto {
   @IsOptional()
   @IsDate()
   appliedAt?: Date;
+
+  /**
+   * Attach, swap or detach the documents this application was sent with.
+   *
+   * `null` detaches — `@IsOptional` lets it through untouched, which is the
+   * only way a form can clear a link it once set.
+   */
+  @IsOptional()
+  @IsUUID()
+  resumeFileId?: string | null;
+
+  @IsOptional()
+  @IsUUID()
+  coverLetterFileId?: string | null;
 }

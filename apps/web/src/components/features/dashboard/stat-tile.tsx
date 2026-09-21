@@ -5,16 +5,9 @@ interface StatTileProps {
   label: string;
   value: number | string;
   href: string;
-  /** Small square of colour matching the status dot used on the board. */
   dotClass?: string;
 }
 
-/**
- * One figure.
- *
- * The tile is the link: the number is the question ("how many are waiting?") and
- * clicking it opens the board that answers it.
- */
 export function StatTile({ label, value, href, dotClass }: StatTileProps) {
   return (
     <Link

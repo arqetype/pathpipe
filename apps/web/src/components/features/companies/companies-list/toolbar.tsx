@@ -1,24 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef, useTransition } from 'react';
+import { useState, useEffect } from 'react';
 import { useDebounce } from '@repo/ui/hooks/use-debounce';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
-  RiCloseLine,
   RiArrowUpDownLine,
   RiArrowUpLine,
   RiArrowDownLine,
   RiFilterLine,
-  RiUpload2Line,
-  RiDownloadLine,
-  RiMoreLine,
-  RiTimeLine,
-  RiCheckLine,
   RiSearchLine,
 } from '@remixicon/react';
-import { toast } from 'sonner';
-import { importCsvAction } from '@/actions/company/import-csv';
-import { exportCsvAction } from '@/actions/company/export-csv';
 
 import { CompanyStatus } from '@repo/db/entities/company';
 import { CompanyIndustry } from '@repo/db/types/company/industry';
@@ -40,38 +31,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuGroup,
-  DropdownMenuItem,
 } from '@repo/ui/components/dropdown-menu';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@repo/ui/components/select';
 import type { CompanySortBy, CompaniesQuery } from '@repo/db/query/company';
-
-const SORT_OPTIONS: { value: CompanySortBy; label: string }[] = [
-  { value: 'created_at', label: 'Date added' },
-  { value: 'updated_at', label: 'Last updated' },
-  { value: 'name', label: 'Name' },
-  { value: 'industry', label: 'Industry' },
-  { value: 'country', label: 'Country' },
-];
-
-const INDUSTRY_OPTIONS = Object.entries(CompanyIndustry).map(
-  ([value, label]) => ({
-    value: value as CompanyIndustry,
-    label,
-  }),
-);
-
-const STATUS_TABS = [
-  { value: CompanyStatus.PENDING, label: 'Pending', icon: RiTimeLine },
-  { value: CompanyStatus.APPROVED, label: 'Accepted', icon: RiCheckLine },
-  { value: CompanyStatus.REJECTED, label: 'Rejected', icon: RiCloseLine },
-] as const;
+import { COMPANY_SORT_OPTIONS } from '../constants/sort';
+import { COMPANY_INDUSTRY_OPTIONS } from '../constants/industry';
+import { CompaniesImportExport } from './toolbar-import-export';
+import { CompaniesStatusSelect } from './toolbar-status-select';
 
 interface CompaniesToolbarProps {
   total: number;
@@ -91,8 +56,6 @@ export function CompaniesToolbar({
   const searchParams = useSearchParams();
 
   const [inputValue, setInputValue] = useState('');
-  const [isPending, startTransition] = useTransition();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const debouncedSearch = useDebounce(inputValue, 300);
 
   useEffect(() => {
@@ -131,66 +94,13 @@ export function CompaniesToolbar({
 
   const activeTab = statusParam || CompanyStatus.PENDING;
 
-  function getCurrentQuery() {
-    return {
-      search: searchParams.get('search') ?? undefined,
-      sortBy: currentSortBy,
-      sortOrder: currentSortOrder,
-      industry: industryParam || undefined,
-      status: statusParam || undefined,
-    } as CompaniesQuery;
-  }
-
-  function handleImportClick() {
-    fileInputRef.current?.click();
-  }
-
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    startTransition(async () => {
-      const result = await importCsvAction(formData);
-
-      if (result.success) {
-        const { successCount, errorCount } = result.data!;
-        toast.success(
-          `Import complete: ${successCount} imported, ${errorCount} errors`,
-        );
-        router.refresh();
-      } else {
-        toast.error(result.error || 'Import failed');
-      }
-    });
-
-    e.target.value = '';
-  }
-
-  async function handleExport() {
-    const query = getCurrentQuery();
-
-    startTransition(async () => {
-      const result = await exportCsvAction(query);
-
-      if (result.success) {
-        const blob = new Blob([result.data!.data], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `companies-${new Date().toISOString().split('T')[0]}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast.success('Export downloaded');
-      } else {
-        toast.error(result.error || 'Export failed');
-      }
-    });
-  }
+  const currentQuery = {
+    search: searchParams.get('search') ?? undefined,
+    sortBy: currentSortBy,
+    sortOrder: currentSortOrder,
+    industry: industryParam || undefined,
+    status: statusParam || undefined,
+  } as CompaniesQuery;
 
   function setParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams?.toString() ?? '');
@@ -212,7 +122,9 @@ export function CompaniesToolbar({
 
   const SortOrderIcon =
     currentSortOrder === 'asc' ? RiArrowUpLine : RiArrowDownLine;
-  const sortLabel = SORT_OPTIONS.find((o) => o.value === currentSortBy)?.label;
+  const sortLabel = COMPANY_SORT_OPTIONS.find(
+    (o) => o.value === currentSortBy,
+  )?.label;
 
   return (
     <div className="flex items-center justify-between gap-4 shrink-0">
@@ -248,7 +160,7 @@ export function CompaniesToolbar({
                   value={currentSortBy}
                   onValueChange={(v) => setParam('sortBy', v)}
                 >
-                  {SORT_OPTIONS.map((opt) => (
+                  {COMPANY_SORT_OPTIONS.map((opt) => (
                     <DropdownMenuRadioItem key={opt.value} value={opt.value}>
                       {opt.label}
                     </DropdownMenuRadioItem>
@@ -290,7 +202,7 @@ export function CompaniesToolbar({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              {INDUSTRY_OPTIONS.map((s) => (
+              {COMPANY_INDUSTRY_OPTIONS.map((s) => (
                 <DropdownMenuCheckboxItem
                   key={s.value}
                   checked={selectedIndustries.has(s.value)}
@@ -310,88 +222,18 @@ export function CompaniesToolbar({
       </div>
 
       <ButtonGroup>
-        <Select
+        <CompaniesStatusSelect
           value={activeTab}
+          counts={tabCounts}
           onValueChange={(value) => {
             const params = new URLSearchParams(searchParams?.toString() ?? '');
-            params.set('status', value as string);
+            params.set('status', value);
             params.set('page', '1');
             router.push(`${pathname}?${params.toString()}`);
           }}
-        >
-          <SelectTrigger>
-            <SelectValue
-              className="flex items-center gap-1"
-              render={() => {
-                const activeTabData = STATUS_TABS.find(
-                  (tab) => tab.value === activeTab,
-                );
-                const Icon = activeTabData?.icon;
-                return (
-                  <>
-                    {Icon && <Icon />}
-                    {activeTabData?.label || 'Status'}
-                  </>
-                );
-              }}
-            />
-          </SelectTrigger>
-          <SelectContent className="w-40">
-            <SelectGroup>
-              {STATUS_TABS.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <SelectItem
-                    key={tab.value}
-                    value={tab.value}
-                    className="flex items-center gap-1"
-                  >
-                    <div className="flex items-center gap-1">
-                      <Icon />
-                      {tab.label}
-                      <span className="ml-auto text-muted-foreground">
-                        ({tabCounts[tab.value]})
-                      </span>
-                    </div>
-                  </SelectItem>
-                );
-              })}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        />
 
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button variant="outline" aria-label="More Options">
-                <RiMoreLine className="size-4" />
-              </Button>
-            }
-          />
-          <DropdownMenuContent align="end">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv"
-              onChange={handleFileChange}
-              className="hidden"
-              aria-hidden="true"
-            />
-            <DropdownMenuGroup>
-              <DropdownMenuItem
-                onClick={handleImportClick}
-                disabled={isPending}
-              >
-                <RiUpload2Line className="mr-2 size-3.5" />
-                Import
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExport} disabled={isPending}>
-                <RiDownloadLine className="mr-2 size-3.5" />
-                Export
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <CompaniesImportExport query={currentQuery} />
       </ButtonGroup>
     </div>
   );

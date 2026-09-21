@@ -2,7 +2,6 @@ import { runDiscoveryCycle } from './cycle';
 import type { DiscoveryCycleDeps, JobSource } from './cycle';
 import type { DiscoveryResult } from './types';
 
-/** A source that is due for a full read and has never failed. */
 const source = (over: Partial<JobSource> = {}): JobSource => ({
   url: 'https://job-boards.greenhouse.io/acme',
   platform: 'greenhouse',
@@ -61,11 +60,13 @@ describe('runDiscoveryCycle', () => {
     const summary = await runDiscoveryCycle(d, 'full');
 
     expect(summary).toMatchObject({ inserted: 1, skipped: 0, failed: 0 });
-    expect(d.saved[0]).toMatchObject({ contentHash: 'abc', synced: true, error: null });
+    expect(d.saved[0]).toMatchObject({
+      contentHash: 'abc',
+      synced: true,
+      error: null,
+    });
   });
 
-  // The two halves of the fix: an empty board is not a failure, an unreachable
-  // one is — the back-off counts only the second.
   it('clears the error when a board is read and lists nothing', async () => {
     const d = deps({ jobs: [], platform: 'greenhouse' });
 

@@ -1,11 +1,4 @@
-/**
- * Worker configuration, read from the environment once at startup.
- *
- * The `WORKERS_SCRAPE_*` env names are deliberately left alone: they are the
- * deployment's contract with this process. The code they feed is called
- * "discovery" everywhere else — renaming the variables would break a running
- * deployment for a cosmetic gain.
- */
+// WORKERS_SCRAPE_* names: deployment contract.
 
 export interface WorkersConfig {
   port: number;
@@ -33,34 +26,20 @@ export interface RedisConfig {
 }
 
 export interface DiscoveryConfig {
-  /** Boards read at the same time. */
   concurrency: number;
   userAgent: string;
-  /** Minimum gap between two requests to the same host, in ms. */
   perHostDelayMs: number;
   respectRobots: boolean;
-  /** Also apply robots.txt to the vendor board APIs (see pipeline docs). */
   respectRobotsForAts: boolean;
-  /** Cheap poll: descriptions skipped, compared against the last fingerprint. */
+  // Fast poll skips descriptions.
   fastCron: string;
-  /** Full poll: every field, every source that is due. */
   fullCron: string;
-  /** Board discovery: finds new companies to read. Much slower cadence. */
   seedCron: string;
-  /** Hours after which a source is re-read in full. */
   fullIntervalHours: number;
-  /** Hours after which an unchanged source is re-synced to the database anyway. */
   reconcileIntervalHours: number;
-  /** Consecutive failures after which a source is backed off. */
   maxFailuresBeforeBackoff: number;
-  /**
-   * Requests allowed to one hostname per cycle.
-   *
-   * Hundreds of boards can share one vendor host, so a per-source cap does not
-   * bound what that host receives from us — this does.
-   */
+  // Caps one vendor per cycle.
   maxRequestsPerHost: number;
-  /** Consecutive 429s before a host is left alone for the rest of the cycle. */
   maxRateLimitStrikes: number;
 }
 
@@ -126,8 +105,6 @@ export class ConfigServiceImpl implements ConfigService {
           this.optionalEnv('WORKERS_SCRAPE_ROBOTS_FOR_ATS') === 'true',
         fastCron: this.requireEnv('WORKERS_SCRAPE_FAST_CRON', '*/15 * * * *'),
         fullCron: this.requireEnv('WORKERS_SCRAPE_FULL_CRON', '0 */4 * * *'),
-        // Boards are found once a day: the roster of companies hiring moves in
-        // days, and every candidate costs a request to somebody's API.
         seedCron: this.requireEnv('WORKERS_SCRAPE_SEED_CRON', '0 3 * * *'),
         fullIntervalHours: this.requireEnvAsInt(
           'WORKERS_SCRAPE_FULL_INTERVAL_HOURS',
