@@ -32,6 +32,7 @@ import { JobPostingLocation } from './job-posting-location';
  */
 @Entity()
 @Unique(['company', 'url'])
+@Unique(['company', 'dedupKey'])
 @Index(['closedAt', 'postedAt'])
 export class JobPosting {
   @PrimaryGeneratedColumn('uuid')
@@ -61,6 +62,15 @@ export class JobPosting {
 
   @Column({ nullable: true })
   location: string | null;
+
+  /**
+   * Title and city, folded — what two copies of the same opening still agree on
+   * when they come from different boards. The URL and the ATS id only settle
+   * identity inside one board; this is what keeps a cross-posted role, or a
+   * board that moved, from landing twice.
+   */
+  @Column({ type: 'text' })
+  dedupKey: string;
 
   @Column({ nullable: true })
   department: string | null;

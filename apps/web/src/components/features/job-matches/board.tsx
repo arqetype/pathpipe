@@ -191,7 +191,10 @@ export function JobBoard({ page, selected }: JobBoardProps) {
 
         {selected ? (
           <div className="min-h-0 overflow-hidden rounded-lg border">
-            <JobDetail job={selected} onBack={closeDetail} />
+            {/* Keyed by the offer so picking another one mounts a fresh pane:
+                the description starts at the top rather than where the last
+                one was left. */}
+            <JobDetail key={selected.id} job={selected} onBack={closeDetail} />
           </div>
         ) : (
           <div className="hidden items-center justify-center rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground xl:flex">

@@ -24,8 +24,6 @@ const SUPPORTED = {
 
 export const RESUME_MAX_BYTES = 8 * 1024 * 1024;
 
-export const RESUME_ACCEPT = '.pdf,.docx,.txt,.md';
-
 type Kind = keyof typeof SUPPORTED;
 
 /**

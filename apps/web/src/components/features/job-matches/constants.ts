@@ -92,19 +92,6 @@ export const SORT_OPTIONS = [
   { value: 'title', label: 'Title' },
 ];
 
-/** Filter keys that carry several values at once. */
-export const MULTI_FILTER_KEYS = [
-  'companyId',
-  'city',
-  'country',
-  'department',
-  'employmentType',
-  'remoteType',
-  'status',
-] as const;
-
-export type MultiFilterKey = (typeof MULTI_FILTER_KEYS)[number];
-
 const REGION_NAMES =
   typeof Intl !== 'undefined' && 'DisplayNames' in Intl
     ? new Intl.DisplayNames(['en'], { type: 'region' })
@@ -118,15 +105,4 @@ export const countryName = (code: string): string => {
   } catch {
     return code;
   }
-};
-
-/** The words on a match reason chip. */
-export const MATCH_REASON_PREFIX: Record<string, string> = {
-  employmentType: '',
-  city: '',
-  country: '',
-  remote: '',
-  keyword: '',
-  salary: 'up to ',
-  followed: '',
 };

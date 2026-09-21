@@ -91,6 +91,13 @@ export function JobProfileForm({ preference }: JobProfileFormProps) {
     setForm((current) => ({ ...current, resumeText: next.resumeText ?? '' }));
   };
 
+  // Filling from the CV rewrites fields all over the form, so the whole thing
+  // is reloaded from what the server saved rather than patched field by field.
+  const adoptProfile = (next: JobPreferenceResponse) => {
+    setSaved(next);
+    setForm(toForm(next));
+  };
+
   const dirty = React.useMemo(
     () => JSON.stringify(form) !== JSON.stringify(toForm(saved)),
     [form, saved],
@@ -377,6 +384,8 @@ export function JobProfileForm({ preference }: JobProfileFormProps) {
           onChange={(resumeText) => setForm((f) => ({ ...f, resumeText }))}
           keywords={saved.resumeKeywords}
           onUploaded={adoptSaved}
+          onFilled={adoptProfile}
+          hasSavedResume={Boolean(saved.resumeText)}
         />
       </Section>
 

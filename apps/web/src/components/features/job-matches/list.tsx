@@ -45,7 +45,9 @@ export function JobMatchList({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto">
+      {/* Keyed by the page so a page change mounts a fresh scroll container:
+          the list starts back at the top without a ref or an effect. */}
+      <div key={page} className="flex-1 overflow-y-auto">
         {jobs.map((job) => (
           <JobRow
             key={job.id}

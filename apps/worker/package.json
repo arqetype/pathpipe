@@ -9,7 +9,8 @@
     "check-types": "tsc --noEmit",
     "build": "tsc -b --clean && tsc && tsc-alias",
     "start": "node dist/index.js",
-    "seed:boards": "DOTENV_CONFIG_PATH=../../.env.development.local node --import dotenv/config --import tsx --no-warnings src/scripts/seed-boards.ts"
+    "seed:boards": "DOTENV_CONFIG_PATH=../../.env.development.local node --import dotenv/config --import tsx --no-warnings src/scripts/seed-boards.ts",
+    "test": "jest --passWithNoTests"
   },
   "dependencies": {
     "@repo/db": "workspace:*",
@@ -22,8 +23,12 @@
     "typeorm": "^0.3.28"
   },
   "devDependencies": {
+    "@repo/jest-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.11.17",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.9",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.7.1",
     "typescript": "^6.0.2"

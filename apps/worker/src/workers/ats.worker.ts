@@ -1,409 +1,46 @@
 import { configService } from '@/infrastructure/config/config.service';
 import { apiClient } from '@/infrastructure/api/api.client';
-import { HttpClient } from '@/domain/scraping/http';
-import { JobDiscoveryService } from '@/domain/scraping/pipeline';
-import { createLimiter } from '@/domain/scraping/limiter';
-import type { ScrapeResult } from '@/domain/scraping/types';
+import { HttpClient } from '@/infrastructure/http/http';
+import { JobDiscoveryService } from '@/domain/discovery/pipeline';
+import { createLimiter } from '@/domain/discovery/limiter';
+import { seedBoards } from '@/domain/discovery/seed';
+import { ingestListing } from '@/domain/discovery/ingest';
+import { runDiscoveryCycle, type SourceStore } from '@/domain/discovery/cycle';
+import type { JobSource } from '@/domain/discovery/cycle';
+import { SCHEDULED_SEED, type CycleMode } from '@/domain/discovery/schedule';
 import { Cron } from 'croner';
 import pino from 'pino';
 import pretty from 'pino-pretty';
 import { createWorker, QUEUES } from '@repo/queues';
-import { CreateJobPostingDto } from '@repo/db/dto/job-posting/create-job-posting.dto';
-import { EmploymentType } from '@repo/db/types/job-posting/employment-type';
-import { RemoteType } from '@repo/db/types/job-posting/remote-type';
-import {
-  SeniorityLevel,
-  WorkDomain,
-} from '@repo/db/types/job-posting/work-domain';
+
+/**
+ * Entry point for job discovery: config in, dependencies built, cron and queue
+ * wired to one domain call. Every rule about when a source is due, what its
+ * answer means and what gets written back lives in `domain/discovery/cycle.ts`
+ * and `domain/discovery/schedule.ts`.
+ */
 
 const logger = pino(pretty());
 
-interface JobSourceCompany {
-  companyId: string;
-  companyName: string;
-}
+/** The API, in the shape the cycle asks for. Failures here never fail a cycle. */
+const apiSourceStore: SourceStore = {
+  list: () => apiClient.get<JobSource[]>('/internal/v1/job-sources'),
 
-interface JobSourceTask {
-  url: string;
-  platform: string | null;
-  strategy: string | null;
-  etag: string | null;
-  lastModified: string | null;
-  contentHash: string | null;
-  jobCount: number;
-  requiresBrowser: boolean;
-  failureCount: number;
-  lastCheckedAt: string | null;
-  lastChangedAt: string | null;
-  lastSyncedAt: string | null;
-  companies: JobSourceCompany[];
-}
-
-interface InsertedJob {
-  id: string;
-  title: string;
-  url: string;
-  location: string | null;
-}
-
-interface BatchResponse {
-  inserted: number;
-  total: number;
-  jobs: InsertedJob[];
-}
-
-type CycleMode = 'fast' | 'full';
-
-const HOUR_MS = 60 * 60 * 1000;
-
-/** The worker emits enum values as strings; only known ones reach the API. */
-const asEmploymentType = (value: string | undefined): EmploymentType | null =>
-  value && value in EmploymentType ? (value as EmploymentType) : null;
-
-const asRemoteType = (value: string | undefined): RemoteType | null =>
-  value && value in RemoteType ? (value as RemoteType) : null;
-
-const asDomain = (value: string | undefined): WorkDomain | null =>
-  value && value in WorkDomain ? (value as WorkDomain) : null;
-
-const asSeniority = (value: string | undefined): SeniorityLevel | null =>
-  value && value in SeniorityLevel ? (value as SeniorityLevel) : null;
-
-const hoursSince = (iso: string | null): number =>
-  iso
-    ? (Date.now() - new Date(iso).getTime()) / HOUR_MS
-    : Number.POSITIVE_INFINITY;
-
-export async function startAtsWorker() {
-  logger.info('Starting ATS worker...');
-
-  const redisConfig = configService.get('redis');
-  const workersConfig = configService.get('workers');
-  const scraperConfig = configService.get('scraper');
-
-  const connection = {
-    host: redisConfig.host,
-    port: redisConfig.port,
-    password: redisConfig.password,
-  };
-
-  const http = new HttpClient({
-    userAgent: scraperConfig.userAgent,
-    perHostDelayMs: scraperConfig.perHostDelayMs,
-    respectRobots: scraperConfig.respectRobots,
-    maxRequestsPerHost: scraperConfig.maxRequestsPerHost,
-    maxRateLimitStrikes: scraperConfig.maxRateLimitStrikes,
-    log: (data, msg) => logger.info(data, msg),
-  });
-
-  const discovery = new JobDiscoveryService({
-    http,
-    respectRobotsForAts: scraperConfig.respectRobotsForAts,
-    log: (data, msg) => logger.debug(data, msg),
-  });
-
-  const limit = createLimiter(scraperConfig.concurrency);
-  let cycleRunning = false;
-
-  /**
-   * A source is skipped entirely when it is backing off after repeated
-   * failures, or when a cheap pass cannot possibly reach it (its listing only
-   * appears after a browser render) and the full pass is not due yet.
-   */
-  const plan = (
-    task: JobSourceTask,
-    mode: CycleMode,
-  ): { skip: boolean; fastOnly: boolean; reconcile: boolean } => {
-    const dueForFull =
-      hoursSince(task.lastCheckedAt) >= scraperConfig.fullIntervalHours;
-
-    if (task.failureCount >= scraperConfig.maxFailuresBeforeBackoff) {
-      const backoffHours = Math.min(
-        24,
-        2 **
-          Math.min(
-            task.failureCount - scraperConfig.maxFailuresBeforeBackoff,
-            4,
-          ),
-      );
-      if (hoursSince(task.lastCheckedAt) < backoffHours) {
-        return { skip: true, fastOnly: true, reconcile: false };
-      }
-    }
-
-    const needsBrowser = task.requiresBrowser;
-    if (mode === 'fast' && needsBrowser && !dueForFull) {
-      return { skip: true, fastOnly: true, reconcile: false };
-    }
-
-    return {
-      skip: false,
-      fastOnly: mode === 'fast' && !needsBrowser && !dueForFull,
-      // Re-ingest periodically even when nothing changed, so a posting lost to
-      // a failed insert cannot stay missing forever.
-      reconcile:
-        hoursSince(task.lastSyncedAt) >= scraperConfig.reconcileIntervalHours,
-    };
-  };
-
-  const reportState = async (
-    task: JobSourceTask,
-    patch: Record<string, unknown>,
-  ): Promise<void> => {
+  saveState: async (url, patch) => {
     try {
-      await apiClient.post('/internal/v1/job-sources/state', {
-        url: task.url,
-        ...patch,
-      });
+      await apiClient.post('/internal/v1/job-sources/state', { url, ...patch });
     } catch (err) {
-      logger.warn({ url: task.url, err }, 'Failed to persist source state');
+      logger.warn({ url, err }, 'Failed to persist source state');
     }
-  };
+  },
 
-  /**
-   * Postings per HTTP request to the API. A full board's descriptions can run
-   * several megabytes; chunking keeps each request well under any reasonable
-   * body-size limit regardless of how large a single company's listing gets.
-   */
-  const SUBMIT_CHUNK_SIZE = 150;
-
-  /** Writes one board's listing for the company behind it. */
-  const syncCompany = async (
-    task: JobSourceTask,
-    company: JobSourceCompany,
-    result: ScrapeResult,
-  ): Promise<number> => {
-    const source = result.resolvedUrl ?? task.url;
-    const live = result.jobs;
-
-    const dtos: CreateJobPostingDto[] = live.map((job) => ({
-      title: job.title,
-      url: job.url,
-      externalId: job.externalId ?? null,
-      description: job.description ?? null,
-      descriptionHtml: job.descriptionHtml ?? null,
-      location: job.location ?? null,
-      locations: (job.parsedLocations ?? []).map((place) => ({
-        city: place.city,
-        region: place.region,
-        country: place.country,
-        raw: place.raw,
-      })),
-      department: job.department ?? null,
-      domain: asDomain(job.domain),
-      seniority: asSeniority(job.seniority),
-      employmentType: asEmploymentType(job.employmentType),
-      remoteType: asRemoteType(job.remoteType),
-      salaryMin: job.salaryMin ?? null,
-      salaryMax: job.salaryMax ?? null,
-      salaryCurrency: job.salaryCurrency ?? null,
-      source,
-      postedAt: job.postedAt ?? null,
-      validThrough: job.validThrough ?? null,
-      companyId: company.companyId,
-    }));
-
-    let inserted = 0;
-    let total = 0;
-    for (let start = 0; start < dtos.length; start += SUBMIT_CHUNK_SIZE) {
-      const chunk = dtos.slice(start, start + SUBMIT_CHUNK_SIZE);
-      try {
-        const response = await apiClient.post<BatchResponse>(
-          '/job-postings/internal/batch',
-          chunk,
-        );
-        inserted += response.jobs.length;
-        total += response.total;
-      } catch (err) {
-        logger.error(
-          { company: company.companyName, err },
-          'Failed to submit jobs to API',
-        );
-        // A later chunk failing should not lose the ones that already landed.
-      }
-    }
-
-    // The board is the authority on what is still open: anything stored for
-    // this company and source that the board no longer lists has been taken
-    // down. Only a complete listing may say that — a truncated one would close
-    // half the board.
-    if (!result.partial) {
-      try {
-        await apiClient.post('/internal/v1/job-postings/reconcile', {
-          companyId: company.companyId,
-          source,
-          urls: live.map((job) => job.url),
-          externalIds: live
-            .map((job) => job.externalId)
-            .filter((id): id is string => Boolean(id)),
-        });
-      } catch (err) {
-        logger.warn(
-          { company: company.companyName, err },
-          'Failed to reconcile closed postings',
-        );
-      }
-    }
-
-    if (inserted) {
-      logger.info(
-        {
-          company: company.companyName,
-          inserted,
-          total,
-          platform: result.platform,
-          strategy: result.strategy,
-        },
-        'New offers ingested',
-      );
-    }
-
-    return inserted;
-  };
-
-  const processSource = async (
-    task: JobSourceTask,
-    mode: CycleMode,
-  ): Promise<{ inserted: number; skipped: boolean }> => {
-    const decision = plan(task, mode);
-    if (decision.skip) return { inserted: 0, skipped: true };
-
-    const result = await discovery.discover(task.url, {
-      previous: decision.reconcile
-        ? null
-        : {
-            etag: task.etag,
-            lastModified: task.lastModified,
-            contentHash: task.contentHash,
-            jobCount: task.jobCount,
-          },
-      fastOnly: decision.fastOnly,
-      knownPlatform: task.platform,
-    });
-
-    if (result.notModified) {
-      await reportState(task, {
-        platform: result.platform ?? task.platform,
-        etag: result.fingerprint?.etag ?? task.etag,
-        lastModified: result.fingerprint?.lastModified ?? task.lastModified,
-      });
-      return { inserted: 0, skipped: false };
-    }
-
-    if (!result.jobs.length) {
-      // A cheap pass finding nothing is expected for browser-only sources; only
-      // a full pass counts as a failure worth backing off from.
-      const isFailure = !decision.fastOnly;
-      await reportState(task, {
-        error: isFailure ? (result.error ?? 'No job listings found') : null,
-        platform: result.platform ?? task.platform,
-        etag: result.fingerprint?.etag ?? null,
-        lastModified: result.fingerprint?.lastModified ?? null,
-      });
-      if (isFailure) {
-        logger.warn(
-          { url: task.url, error: result.error },
-          'No jobs found for source',
-        );
-      }
-      return { inserted: 0, skipped: false };
-    }
-
-    let inserted = 0;
-    for (const company of task.companies) {
-      inserted += await syncCompany(task, company, result);
-    }
-
-    await reportState(task, {
-      platform: result.platform ?? null,
-      strategy: result.strategy ?? null,
-      etag: result.fingerprint?.etag ?? null,
-      lastModified: result.fingerprint?.lastModified ?? null,
-      contentHash: result.fingerprint?.contentHash ?? null,
-      jobCount: result.fingerprint?.jobCount ?? result.jobs.length,
-      changed: task.contentHash !== result.fingerprint?.contentHash,
-      synced: true,
-      error: null,
-    });
-
-    return { inserted, skipped: false };
-  };
-
-  async function runDiscovery(mode: CycleMode = 'full'): Promise<void> {
-    if (cycleRunning) {
-      logger.info('Discovery cycle already running, skipping this tick');
-      return;
-    }
-    cycleRunning = true;
-    const startedAt = Date.now();
-    // Per-host budgets and rate-limit strikes are per cycle: a host that told
-    // us to back off gets its next chance hours from now, not seconds.
-    http.beginCycle();
-
+  notifyNewOffers: async () => {
     try {
-      let tasks: JobSourceTask[];
-      try {
-        tasks = await apiClient.get<JobSourceTask[]>(
-          '/internal/v1/job-sources',
-        );
-      } catch (err) {
-        logger.error({ err }, 'Failed to fetch job sources');
-        return;
-      }
-
-      logger.info(
-        { mode, sources: tasks.length },
-        'Starting job discovery cycle',
-      );
-
-      const results = await Promise.all(
-        tasks.map((task) =>
-          limit(async () => {
-            try {
-              return await processSource(task, mode);
-            } catch (err) {
-              logger.error({ url: task.url, err }, 'Source failed');
-              await reportState(task, {
-                error: err instanceof Error ? err.message : String(err),
-              });
-              return { inserted: 0, skipped: false };
-            }
-          }),
-        ),
-      );
-
-      const inserted = results.reduce((sum, r) => sum + r.inserted, 0);
-
-      const paused = http.pausedHosts();
-      logger.info(
-        {
-          mode,
-          sources: tasks.length,
-          skipped: results.filter((r) => r.skipped).length,
-          inserted,
-          // Silence about a host we stopped talking to would read as "that
-          // board has no jobs" rather than "we were asked to stop".
-          backedOffHosts: paused.length ? paused : undefined,
-          seconds: Math.round((Date.now() - startedAt) / 1000),
-        },
-        'Job discovery cycle complete',
-      );
-
-      await expireDatedOffers();
-
-      // Who to tell about a new offer is a question about profiles, which live
-      // in the API — the worker only says that new offers landed.
-      if (inserted) {
-        try {
-          await apiClient.post('/internal/v1/job-postings/notify', {});
-        } catch (err) {
-          logger.warn({ err }, 'Failed to trigger match notifications');
-        }
-      }
-    } finally {
-      cycleRunning = false;
+      await apiClient.post('/internal/v1/job-postings/notify', {});
+    } catch (err) {
+      logger.warn({ err }, 'Failed to trigger match notifications');
     }
-  }
+  },
 
   /**
    * Closes offers that dated themselves out.
@@ -413,17 +50,93 @@ export async function startAtsWorker() {
    * already catches, and it catches it through the vendor's API rather than by
    * knocking on a page that may answer with a bot challenge.
    */
-  async function expireDatedOffers(): Promise<void> {
+  expireDatedOffers: async () => {
     try {
       const { closed } = await apiClient.post<{ closed: number }>(
         '/internal/v1/job-postings/expire',
         {},
       );
-      if (closed) logger.info({ closed }, 'Closed offers past their end date');
+      return closed;
     } catch (err) {
       logger.warn({ err }, 'Failed to close expired offers');
+      return 0;
     }
-  }
+  },
+};
+
+export async function startAtsWorker() {
+  logger.info('Starting ATS worker...');
+
+  const redisConfig = configService.get('redis');
+  const workersConfig = configService.get('workers');
+  const config = configService.get('discovery');
+
+  const http = new HttpClient({
+    userAgent: config.userAgent,
+    perHostDelayMs: config.perHostDelayMs,
+    respectRobots: config.respectRobots,
+    maxRequestsPerHost: config.maxRequestsPerHost,
+    maxRateLimitStrikes: config.maxRateLimitStrikes,
+    log: (data, msg) => logger.info(data, msg),
+  });
+
+  const discovery = new JobDiscoveryService({
+    http,
+    respectRobotsForAts: config.respectRobotsForAts,
+    log: (data, msg) => logger.debug(data, msg),
+  });
+
+  const limit = createLimiter(config.concurrency);
+  let cycleRunning = false;
+
+  const runDiscovery = async (mode: CycleMode): Promise<void> => {
+    if (cycleRunning) {
+      logger.info('Discovery cycle already running, skipping this tick');
+      return;
+    }
+    cycleRunning = true;
+    try {
+      const summary = await runDiscoveryCycle(
+        {
+          sources: apiSourceStore,
+          discover: (url, options) => discovery.discover(url, options),
+          ingest: (company, result, listingUrl) =>
+            ingestListing(company, result, listingUrl, logger),
+          http,
+          limit,
+          policy: config,
+          log: logger,
+        },
+        mode,
+      );
+      if (summary) logger.info(summary, 'Job discovery cycle complete');
+    } finally {
+      cycleRunning = false;
+    }
+  };
+
+  /**
+   * Refills the company list discovery works from.
+   *
+   * Companies are only read once somebody knows their board exists, and the
+   * roster of who is hiring moves every day — so the same seeding the CLI runs
+   * happens on a schedule. Safe to repeat: the API call behind it is an upsert.
+   */
+  const runSeeding = async (): Promise<void> => {
+    logger.info('Starting board discovery');
+    try {
+      const boards = await seedBoards({
+        ...SCHEDULED_SEED,
+        log: (msg) => {
+          const line = msg.trim();
+          if (line) logger.info(line);
+        },
+      });
+      logger.info({ boards: boards.length }, 'Board discovery complete');
+    } catch (err) {
+      logger.warn({ err }, 'Board discovery failed');
+    }
+  };
 
   logger.info('ATS worker started, waiting for API...');
 
@@ -440,28 +153,32 @@ export async function startAtsWorker() {
 
   await runDiscovery('full');
 
-  const fastCron = new Cron(
-    scraperConfig.fastCron,
-    { timezone: workersConfig.cronTimezone },
-    async () => {
-      await runDiscovery('fast');
-    },
-  );
+  const schedule = (
+    expression: string,
+    run: () => Promise<void>,
+    // `runDiscovery` keeps its own guard, and says so in the log when a tick
+    // lands on a running cycle. Seeding has no such guard, so croner holds it.
+    protect = false,
+  ): Cron =>
+    new Cron(
+      expression,
+      { timezone: workersConfig.cronTimezone, protect },
+      run,
+    );
 
-  const fullCron = new Cron(
-    scraperConfig.fullCron,
-    { timezone: workersConfig.cronTimezone },
-    async () => {
-      await runDiscovery('full');
-    },
-  );
+  const crons = [
+    schedule(config.fastCron, () => runDiscovery('fast')),
+    schedule(config.fullCron, () => runDiscovery('full')),
+    schedule(config.seedCron, runSeeding, true),
+  ];
 
   logger.info(
     {
-      fast: scraperConfig.fastCron,
-      full: scraperConfig.fullCron,
+      fast: config.fastCron,
+      full: config.fullCron,
+      seed: config.seedCron,
       timezone: workersConfig.cronTimezone,
-      concurrency: scraperConfig.concurrency,
+      concurrency: config.concurrency,
     },
     'ATS worker scheduled',
   );
@@ -472,7 +189,11 @@ export async function startAtsWorker() {
       logger.info(`Triggered by ${job.id}, running discovery...`);
       await runDiscovery('full');
     },
-    connection,
+    {
+      host: redisConfig.host,
+      port: redisConfig.port,
+      password: redisConfig.password,
+    },
   );
 
   triggerWorker.on('completed', (job) => {
@@ -484,8 +205,7 @@ export async function startAtsWorker() {
 
   const shutdown = async () => {
     logger.info('Shutting down ATS worker...');
-    fastCron.stop();
-    fullCron.stop();
+    for (const cron of crons) cron.stop();
     await triggerWorker.close();
     process.exit(0);
   };

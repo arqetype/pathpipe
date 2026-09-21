@@ -1,7 +1,10 @@
 'use server';
 
-import { get, postForm, put } from '@/lib/fetch';
-import type { JobPreferenceResponse } from '@repo/db/query/job-preference';
+import { get, post, postForm, put } from '@/lib/fetch';
+import type {
+  JobPreferenceResponse,
+  ResumeProfileApplied,
+} from '@repo/db/query/job-preference';
 import type { UpdateJobPreferenceDto } from '@repo/db/dto/job-preference/update-job-preference.dto';
 
 const EMPTY: JobPreferenceResponse = {
@@ -66,6 +69,26 @@ export async function uploadResumeAction(
       ? result.data.message[0]
       : result.data?.message;
     throw new Error(message || 'Could not read that file');
+  }
+  return result.data;
+}
+
+/**
+ * Build the profile out of the CV already saved.
+ *
+ * Only the blanks are filled, so this is safe to run again after correcting the
+ * text — which is exactly what somebody does when a PDF came out garbled.
+ */
+export async function applyResumeToProfileAction(): Promise<ResumeProfileApplied> {
+  const result = await post<ResumeProfileApplied>(
+    '/job-preferences/resume/apply',
+    {},
+  );
+  if (!result.ok) {
+    const message = Array.isArray(result.data?.message)
+      ? result.data.message[0]
+      : result.data?.message;
+    throw new Error(message || 'Could not read your CV');
   }
   return result.data;
 }

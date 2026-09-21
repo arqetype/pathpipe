@@ -89,7 +89,9 @@ export function useJobFilters() {
       else params.delete('page');
       const qs = params.toString();
       startTransition(() => {
-        router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: true });
+        // Nothing scrolls at the window level here — the list pane resets
+        // itself (see JobMatchList).
+        router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
       });
     },
     [pathname, router, searchParams],

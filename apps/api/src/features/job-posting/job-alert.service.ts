@@ -6,12 +6,10 @@ import { JobPosting } from '@repo/db/entities/job-posting';
 import { JobPreference } from '@repo/db/entities/job-preference';
 import { JobPostingLocation } from '@repo/db/entities/job-posting-location';
 import type { JobAlertJob, JobAlertOffer } from '@repo/queues/job-alert';
-import {
-  buildExclusionPredicate,
-  buildMatchPredicate,
-  buildMatchSql,
-  isConfigured,
-} from './job-match';
+import { buildExclusionPredicate } from './match/exclusion';
+import { buildMatchPredicate } from './match/predicate';
+import { buildMatchSql } from './match/score';
+import { isConfigured } from './match/shared';
 
 /** Offers in one digest. Beyond this the email stops being readable. */
 const MAX_OFFERS_PER_DIGEST = 10;

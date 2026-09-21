@@ -44,3 +44,15 @@ export interface JobPreferenceResponse {
    */
   completeness: number;
 }
+
+/** What filling the profile from a CV changed, so the UI can say it plainly. */
+export interface ResumeProfileApplied {
+  preference: JobPreferenceResponse;
+  /** Names of the fields that were empty and have just been filled. */
+  filled: string[];
+  /**
+   * Fields the CV had an answer for that were left alone because the user had
+   * already answered them — shown so nothing looks silently ignored.
+   */
+  skipped: string[];
+}

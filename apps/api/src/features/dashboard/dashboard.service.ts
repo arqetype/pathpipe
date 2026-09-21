@@ -13,7 +13,7 @@ import {
 } from '@repo/db/query/dashboard';
 import type { JobPostingResponse } from '@repo/db/query/job-posting';
 import { JobPostingService } from '../job-posting/job-posting.service';
-import { completenessOf, isConfigured } from '../job-posting/job-match';
+import { completenessOf, isConfigured } from '../job-posting/match/shared';
 
 const DAY_MS = 86_400_000;
 

@@ -34,9 +34,12 @@ export class CompanyService {
 
   async findOrCreate(name: string): Promise<Company> {
     const trimmed = name.trim();
-    let company = await this.companiesRepository.findOne({
-      where: { name: trimmed },
-    });
+    let company = await this.companiesRepository
+      .createQueryBuilder('company')
+      .where('lower(btrim(company.name)) = lower(btrim(:name))', {
+        name: trimmed,
+      })
+      .getOne();
     if (!company) {
       company = await this.companiesRepository.save({
         name: trimmed,

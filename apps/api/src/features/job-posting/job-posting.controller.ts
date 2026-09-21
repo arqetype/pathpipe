@@ -10,6 +10,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { JobPostingService } from './job-posting.service';
+import { JobPostingIngestService } from './job-posting-ingest.service';
+import { JobPostingInteractionService } from './job-posting-interaction.service';
 import { CreateJobPostingDto } from '@repo/db/dto/job-posting/create-job-posting.dto';
 import {
   type JobPostingResponse,
@@ -24,13 +26,17 @@ import { User } from '@repo/db/entities/user';
 
 @Controller('job-postings')
 export class JobPostingController {
-  constructor(private readonly jobPostingService: JobPostingService) {}
+  constructor(
+    private readonly jobPostingService: JobPostingService,
+    private readonly ingestService: JobPostingIngestService,
+    private readonly interactionService: JobPostingInteractionService,
+  ) {}
 
   @ApiKeyProtected()
   @HttpCode(HttpStatus.CREATED)
   @Post('internal/batch')
   async createBatch(@Body() dtos: CreateJobPostingDto[]) {
-    return this.jobPostingService.createBatch(dtos);
+    return this.ingestService.createBatch(dtos);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -66,7 +72,7 @@ export class JobPostingController {
     @Param('id') id: string,
     @Body('status') status: JobPostingStatus,
   ): Promise<void> {
-    return this.jobPostingService.markAs(user.id, id, status);
+    return this.interactionService.markAs(user.id, id, status);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -76,7 +82,7 @@ export class JobPostingController {
     @Param('id') id: string,
     @Body('saved') saved: boolean,
   ): Promise<JobPostingResponse> {
-    return this.jobPostingService.setSaved(user.id, id, Boolean(saved));
+    return this.interactionService.setSaved(user.id, id, Boolean(saved));
   }
 
   /** Pushes the offer onto the applications board, or returns the existing one. */
@@ -87,6 +93,6 @@ export class JobPostingController {
     @Param('id') id: string,
     @Body('status') status?: ApplicationStatus,
   ): Promise<{ applicationId: string; created: boolean }> {
-    return this.jobPostingService.trackAsApplication(user, id, status);
+    return this.interactionService.trackAsApplication(user, id, status);
   }
 }

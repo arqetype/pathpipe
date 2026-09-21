@@ -59,9 +59,3 @@ export async function fetchJobMatchAction(
   if (!result.ok) return null;
   return result.data;
 }
-
-export async function countNewJobMatchesAction(): Promise<number> {
-  const result = await get<{ count: number }>('/job-postings/count');
-  if (!result.ok) return 0;
-  return result.data.count;
-}

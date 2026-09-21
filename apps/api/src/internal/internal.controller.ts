@@ -16,9 +16,9 @@ import { Queue } from 'bullmq';
 import { JobSourceService, JobSourceTask } from './job-source.service';
 import { UpdateJobSourceStateDto } from '@repo/db/dto/job-posting/update-job-source-state.dto';
 import {
-  JobPostingService,
+  JobPostingLifecycleService,
   StalePostingSummary,
-} from '../features/job-posting/job-posting.service';
+} from '../features/job-posting/job-posting-lifecycle.service';
 import { JobAlertService } from '../features/job-posting/job-alert.service';
 import { ReconcileJobPostingsDto } from '@repo/db/dto/job-posting/reconcile-job-postings.dto';
 import { ReportJobPostingValidityDto } from '@repo/db/dto/job-posting/job-posting-validity.dto';
@@ -32,7 +32,7 @@ export class InternalController {
     @InjectRepository(CompanyWatch)
     private readonly companyWatchRepository: Repository<CompanyWatch>,
     private readonly jobSourceService: JobSourceService,
-    private readonly jobPostingService: JobPostingService,
+    private readonly lifecycleService: JobPostingLifecycleService,
     private readonly jobAlertService: JobAlertService,
     private readonly companySeedService: CompanySeedService,
     @Inject('DISCOVERY_QUEUE')
@@ -91,7 +91,7 @@ export class InternalController {
   async reconcileJobPostings(
     @Body() dto: ReconcileJobPostingsDto,
   ): Promise<{ closed: number }> {
-    return this.jobPostingService.reconcile(dto);
+    return this.lifecycleService.reconcile(dto);
   }
 
   /** Open offers most overdue for a "does this still exist?" probe. */
@@ -102,8 +102,8 @@ export class InternalController {
     @Query('olderThanHours') olderThanHours?: string,
   ): Promise<StalePostingSummary[]> {
     // Offers that dated themselves out need no request to close.
-    await this.jobPostingService.closeExpired();
-    return this.jobPostingService.findStale(
+    await this.lifecycleService.closeExpired();
+    return this.lifecycleService.findStale(
       Number.parseInt(limit ?? '50', 10) || 50,
       Number.parseInt(olderThanHours ?? '48', 10) || 48,
     );
@@ -114,7 +114,7 @@ export class InternalController {
   async reportJobPostingValidity(
     @Body() dto: ReportJobPostingValidityDto,
   ): Promise<{ closed: number; confirmed: number }> {
-    return this.jobPostingService.applyValidity(dto.results ?? []);
+    return this.lifecycleService.applyValidity(dto.results ?? []);
   }
 
   /**
@@ -127,7 +127,7 @@ export class InternalController {
   @HttpCode(HttpStatus.OK)
   @Post('job-postings/expire')
   async expireJobPostings(): Promise<{ closed: number }> {
-    return { closed: await this.jobPostingService.closeExpired() };
+    return { closed: await this.lifecycleService.closeExpired() };
   }
 
   @HttpCode(HttpStatus.OK)

@@ -5,7 +5,11 @@ import type { NextConfig } from 'next';
 
 // Pin the workspace root: Claude Code worktrees live under .claude/worktrees/, so
 // Next.js otherwise sees two pnpm-workspace.yaml files and infers the root itself.
-const workspaceRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const workspaceRoot = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+);
 
 const nextConfig: NextConfig = {
   turbopack: { root: workspaceRoot },

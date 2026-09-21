@@ -14,7 +14,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JobPreferenceService } from './job-preference.service';
 import { extractResumeFile } from './resume-file';
 import { UpdateJobPreferenceDto } from '@repo/db/dto/job-preference/update-job-preference.dto';
-import { JobPreferenceResponse } from '@repo/db/query/job-preference';
+import {
+  JobPreferenceResponse,
+  ResumeProfileApplied,
+} from '@repo/db/query/job-preference';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { User } from '@repo/db/entities/user';
 
@@ -53,5 +56,17 @@ export class JobPreferenceController {
     if (!file) throw new BadRequestException('No file was uploaded.');
     const text = await extractResumeFile(file);
     return this.service.replaceResume(user.id, text);
+  }
+
+  /**
+   * Fill the profile from the CV on file.
+   *
+   * Separate from the upload so it can be re-run after somebody fixes the text,
+   * and so uploading never silently rewrites a profile.
+   */
+  @HttpCode(HttpStatus.OK)
+  @Post('resume/apply')
+  async applyResume(@CurrentUser() user: User): Promise<ResumeProfileApplied> {
+    return this.service.applyResume(user.id);
   }
 }

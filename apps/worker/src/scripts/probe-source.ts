@@ -11,12 +11,12 @@
  */
 import pino from 'pino';
 import pretty from 'pino-pretty';
-import { HttpClient } from '@/domain/scraping/http';
-import { JobDiscoveryService } from '@/domain/scraping/pipeline';
+import { HttpClient } from '@/infrastructure/http/http';
+import { JobDiscoveryService } from '@/domain/discovery/pipeline';
 
 const USER_AGENT =
   process.env.WORKERS_SCRAPE_USER_AGENT ??
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 PathpipeBot/1.0';
+  'PathpipeBot/1.0 (+https://pathpipe.clementomnes.dev/bot)';
 
 const main = async (): Promise<void> => {
   const args = process.argv.slice(2);

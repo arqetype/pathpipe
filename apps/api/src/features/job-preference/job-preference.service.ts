@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Company } from '@repo/db/entities/company';
@@ -7,9 +7,11 @@ import { UpdateJobPreferenceDto } from '@repo/db/dto/job-preference/update-job-p
 import {
   ExcludedCompany,
   JobPreferenceResponse,
+  ResumeProfileApplied,
 } from '@repo/db/query/job-preference';
-import { completenessOf, isConfigured } from '../job-posting/job-match';
+import { completenessOf, isConfigured } from '../job-posting/match/shared';
 import { extractResumeKeywords, normalizeResumeText } from './resume';
+import { extractResumeProfile } from './resume-profile';
 
 /** Trimmed, deduped, and capped — a profile is a set, not a paste buffer. */
 const cleanList = (values: string[] | undefined, max: number): string[] =>
@@ -54,6 +56,72 @@ export class JobPreferenceService {
     text: string,
   ): Promise<JobPreferenceResponse> {
     return this.update(userId, { resumeText: text });
+  }
+
+  /**
+   * Build the profile out of the CV already on file.
+   *
+   * Only empty fields are filled. A CV describes what somebody has done and the
+   * profile describes what they want next — close enough to propose, not close
+   * enough to overwrite an answer they gave on purpose. Everything it writes is
+   * an ordinary profile value afterwards, editable like any other.
+   */
+  async applyResume(userId: string): Promise<ResumeProfileApplied> {
+    const preference = await this.repository.findOne({ where: { userId } });
+    const text = preference?.resumeText;
+    if (!text) {
+      throw new BadRequestException(
+        'Add a CV first — upload a file or paste the text.',
+      );
+    }
+
+    const read = extractResumeProfile(text);
+    const filled: string[] = [];
+    const skipped: string[] = [];
+    const dto: UpdateJobPreferenceDto = {};
+
+    // One rule for every field: propose where the user said nothing, report
+    // where they did, and stay quiet where the CV had nothing to say.
+    const propose = <K extends keyof UpdateJobPreferenceDto>(
+      field: K,
+      current: unknown[],
+      value: NonNullable<UpdateJobPreferenceDto[K]> & unknown[],
+      label: string,
+    ): void => {
+      if (!value.length) return;
+      if (current.length) {
+        skipped.push(label);
+        return;
+      }
+      dto[field] = value as UpdateJobPreferenceDto[K];
+      filled.push(label);
+    };
+
+    propose('titles', preference.titles, read.titles, 'titles');
+    propose('domains', preference.domains, read.domains, 'domains');
+    propose(
+      'seniorities',
+      preference.seniorities,
+      read.seniorities,
+      'seniority',
+    );
+    propose(
+      'employmentTypes',
+      preference.employmentTypes,
+      read.employmentTypes,
+      'contract types',
+    );
+    propose('cities', preference.cities, read.cities, 'cities');
+    propose('countries', preference.countries, read.countries, 'countries');
+    // `keywords` is deliberately not proposed: the CV's skills already land in
+    // `resumeKeywords` on every save, and copying them into a second criterion
+    // would weigh the same words twice.
+
+    const updated = Object.keys(dto).length
+      ? await this.update(userId, dto)
+      : await this.toResponse(preference);
+
+    return { preference: updated, filled, skipped };
   }
 
   async update(

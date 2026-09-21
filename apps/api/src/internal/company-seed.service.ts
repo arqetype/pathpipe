@@ -45,9 +45,12 @@ export class CompanySeedService {
       const name = entry.name.trim();
       if (!name) continue;
 
-      const existing = await this.companyRepository.findOne({
-        where: { name },
-      });
+      // Case-insensitively: a board answers to "nvidia" and "NVIDIA" alike, so
+      // both spellings reach here for the same company.
+      const existing = await this.companyRepository
+        .createQueryBuilder('company')
+        .where('lower(btrim(company.name)) = lower(btrim(:name))', { name })
+        .getOne();
 
       if (!existing) {
         await this.companyRepository.save(

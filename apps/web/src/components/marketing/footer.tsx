@@ -26,6 +26,7 @@ const sections = [
       { label: 'Terms', href: '#' },
       { label: 'Cookies', href: '#' },
       { label: 'Security', href: '#' },
+      { label: 'Data sources', href: '/data-sources' },
     ],
   },
 ];

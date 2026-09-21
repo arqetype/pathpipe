@@ -39,3 +39,6 @@ yarn-error.log*
 
 
 .claude/worktrees
+
+# TS incremental build info
+*.tsbuildinfo
