@@ -3,10 +3,15 @@
 import { useSortable } from '@dnd-kit/react/sortable';
 import { Card, CardContent } from '@repo/ui/components/card';
 import type { Application } from '@repo/db/entities/application';
-import { RiMoneyDollarBoxLine, RiCalendarLine } from '@remixicon/react';
+import {
+  RiMoneyDollarBoxLine,
+  RiCalendarLine,
+  RiMapPin2Line,
+} from '@remixicon/react';
 import { cn } from '@repo/ui/lib/utils';
 import { formatDate, formatSalary } from '@/utils/applications-utils';
 import { CompanyLogo } from '@/components/shared/company-logo';
+import { formatLocation } from '@/components/shared/select-location';
 import { Badge } from '@repo/ui/components/badge';
 import { TIER_CONFIG } from '../../constants/tier';
 import { ApplicationTier } from '@repo/db/types/application/tier';
@@ -38,6 +43,10 @@ export function KanbanCard({
   });
 
   const salary = formatSalary(application.salaryMin, application.salaryMax);
+  const location = formatLocation({
+    city: application.city ?? '',
+    country: application.country ?? '',
+  });
   const date = formatDate(application.appliedAt ?? application.created_at);
   const tierConfig = TIER_CONFIG[application.tier];
   const hasTier = tierConfig && application.tier !== ApplicationTier.NONE;
@@ -87,6 +96,12 @@ export function KanbanCard({
             <span className="flex items-center gap-1">
               <RiCalendarLine className="size-3 shrink-0" />
               {date}
+            </span>
+          )}
+          {location && (
+            <span className="flex min-w-0 items-center gap-1">
+              <RiMapPin2Line className="size-3 shrink-0" />
+              <span className="truncate">{location}</span>
             </span>
           )}
           {hasTier && (

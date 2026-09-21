@@ -4,6 +4,9 @@ import {
   IsString,
   IsNumber,
   IsDate,
+  IsUUID,
+  Length,
+  MaxLength,
 } from 'class-validator';
 import { ApplicationStatus } from '../../types/application/status';
 import { ApplicationTier } from '../../types/application/tier';
@@ -28,6 +31,17 @@ export class UpdateApplicationDto {
   @IsOptional()
   @IsString()
   url?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  city?: string | null;
+
+  /** ISO 3166-1 alpha-2. Empty is allowed; a half-typed code is not. */
+  @IsOptional()
+  @IsString()
+  @Length(2, 2)
+  country?: string | null;
 
   @IsOptional()
   @IsNumber()
@@ -60,4 +74,18 @@ export class UpdateApplicationDto {
   @IsOptional()
   @IsDate()
   appliedAt?: Date;
+
+  /**
+   * Attach, swap or detach the documents this application was sent with.
+   *
+   * `null` detaches — `@IsOptional` lets it through untouched, which is the
+   * only way a form can clear a link it once set.
+   */
+  @IsOptional()
+  @IsUUID()
+  resumeFileId?: string | null;
+
+  @IsOptional()
+  @IsUUID()
+  coverLetterFileId?: string | null;
 }

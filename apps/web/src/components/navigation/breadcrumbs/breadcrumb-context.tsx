@@ -29,19 +29,18 @@ export function BreadcrumbProvider({
   defaultLabels = {},
 }: {
   children: ReactNode;
-  defaultLabels?: Record<string, string>; // Map route segments to labels
+  defaultLabels?: Record<string, string>;
 }) {
   const pathname = usePathname();
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
 
-  // Automatically infer breadcrumbs from the current route
   useEffect(() => {
     if (!pathname) return;
 
-    const segments = pathname.split('/').filter(Boolean); // Split and remove empty segments
+    const segments = pathname.split('/').filter(Boolean);
     const inferredBreadcrumbs = segments.map((segment, index) => {
       const fullPath = '/' + segments.slice(0, index + 1).join('/');
-      const href = index === segments.length - 1 ? undefined : fullPath; // No href for the current segment
+      const href = index === segments.length - 1 ? undefined : fullPath;
       const label =
         defaultLabels[segment] ||
         routes[fullPath] ||

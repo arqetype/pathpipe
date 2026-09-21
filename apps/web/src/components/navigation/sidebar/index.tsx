@@ -5,9 +5,12 @@ import {
   RiBriefcaseLine,
   RiBuildingLine,
   RiEyeLine,
+  RiHome5Line,
   RiKeyLine,
   RiFileListLine,
+  RiFolder3Line,
   RiRadarLine,
+  RiUserSearchLine,
 } from '@remixicon/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -32,9 +35,12 @@ import type { User } from '@repo/db/entities/user';
 import { Logo } from '@repo/ui/branding/logo';
 
 const userNavItems = [
-  { title: 'Job Matches', href: '/app/job-matches', icon: RiFileListLine },
+  { title: 'Home', href: '/app', icon: RiHome5Line },
   { title: 'Applications', href: '/app/applications', icon: RiBriefcaseLine },
-  { title: 'Watchlist', href: '/app/watchlist', icon: RiEyeLine },
+  { title: 'Job Matches', href: '/app/job-matches', icon: RiFileListLine },
+  { title: 'Company Watch List', href: '/app/watchlist', icon: RiEyeLine },
+  { title: 'Job Profile', href: '/app/job-profile', icon: RiUserSearchLine },
+  { title: 'Documents', href: '/app/documents', icon: RiFolder3Line },
 ];
 
 const adminNavItems = [
@@ -74,17 +80,30 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
   };
 
   return (
-    <Sidebar variant="floating" collapsible="icon" {...props}>
-      <SidebarHeader>
+    <Sidebar collapsible="icon" {...props}>
+      {/*
+        Exactly as tall as the breadcrumb bar next to it — h-12 here, min-h-12
+        there — so the wordmark and the breadcrumb sit on the same line rather
+        than a few pixels off. No rule underneath: the sidebar's own right-hand
+        border already separates it from the page.
+      */}
+      <SidebarHeader className="h-12 justify-center px-2 py-0">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton render={<Link href="/app" />} size="lg">
+            <SidebarMenuButton
+              render={<Link href="/app" />}
+              // The collapsed rail is a 32px square; its default padding would
+              // leave 16px of room and clip the mark.
+              className="group-data-[collapsible=icon]:p-0!"
+            >
               <Logo
-                className="aspect-square !size-8"
+                className="aspect-square !size-6"
                 aria-label="pathpipe logo"
               />
-              <div className="grid flex-1 text-left text-lg leading-tight">
-                <span className="truncate font-semibold">pathpipe</span>
+              <div className="grid flex-1 text-left leading-tight">
+                <span className="truncate text-base font-semibold">
+                  pathpipe
+                </span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

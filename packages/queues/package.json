@@ -37,6 +37,10 @@
     "./email": {
       "types": "./dist/email/index.d.ts",
       "default": "./dist/email/index.js"
+    },
+    "./job-alert": {
+      "types": "./dist/job-alert/index.d.ts",
+      "default": "./dist/job-alert/index.js"
     }
   }
 }

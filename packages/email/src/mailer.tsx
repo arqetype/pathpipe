@@ -125,14 +125,18 @@ export class Mailer {
   public async sendNewJobAlertEmail(
     to: string,
     user: { name: string },
-    companyName: string,
     jobCount: number,
-    jobs: Array<{ title: string; url: string; location?: string }>,
+    jobs: Array<{
+      title: string;
+      url: string;
+      companyName: string;
+      location?: string;
+      matchScore?: number;
+    }>,
   ): Promise<void> {
     const html = await render(
       <NewJobAlertEmail
         userName={user.name}
-        companyName={companyName}
         jobCount={jobCount}
         jobs={jobs}
         appUrl={this.appUrl}
@@ -143,7 +147,7 @@ export class Mailer {
       await this.transporter.sendMail({
         to,
         from: this.from,
-        subject: `pathpipe : ${jobCount} new job${jobCount > 1 ? 's' : ''} at ${companyName}`,
+        subject: `pathpipe : ${jobCount} new offer${jobCount > 1 ? 's' : ''} matching your profile`,
         html,
       });
     } catch {

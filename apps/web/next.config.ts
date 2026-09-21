@@ -1,6 +1,20 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import type { NextConfig } from 'next';
 
+// Pin the workspace root: Claude Code worktrees live under .claude/worktrees/, so
+// Next.js otherwise sees two pnpm-workspace.yaml files and infers the root itself.
+const workspaceRoot = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+);
+
 const nextConfig: NextConfig = {
+  turbopack: { root: workspaceRoot },
+  // Same flag as the API reads, inlined so client components can hide the CTAs.
+  env: { SIGNUP_CLOSED: process.env.SIGNUP_CLOSED ?? '' },
   output: 'standalone',
   reactStrictMode: true,
   transpilePackages: ['@repo/ui'],

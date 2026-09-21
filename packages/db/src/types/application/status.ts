@@ -5,4 +5,5 @@ export enum ApplicationStatus {
   OFFER = 'OFFER',
   REJECTED = 'REJECTED',
   GHOSTED = 'GHOSTED',
+  NOT_ELIGIBLE = 'NOT_ELIGIBLE',
 }

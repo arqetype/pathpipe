@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Logo } from '@repo/ui/branding/logo';
-import { buttonVariants } from '@repo/ui/components/button';
+import { SIGNUP_CLOSED } from '@/lib/signup-closed';
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -20,15 +20,33 @@ const NAV_SECTIONS = [
     label: 'Product',
     dropdown: true,
     links: [
-      { href: '/feature-1', label: 'Features', description: 'Description' },
-      { href: '/feature-2', label: 'Test', description: 'Description' },
+      {
+        href: '/#features',
+        label: 'Features',
+        description: 'Matches, pipeline, companies, documents',
+      },
+      {
+        href: '/#how-it-works',
+        label: 'How it works',
+        description: 'From your CV to your first scored matches',
+      },
+      {
+        href: '/data-sources',
+        label: 'Data sources',
+        description: 'Every job board pathpipe reads, credited',
+      },
+      {
+        href: '/changelog',
+        label: 'Changelog',
+        description: 'What shipped, newest first',
+      },
     ],
   },
   {
     label: 'Company',
     links: [
       { href: '/pricing', label: 'Pricing' },
-      { href: '/changelog', label: 'Now' },
+      { href: '/about', label: 'About' },
       { href: '/contact', label: 'Contact' },
     ],
   },
@@ -55,8 +73,8 @@ export function MarketingNavbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full bg-background/70 backdrop-blur-xl backdrop-saturate-150">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-4 md:px-6">
+      <header className="sticky top-0 z-50 w-full px-4 py-3">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-6 rounded-full border border-border bg-background/80 pl-5 pr-3 shadow-sm backdrop-blur-xl backdrop-saturate-150">
           <div className="flex items-center gap-6">
             <Link
               href="/"
@@ -115,33 +133,31 @@ export function MarketingNavbar() {
           <div className="hidden items-center gap-2 md:flex">
             <Link
               href="/app/sign-in"
-              className={buttonVariants({ variant: 'secondary', size: 'lg' })}
+              className="inline-flex h-9 items-center rounded-full px-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Sign in
             </Link>
-            <Link
-              href="/app/sign-up"
-              className={buttonVariants({ size: 'lg' })}
-            >
-              Sign up
-            </Link>
+            {!SIGNUP_CLOSED && (
+              <Link
+                href="/app/sign-up"
+                className="inline-flex h-9 items-center rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Sign up
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-            <Link
-              href="/app/sign-in"
-              className={buttonVariants({ variant: 'secondary', size: 'sm' })}
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/app/sign-up"
-              className={buttonVariants({ size: 'sm' })}
-            >
-              Sign up
-            </Link>
+            {!SIGNUP_CLOSED && (
+              <Link
+                href="/app/sign-up"
+                className="inline-flex h-8 items-center rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground"
+              >
+                Sign up
+              </Link>
+            )}
             <button
-              className="flex size-9 items-center justify-center rounded-md text-foreground transition-colors hover:bg-accent"
+              className="flex size-9 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
               aria-label={open ? 'Close menu' : 'Open menu'}
               aria-expanded={open}
               onClick={() => setOpen((v) => !v)}
@@ -158,7 +174,7 @@ export function MarketingNavbar() {
 
       {open && (
         <div
-          className="fixed inset-x-0 top-16 bottom-0 z-40 overflow-y-auto bg-background/70 backdrop-blur-xl backdrop-saturate-150md:hidden"
+          className="fixed inset-x-0 bottom-0 top-20 z-40 overflow-y-auto bg-background/80 backdrop-blur-xl backdrop-saturate-150 md:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Navigation menu"

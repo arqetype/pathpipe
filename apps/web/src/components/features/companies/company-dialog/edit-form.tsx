@@ -19,7 +19,6 @@ import {
   RiBuildingLine,
   RiDeleteBinLine,
   RiGlobalLine,
-  RiImageLine,
   RiLink,
   RiLoader5Line,
   RiMapPinLine,
@@ -33,6 +32,8 @@ import EditableText from '@repo/ui/components/editable-inputs/editable-text';
 import InlineInput from '@repo/ui/components/inline-inputs/inline-input';
 import Property from '@repo/ui/components/customs/property';
 import { COMPANY_INDUSTRY_OPTIONS } from '../constants/industry';
+import { CompanyLogoField } from './logo-field';
+import { CompanyUrlProperty } from './url-property';
 
 type FormValues = {
   name: string;
@@ -51,7 +52,6 @@ export function EditCompanyForm({ company, onClose }: EditCompanyFormProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const [pendingLogoFile, setPendingLogoFile] = useState<File | null>(null);
-  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
 
   const { handleSubmit, control } = useForm<FormValues>({
     defaultValues: {
@@ -62,31 +62,6 @@ export function EditCompanyForm({ company, onClose }: EditCompanyFormProps) {
       country: company.country ?? '',
     },
   });
-
-  const ALLOWED_LOGO_TYPES = new Set([
-    'image/png',
-    'image/jpeg',
-    'image/webp',
-    'image/gif',
-  ]);
-  const MAX_LOGO_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
-
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-    if (!ALLOWED_LOGO_TYPES.has(file.type)) {
-      toast.error('Only PNG, JPEG, WebP, and GIF images are allowed.');
-      return;
-    }
-    if (file.size > MAX_LOGO_SIZE_BYTES) {
-      toast.error('Logo must be smaller than 10 MB.');
-      return;
-    }
-    if (logoPreviewUrl) URL.revokeObjectURL(logoPreviewUrl);
-    setPendingLogoFile(file);
-    setLogoPreviewUrl(URL.createObjectURL(file));
-  }
 
   function onSubmit(data: FormValues) {
     startTransition(async () => {
@@ -161,56 +136,18 @@ export function EditCompanyForm({ company, onClose }: EditCompanyFormProps) {
       </DialogTitle>
 
       <div className="flex flex-col gap-2 mt-2">
-        <Property icon={<RiImageLine className="size-4" />} label="Logo">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            {logoPreviewUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={logoPreviewUrl}
-                alt="Logo preview"
-                className="size-8 rounded object-contain border border-border"
-              />
-            )}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-              <div className="px-3 py-1 rounded border border-secondary text-sm">
-                {pendingLogoFile ? pendingLogoFile.name : 'Upload'}
-              </div>
-            </label>
-          </div>
-        </Property>
+        <CompanyLogoField onSelect={setPendingLogoFile} />
 
         <Controller
           name="website"
           control={control}
           render={({ field }) => (
-            <Property
+            <CompanyUrlProperty
               icon={<RiGlobalLine className="size-4" />}
               label="Website"
-            >
-              <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                <InlineInput
-                  value={field.value}
-                  placeholder="https://…"
-                  onSave={(v) => field.onChange(v ?? '')}
-                />
-                {field.value && (
-                  <a
-                    href={field.value}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <RiLink className="size-3.5" />
-                  </a>
-                )}
-              </div>
-            </Property>
+              value={field.value}
+              onSave={(v) => field.onChange(v ?? '')}
+            />
           )}
         />
 
@@ -218,25 +155,12 @@ export function EditCompanyForm({ company, onClose }: EditCompanyFormProps) {
           name="careersUrl"
           control={control}
           render={({ field }) => (
-            <Property icon={<RiLink className="size-4" />} label="Careers URL">
-              <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                <InlineInput
-                  value={field.value}
-                  placeholder="https://…"
-                  onSave={(v) => field.onChange(v ?? '')}
-                />
-                {field.value && (
-                  <a
-                    href={field.value}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <RiLink className="size-3.5" />
-                  </a>
-                )}
-              </div>
-            </Property>
+            <CompanyUrlProperty
+              icon={<RiLink className="size-4" />}
+              label="Careers URL"
+              value={field.value}
+              onSave={(v) => field.onChange(v ?? '')}
+            />
           )}
         />
 

@@ -1,4 +1,60 @@
-import { AppConfig, ConfigService } from '@/domain/services/config.service';
+// WORKERS_SCRAPE_* names: deployment contract.
+
+export interface WorkersConfig {
+  port: number;
+  cronTimezone: string;
+}
+
+export interface EmailConfig {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+  from: string;
+  frontendUrl: string;
+}
+
+export interface ApiConfig {
+  baseUrl: string;
+  apiKey: string;
+}
+
+export interface RedisConfig {
+  host: string;
+  port: number;
+  password?: string;
+}
+
+export interface DiscoveryConfig {
+  concurrency: number;
+  userAgent: string;
+  perHostDelayMs: number;
+  respectRobots: boolean;
+  respectRobotsForAts: boolean;
+  // Fast poll skips descriptions.
+  fastCron: string;
+  fullCron: string;
+  seedCron: string;
+  fullIntervalHours: number;
+  reconcileIntervalHours: number;
+  maxFailuresBeforeBackoff: number;
+  // Caps one vendor per cycle.
+  maxRequestsPerHost: number;
+  maxRateLimitStrikes: number;
+}
+
+export interface AppConfig {
+  workers: WorkersConfig;
+  email: EmailConfig;
+  api: ApiConfig;
+  redis: RedisConfig;
+  discovery: DiscoveryConfig;
+}
+
+export interface ConfigService {
+  get<K extends keyof AppConfig>(key: K): AppConfig[K];
+  validate(): Promise<void>;
+}
 
 export class ConfigServiceImpl implements ConfigService {
   private readonly config: AppConfig;
@@ -32,6 +88,44 @@ export class ConfigServiceImpl implements ConfigService {
         host: this.requireEnv('WORKERS_REDIS_HOST', 'localhost'),
         port: this.requireEnvAsInt('WORKERS_REDIS_PORT', 6379),
         password: this.optionalEnv('WORKERS_REDIS_PASSWORD'),
+      },
+      discovery: {
+        concurrency: this.requireEnvAsInt('WORKERS_SCRAPE_CONCURRENCY', 6),
+        userAgent: this.requireEnv(
+          'WORKERS_SCRAPE_USER_AGENT',
+          'PathpipeBot/1.0 (+https://pathpipe.clementomnes.dev/bot)',
+        ),
+        perHostDelayMs: this.requireEnvAsInt(
+          'WORKERS_SCRAPE_HOST_DELAY_MS',
+          800,
+        ),
+        respectRobots:
+          this.optionalEnv('WORKERS_SCRAPE_RESPECT_ROBOTS') !== 'false',
+        respectRobotsForAts:
+          this.optionalEnv('WORKERS_SCRAPE_ROBOTS_FOR_ATS') === 'true',
+        fastCron: this.requireEnv('WORKERS_SCRAPE_FAST_CRON', '*/15 * * * *'),
+        fullCron: this.requireEnv('WORKERS_SCRAPE_FULL_CRON', '0 */4 * * *'),
+        seedCron: this.requireEnv('WORKERS_SCRAPE_SEED_CRON', '0 3 * * *'),
+        fullIntervalHours: this.requireEnvAsInt(
+          'WORKERS_SCRAPE_FULL_INTERVAL_HOURS',
+          4,
+        ),
+        reconcileIntervalHours: this.requireEnvAsInt(
+          'WORKERS_SCRAPE_RECONCILE_INTERVAL_HOURS',
+          24,
+        ),
+        maxFailuresBeforeBackoff: this.requireEnvAsInt(
+          'WORKERS_SCRAPE_MAX_FAILURES',
+          4,
+        ),
+        maxRequestsPerHost: this.requireEnvAsInt(
+          'WORKERS_SCRAPE_MAX_REQUESTS_PER_HOST',
+          1500,
+        ),
+        maxRateLimitStrikes: this.requireEnvAsInt(
+          'WORKERS_SCRAPE_MAX_RATE_LIMIT_STRIKES',
+          3,
+        ),
       },
     };
   }

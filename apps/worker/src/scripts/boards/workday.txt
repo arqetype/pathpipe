@@ -1,0 +1,15 @@
+# Workday careers sites, confirmed against the CXS API.
+#
+# Workday is not seeded by board-name guessing like the other vendors: a tenant
+# is three unknowns (tenant, datacenter, site path) rather than one name, so
+# these are full URLs added by hand once verified.
+#
+#   pnpm --filter worker seed:boards -- --file src/scripts/boards/workday.txt
+#
+# One careers URL per line. Lines starting with # are ignored.
+
+https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite
+https://salesforce.wd12.myworkdayjobs.com/External_Career_Site
+https://hp.wd5.myworkdayjobs.com/ExternalCareerSite
+https://adobe.wd5.myworkdayjobs.com/external_experienced
+https://intel.wd1.myworkdayjobs.com/External

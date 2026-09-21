@@ -20,10 +20,19 @@ import { Application } from '@repo/db/entities/application';
 import { Company } from '@repo/db/entities/company';
 import { CompanyWatch } from '@repo/db/entities/company-watch';
 import { JobPosting } from '@repo/db/entities/job-posting';
+import { JobPostingLocation } from '@repo/db/entities/job-posting-location';
+import { JobPostingInteraction } from '@repo/db/entities/job-posting-interaction';
+import { JobEvent } from '@repo/db/entities/job-event';
+import { JobPreference } from '@repo/db/entities/job-preference';
+import { JobSource } from '@repo/db/entities/job-source';
 import { ApiKey } from '@repo/db/entities/api-key';
+import { UserFile } from '@repo/db/entities/user-file';
 import { JobPostingModule } from './features/job-posting/job-posting.module';
+import { JobPreferenceModule } from './features/job-preference/job-preference.module';
+import { DashboardModule } from './features/dashboard/dashboard.module';
 import { AdminModule } from './features/admin/admin.module';
 import { InternalModule } from './internal/internal.module';
+import { UserFileModule } from './features/user/file/user-file.module';
 import { resolve } from 'node:path';
 import { ThrottlerModule } from '@nestjs/throttler';
 
@@ -58,7 +67,13 @@ import { ThrottlerModule } from '@nestjs/throttler';
           Company,
           CompanyWatch,
           JobPosting,
+          JobPostingLocation,
+          JobPostingInteraction,
+          JobEvent,
+          JobPreference,
+          JobSource,
           ApiKey,
+          UserFile,
         ],
         synchronize: false,
         migrationsRun: true,
@@ -74,6 +89,9 @@ import { ThrottlerModule } from '@nestjs/throttler';
     ApplicationModule,
     CompanyModule,
     JobPostingModule,
+    JobPreferenceModule,
+    DashboardModule,
+    UserFileModule,
     AdminModule,
     InternalModule,
 

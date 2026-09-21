@@ -1,4 +1,9 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthMailerService } from '../infrastructure/mailer/auth-mailer.service';
 import { VerificationService } from './verification/verification.service';
@@ -6,6 +11,11 @@ import { User } from '@repo/db/entities/user';
 import { Response } from 'express';
 import { PasswordUtils } from '../common/utils/password.utils';
 import { UserService } from '../features/user/user.service';
+
+// Registration is closed while the service is not open to new users; sign-in
+// keeps working. Accounts are born in exactly three places: signUp and the
+// create branch of each findOrCreate*User, so those are the three gates.
+const SIGNUP_CLOSED = process.env.SIGNUP_CLOSED === 'true';
 
 @Injectable()
 export class AuthService {
@@ -51,6 +61,10 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<{ success: boolean }> {
+    if (SIGNUP_CLOSED) {
+      throw new ServiceUnavailableException('Sign-up is temporarily closed');
+    }
+
     const existingUser = await this.userService.findOneByEmail(email);
     if (existingUser) {
       throw new UnauthorizedException('Email already exists');
@@ -252,6 +266,10 @@ export class AuthService {
       return user;
     }
 
+    if (SIGNUP_CLOSED) {
+      throw new ServiceUnavailableException('Sign-up is temporarily closed');
+    }
+
     user = await this.userService.createLinkedinUser(
       linkedinUserData.email,
       '',
@@ -291,6 +309,10 @@ export class AuthService {
         await this.userService.update(user);
       }
       return user;
+    }
+
+    if (SIGNUP_CLOSED) {
+      throw new ServiceUnavailableException('Sign-up is temporarily closed');
     }
 
     user = await this.userService.createGoogleUser(

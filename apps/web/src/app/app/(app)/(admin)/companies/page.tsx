@@ -38,7 +38,7 @@ export default async function CompaniesPage({
   const totalPages = Math.ceil(total / limit) || 1;
 
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-4">
       <CompaniesToolbar
         total={total}
         pendingCount={statusCounts[CompanyStatus.PENDING]}

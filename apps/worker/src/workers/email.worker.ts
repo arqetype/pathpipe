@@ -82,12 +82,13 @@ export async function startEmailWorker() {
   const jobAlertWorker = createWorker<jobAlert.JobAlertJob>(
     QUEUES.JOB_ALERT,
     async (job) => {
-      logger.info(`Processing job alert ${job.id} for ${job.data.companyName}`);
+      logger.info(
+        `Processing job alert ${job.id}: ${job.data.jobCount} matched offers`,
+      );
 
       await mailer.sendNewJobAlertEmail(
         job.data.to,
         { name: job.data.userName },
-        job.data.companyName,
         job.data.jobCount,
         job.data.jobs,
       );

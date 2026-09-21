@@ -1,3 +1,12 @@
+import { fetchDashboardAction } from '@/actions/dashboard/fetch';
+import { HomeDashboard } from '@/components/features/dashboard';
+
 export default async function AppMainPage() {
-  return <div className="flex flex-1 flex-col min-h-0 w-full">Hello world</div>;
+  const dashboard = await fetchDashboardAction();
+
+  return (
+    <div className="flex h-full min-h-0 w-full flex-col">
+      <HomeDashboard dashboard={dashboard} />
+    </div>
+  );
 }
