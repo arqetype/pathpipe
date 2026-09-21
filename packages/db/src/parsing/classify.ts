@@ -1,3 +1,5 @@
+import { SeniorityLevel, WorkDomain } from '../types/job-posting/work-domain';
+
 /**
  * Reading the shape of a role out of the words a board used for it.
  *
@@ -12,70 +14,82 @@
  */
 
 /** Ordered: the first pattern that hits wins, so specific ones come first. */
-const DOMAIN_PATTERNS: Array<[RegExp, string]> = [
+const DOMAIN_PATTERNS: Array<[RegExp, WorkDomain]> = [
   [
     /\b(machine learning|ml engineer|ml scientist|deep learning|nlp|computer vision|llm|generative ai|ai (engineer|scientist|researcher)|mlops)\b/i,
-    'MACHINE_LEARNING',
+    WorkDomain.MACHINE_LEARNING,
   ],
   [
     /\b(research scientist|research engineer|researcher|scientifique|chercheur)\b/i,
-    'RESEARCH',
+    WorkDomain.RESEARCH,
   ],
   [
     /\b(data (engineer|analyst|scientist|platform)|analytics engineer|business intelligence|bi engineer|donnees|données)\b/i,
-    'DATA',
+    WorkDomain.DATA,
   ],
   [
     /\b(security|s[eé]curit[eé]|appsec|infosec|penetration tester|red team|soc analyst|detection engineer|cryptograph)\b/i,
-    'SECURITY',
+    WorkDomain.SECURITY,
   ],
   [
     /\b(sre|site reliability|devops|platform engineer|infrastructure|cloud engineer|kubernetes|systems engineer|network engineer|infra)\b/i,
-    'INFRASTRUCTURE',
+    WorkDomain.INFRASTRUCTURE,
   ],
   [
     /\b(embedded|firmware|hardware|fpga|rtos|electronics|robotics)\b/i,
-    'EMBEDDED',
+    WorkDomain.EMBEDDED,
   ],
   [
     /\b(mobile|ios|android|react native|flutter|swift|kotlin) (engineer|developer|d[eé]veloppeur)\b|\b(ios|android) engineer\b/i,
-    'MOBILE',
+    WorkDomain.MOBILE,
   ],
-  [/\b(full[\s-]?stack|fullstack)\b/i, 'FULLSTACK'],
+  [/\b(full[\s-]?stack|fullstack)\b/i, WorkDomain.FULLSTACK],
   [
     /\b(front[\s-]?end|frontend|ui engineer|web developer|react developer)\b/i,
-    'FRONTEND',
+    WorkDomain.FRONTEND,
   ],
   [
     /\b(back[\s-]?end|backend|server[\s-]side|api engineer|distributed systems)\b/i,
-    'BACKEND',
+    WorkDomain.BACKEND,
   ],
   [
     /\b(qa|quality assurance|test engineer|sdet|automation engineer|testeur)\b/i,
-    'QA',
+    WorkDomain.QA,
   ],
   [
     /\b(product manager|product owner|product lead|chef de produit|product analyst|pm\b)/i,
-    'PRODUCT',
+    WorkDomain.PRODUCT,
   ],
-  [/\b(designer|design|ux|ui\/ux|user experience|graphiste)\b/i, 'DESIGN'],
+  [
+    /\b(designer|design|ux|ui\/ux|user experience|graphiste)\b/i,
+    WorkDomain.DESIGN,
+  ],
   [
     /\b(developer (advocate|relations)|devrel|community engineer|technical writer)\b/i,
-    'DEVREL',
+    WorkDomain.DEVREL,
   ],
   [
     /\b(account executive|sales|business development|bdr|sdr|commercial|partnerships)\b/i,
-    'SALES',
+    WorkDomain.SALES,
   ],
-  [/\b(marketing|growth|seo|content|brand|communication)\b/i, 'MARKETING'],
-  [/\b(finance|accountant|controller|comptab|fp&a|treasury)\b/i, 'FINANCE'],
+  [
+    /\b(marketing|growth|seo|content|brand|communication)\b/i,
+    WorkDomain.MARKETING,
+  ],
+  [
+    /\b(finance|accountant|controller|comptab|fp&a|treasury)\b/i,
+    WorkDomain.FINANCE,
+  ],
   [
     /\b(operations|recruiter|talent|people ops|human resources|hr\b|office manager|legal|counsel)\b/i,
-    'OPERATIONS',
+    WorkDomain.OPERATIONS,
   ],
   // Last: a bare "engineer" with no qualifier is most often server-side work,
   // but only claim it when nothing more specific matched.
-  [/\b(software engineer|swe|d[eé]veloppeur|developer|engineer)\b/i, 'BACKEND'],
+  [
+    /\b(software engineer|swe|d[eé]veloppeur|developer|engineer)\b/i,
+    WorkDomain.BACKEND,
+  ],
 ];
 
 const foldAccents = (value: string): string =>
@@ -90,7 +104,7 @@ const foldAccents = (value: string): string =>
 export const classifyDomain = (
   title: string,
   department?: string,
-): string | undefined => {
+): WorkDomain | undefined => {
   const haystack = foldAccents(`${title} ${department ?? ''}`);
   for (const [pattern, domain] of DOMAIN_PATTERNS) {
     if (
@@ -103,23 +117,26 @@ export const classifyDomain = (
   return undefined;
 };
 
-const SENIORITY_PATTERNS: Array<[RegExp, string]> = [
+const SENIORITY_PATTERNS: Array<[RegExp, SeniorityLevel]> = [
   [
     /\b(intern|internship|stage|stagiaire|praktikum|working student)\b/i,
-    'INTERN',
+    SeniorityLevel.INTERN,
   ],
-  [/\b(director|vp|vice president|head of|chief|cto|cpo|cio)\b/i, 'DIRECTOR'],
+  [
+    /\b(director|vp|vice president|head of|chief|cto|cpo|cio)\b/i,
+    SeniorityLevel.DIRECTOR,
+  ],
   // "Product Manager" and "Account Manager" are roles, not levels — only a
   // manager *of people* counts, which is what the qualifier is doing here.
   [
     /\b(engineering|people|team|technical|dev(elopment)?)\s+manager\b|\bmanager,?\s+engineering\b/i,
-    'MANAGER',
+    SeniorityLevel.MANAGER,
   ],
-  [/\b(staff|principal|lead|tech lead|architect)\b/i, 'LEAD'],
-  [/\b(senior|sr\.?|confirm[eé]|experienced)\b/i, 'SENIOR'],
+  [/\b(staff|principal|lead|tech lead|architect)\b/i, SeniorityLevel.LEAD],
+  [/\b(senior|sr\.?|confirm[eé]|experienced)\b/i, SeniorityLevel.SENIOR],
   [
     /\b(junior|jr\.?|graduate|entry[\s-]level|d[eé]butant|apprentice\w*|alternan\w*|apprenti\w*|contrat pro\w*)\b/i,
-    'JUNIOR',
+    SeniorityLevel.JUNIOR,
   ],
 ];
 
@@ -130,7 +147,9 @@ const SENIORITY_PATTERNS: Array<[RegExp, string]> = [
  * before it is a senior, and an internship is an internship whatever else the
  * title claims.
  */
-export const classifySeniority = (title: string): string | undefined => {
+export const classifySeniority = (
+  title: string,
+): SeniorityLevel | undefined => {
   const haystack = foldAccents(title);
   for (const [pattern, level] of SENIORITY_PATTERNS) {
     if (pattern.test(haystack) || pattern.test(title)) return level;

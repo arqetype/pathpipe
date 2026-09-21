@@ -105,7 +105,9 @@ const safeHref = (raw: string): string | null => {
   const value = decodeEntities(raw).trim();
   if (!/^(https?:\/\/|mailto:)/i.test(value)) return null;
   // A control character inside a URL is how obfuscated schemes are smuggled
-  // past a prefix check; a link carrying one is not one we keep.
+  // past a prefix check; a link carrying one is not one we keep. Matching them
+  // is the whole point here, so the rule that forbids it is off for this line.
+  // eslint-disable-next-line no-control-regex
   if (/[\u0000-\u001f\u007f]/.test(value)) return null;
   if (value.length > 2000) return null;
   return escapeText(value);
