@@ -41,7 +41,7 @@ export class CreateApplicationDto {
   /** ISO 3166-1 alpha-2. Empty is allowed; a half-typed code is not. */
   // An untouched or cleared location box sends '', and @IsOptional only skips
   // null/undefined — without this the form can never pass its own validation.
-  @Transform(({ value }) => value || undefined)
+  @Transform(({ value }: { value: unknown }) => value || undefined)
   @IsOptional()
   @IsString()
   @Length(2, 2)
