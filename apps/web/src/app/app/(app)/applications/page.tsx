@@ -28,32 +28,42 @@ export default async function AppMainPage({
   );
   const view = (str(params.view) as 'kanban' | 'table' | null) ?? 'kanban';
 
+  // Hiding a column is a filter like any other, so the count in the bar follows
+  // it. The filtering moves to the API rather than the two views, which is what
+  // makes the number and the rows answer the same question.
+  const visibleStatuses = Object.values(ApplicationStatus).filter(
+    (status) => !hiddenStatuses.has(status),
+  );
   const { result } = await fetchApplicationsAction({
     search,
     sortBy,
     sortOrder,
+    status: hiddenStatuses.size ? visibleStatuses : undefined,
   });
-  const applications = result.ok ? result.data.data : [];
-  const total = result.ok ? result.data.total : 0;
+  // Nothing visible is a question the API cannot be asked — an empty status
+  // list reads as "no filter" — so it is answered here instead.
+  const hasVisible = visibleStatuses.length > 0;
+  const applications = hasVisible && result.ok ? result.data.data : [];
+  const total = hasVisible && result.ok ? result.data.total : 0;
 
   return (
     <>
-      <div className="flex flex-col h-full max-h-[calc(100vh-theme(space.12))]">
+      <div className="flex flex-col h-full min-h-0">
         <ViewToolbar total={total} actions={<CreateApplicationDialog />} />
-        <ScrollArea className="flex-1 flex flex-col h-full min-h-0 overflow-y-auto w-full">
-          {view === 'table' ? (
-            <ApplicationsTable
-              applications={applications}
-              hiddenStatuses={hiddenStatuses}
-            />
-          ) : (
+        {view === 'table' ? (
+          <ApplicationsTable
+            applications={applications}
+            hiddenStatuses={hiddenStatuses}
+          />
+        ) : (
+          <ScrollArea className="flex-1 min-h-0 w-full">
             <KanbanBoard
               applications={applications}
               hiddenColumns={hiddenStatuses}
             />
-          )}
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        )}
       </div>
       <ApplicationDialog id={id} />
     </>

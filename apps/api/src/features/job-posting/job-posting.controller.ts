@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -11,31 +10,42 @@ import {
   Query,
 } from '@nestjs/common';
 import { JobPostingService } from './job-posting.service';
+import { JobPostingIngestService } from './ingest/job-posting-ingest.service';
+import { JobPostingInteractionService } from './interaction/job-posting-interaction.service';
 import { CreateJobPostingDto } from '@repo/db/dto/job-posting/create-job-posting.dto';
-import { JobPostingResponse } from '@repo/db/query/job-posting';
+import {
+  type JobPostingResponse,
+  type JobPostingsQuery,
+  type PaginatedJobPostings,
+} from '@repo/db/query/job-posting';
 import { JobPostingStatus } from '@repo/db/types/job-posting/status';
+import { ApplicationStatus } from '@repo/db/types/application/status';
 import { ApiKeyProtected } from '../../common/decorators/api-key-protected.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { User } from '@repo/db/entities/user';
 
 @Controller('job-postings')
 export class JobPostingController {
-  constructor(private readonly jobPostingService: JobPostingService) {}
+  constructor(
+    private readonly jobPostingService: JobPostingService,
+    private readonly ingestService: JobPostingIngestService,
+    private readonly interactionService: JobPostingInteractionService,
+  ) {}
 
   @ApiKeyProtected()
   @HttpCode(HttpStatus.CREATED)
   @Post('internal/batch')
   async createBatch(@Body() dtos: CreateJobPostingDto[]) {
-    return this.jobPostingService.createBatch(dtos);
+    return this.ingestService.createBatch(dtos);
   }
 
   @HttpCode(HttpStatus.OK)
   @Get()
-  async findByUser(
+  async findMany(
     @CurrentUser() user: User,
-    @Query('status') status?: JobPostingStatus,
-  ): Promise<JobPostingResponse[]> {
-    return this.jobPostingService.findByUser(user.id, status);
+    @Query() query: JobPostingsQuery,
+  ): Promise<PaginatedJobPostings> {
+    return this.jobPostingService.findMany(user.id, query);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -46,21 +56,41 @@ export class JobPostingController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @Get(':id')
+  async findOne(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+  ): Promise<JobPostingResponse> {
+    return this.jobPostingService.findOne(user.id, id);
+  }
+
+  @HttpCode(HttpStatus.OK)
   @Patch(':id/status')
   async updateStatus(
     @CurrentUser() user: User,
     @Param('id') id: string,
     @Body('status') status: JobPostingStatus,
   ): Promise<void> {
-    return this.jobPostingService.markAs(user.id, id, status);
+    return this.interactionService.markAs(user.id, id, status);
   }
 
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Delete(':id')
-  async delete(
+  @HttpCode(HttpStatus.OK)
+  @Patch(':id/saved')
+  async setSaved(
     @CurrentUser() user: User,
     @Param('id') id: string,
-  ): Promise<void> {
-    return this.jobPostingService.delete(user.id, id);
+    @Body('saved') saved: boolean,
+  ): Promise<JobPostingResponse> {
+    return this.interactionService.setSaved(user.id, id, Boolean(saved));
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post(':id/application')
+  async track(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body('status') status?: ApplicationStatus,
+  ): Promise<{ applicationId: string; created: boolean }> {
+    return this.interactionService.trackAsApplication(user, id, status);
   }
 }

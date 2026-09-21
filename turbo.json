@@ -27,6 +27,7 @@
     "REDIS_PORT",
     "REDIS_PASSWORD",
     "APP_URL",
+    "SIGNUP_CLOSED",
     "WORKERS_FRONTEND_URL"
   ],
   "tasks": {

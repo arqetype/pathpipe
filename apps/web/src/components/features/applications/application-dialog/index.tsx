@@ -35,7 +35,8 @@ export function ApplicationDialog({ id }: { id: string | null }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      {/* Flex column: the form scrolls. */}
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
         {application && (
           <EditApplicationForm application={application} onClose={close} />
         )}

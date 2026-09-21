@@ -9,7 +9,13 @@ import { Application } from '@repo/db/entities/application';
 import { Company } from '@repo/db/entities/company';
 import { CompanyWatch } from '@repo/db/entities/company-watch';
 import { JobPosting } from '@repo/db/entities/job-posting';
+import { JobPostingLocation } from '@repo/db/entities/job-posting-location';
+import { JobPostingInteraction } from '@repo/db/entities/job-posting-interaction';
+import { JobEvent } from '@repo/db/entities/job-event';
+import { JobPreference } from '@repo/db/entities/job-preference';
+import { JobSource } from '@repo/db/entities/job-source';
 import { ApiKey } from '@repo/db/entities/api-key';
+import { UserFile } from '@repo/db/entities/user-file';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -27,7 +33,13 @@ export const AppDataSource = new DataSource({
     Company,
     CompanyWatch,
     JobPosting,
+    JobPostingLocation,
+    JobPostingInteraction,
+    JobEvent,
+    JobPreference,
+    JobSource,
     ApiKey,
+    UserFile,
   ],
   migrations: [resolve(__dirname, 'common/*.{ts,js}')],
   synchronize: false,

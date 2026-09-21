@@ -5,7 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@repo/ui/lib/utils';
 
 const badgeVariants = cva(
-  'group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!',
+  'group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[color,background-color,border-color,box-shadow] duration-(--duration-fast) ease-out focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!',
   {
     variants: {
       variant: {
@@ -19,6 +19,17 @@ const badgeVariants = cva(
         ghost:
           'hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50',
         link: 'text-primary underline-offset-4 hover:underline',
+
+        // Meaning, not decoration. Each is a tint with the text tuned to stay
+        // readable on it in both themes — which is the whole reason the status
+        // tokens come in threes rather than as one colour per state.
+        neutral: 'bg-status-neutral text-status-neutral-fg',
+        info: 'bg-status-info text-status-info-fg',
+        success: 'bg-status-success text-status-success-fg',
+        warning: 'bg-status-warning text-status-warning-fg',
+        danger: 'bg-status-danger text-status-danger-fg',
+        accent: 'bg-status-accent text-status-accent-fg',
+        caution: 'bg-status-caution text-status-caution-fg',
       },
     },
     defaultVariants: {

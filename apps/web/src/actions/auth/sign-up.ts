@@ -2,6 +2,7 @@
 
 import { publicPost } from '@/lib/fetch';
 import { action } from '@/lib/safe-action';
+import { SIGNUP_CLOSED } from '@/lib/signup-closed';
 import { IsNotEmpty, IsString, IsEmail, IsBoolean } from 'class-validator';
 
 class SignUpActionResponse {
@@ -36,6 +37,10 @@ export const signUpAction = action
   .inputDto(SignUpActionInput)
   .outputDto(SignUpActionResponse)
   .action(async ({ parsedInput }) => {
+    if (SIGNUP_CLOSED) {
+      throw new Error('Registration is closed for the moment');
+    }
+
     const { ok, data } = await publicPost('/auth/sign-up', parsedInput);
 
     if (!ok) {

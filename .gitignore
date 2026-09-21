@@ -36,3 +36,11 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+
+.claude/worktrees
+
+# TS incremental build info
+*.tsbuildinfo
+
+.agents

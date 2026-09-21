@@ -6,7 +6,7 @@ export default async function WatchlistPage() {
   const companies = await fetchWatchedCompaniesAction();
 
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-4">
       <WatchlistToolbar />
       <WatchlistGrid companies={companies} />
     </div>

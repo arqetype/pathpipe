@@ -41,6 +41,7 @@ async function parseResponseBody(response: Response): Promise<unknown> {
   }
 }
 
+// Wrapped in React cache(): deduped
 const fetchWithAuth = cache(
   async <T = object>(
     path: string,

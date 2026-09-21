@@ -2,7 +2,7 @@ import { TriggerDiscovery } from '@/components/features/discover/trigger-discove
 
 export default function DiscoverPage() {
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-4">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">Discovery</h1>
         <p className="text-muted-foreground">

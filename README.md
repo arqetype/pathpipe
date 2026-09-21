@@ -130,6 +130,24 @@ Each worker is an independent BullMQ consumer that processes jobs from its dedic
    pnpm run dev
    ```
 
+### Git worktrees
+
+`.worktreeinclude` at the repository root lists the git-ignored local files that are
+copied automatically into a new worktree — currently `.env.development.local` and
+`.env.production.local`. Dependencies are deliberately not copied: pnpm's
+`node_modules` is a symlink farm into the shared store and symlinks are skipped, so a
+copy would be both slower and broken. Bootstrap a fresh worktree with:
+
+```bash
+pnpm install --frozen-lockfile
+```
+
+The install is cheap — packages are hardlinked from the already-populated pnpm store.
+
+Note that only one tree can run `pnpm run dev` at a time: host ports (web 3000, api
+4000, worker 4100, maildev 3010/3011, postgres 5432, redis 6379) and the
+`pathpipe-dev-database` / `pathpipe-dev-redis` container names are fixed.
+
 ## 🧪 Testing
 
 - **Unit Tests**: `pnpm run test`

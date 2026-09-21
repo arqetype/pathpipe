@@ -1,0 +1,7 @@
+# Local files copied into every Claude Code worktree.
+# gitignore syntax; only matches git-ignored/untracked files. Symlinks are skipped.
+# Dependencies are NOT listed here on purpose: pnpm's node_modules is a symlink farm
+# into the shared store, and the copier skips symlinks. Run `pnpm install --frozen-lockfile`
+# in the new worktree instead.
+.env.development.local
+.env.production.local

@@ -7,6 +7,13 @@ export const APPLICATION_TIER_OPTIONS = [
   { value: ApplicationTier.B_TIER, label: 'B-Tier' },
 ];
 
+/**
+ * How much a given application matters to its owner.
+ *
+ * Six classes each became two: a status token already carries its own dark
+ * value, so the `dark:` half of every rule was a second palette to keep in step
+ * with the first — and the place where a theme quietly drifts.
+ */
 export const TIER_CONFIG: Record<
   ApplicationTier,
   { label: string; className: string }
@@ -17,17 +24,14 @@ export const TIER_CONFIG: Record<
   },
   [ApplicationTier.S_TIER]: {
     label: 'S-Tier',
-    className:
-      'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-400 dark:border-purple-900',
+    className: 'bg-status-accent text-status-accent-fg border-transparent',
   },
   [ApplicationTier.A_TIER]: {
     label: 'A-Tier',
-    className:
-      'bg-green-100 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-900',
+    className: 'bg-status-success text-status-success-fg border-transparent',
   },
   [ApplicationTier.B_TIER]: {
     label: 'B-Tier',
-    className:
-      'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-400 dark:border-yellow-900',
+    className: 'bg-status-warning text-status-warning-fg border-transparent',
   },
 };

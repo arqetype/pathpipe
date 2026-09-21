@@ -42,6 +42,7 @@ const SORT_OPTIONS: { value: ApplicationSortBy; label: string }[] = [
   { value: 'updated_at', label: 'Last updated' },
   { value: 'company', label: 'Company' },
   { value: 'position', label: 'Position' },
+  { value: 'city', label: 'Location' },
   { value: 'salaryMin', label: 'Minimum Salary' },
   { value: 'salaryMax', label: 'Maximum Salary' },
 ];
@@ -109,7 +110,6 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
   return (
     <div className="flex items-center justify-between gap-4 p-4 shrink-0">
       <div className="flex items-center gap-2">
-        {/* Search */}
         <Field className="max-w-sm">
           <InputGroup>
             <InputGroupInput
@@ -123,7 +123,6 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
           </InputGroup>
         </Field>
 
-        {/* Sort */}
         <ButtonGroup>
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -161,7 +160,6 @@ export function ViewToolbar({ total, actions }: ViewToolbarProps) {
           </Button>
         </ButtonGroup>
 
-        {/* Status filter */}
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
