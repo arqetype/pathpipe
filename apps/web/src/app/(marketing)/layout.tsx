@@ -10,7 +10,7 @@ import { Footer } from '@/components/marketing/footer';
 export const metadata: Metadata = {
   title: 'pathpipe: Job Tracking Application',
   description:
-    'pathpipe is a job tracking application that helps you manage your job applications and provides suggestions to improve your chances of landing your dream job.',
+    "pathpipe reads openings from the employer's own job board, scores them against your profile, and tracks every application from the day you apply to the day you get an answer.",
 };
 
 type MarketingLayoutProps = Readonly<{

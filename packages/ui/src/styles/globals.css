@@ -442,6 +442,19 @@
 @theme {
   --animate-wiggle: wiggle 1s ease-in-out infinite;
 
+  /* Marketing only. Duplicate the track, travel exactly half of it. */
+  --animate-marquee: marquee 90s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
   @keyframes wiggle {
     0%,
     100% {

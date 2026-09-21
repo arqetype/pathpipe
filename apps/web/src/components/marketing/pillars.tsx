@@ -8,6 +8,7 @@ import {
   RiCheckLine,
 } from '@remixicon/react';
 import { Badge } from '@repo/ui/components/badge';
+import { Eyebrow } from '@/components/marketing/eyebrow';
 import {
   Tabs,
   TabsContent,
@@ -154,94 +155,91 @@ const PILLARS: Pillar[] = [
 
 export function Pillars() {
   return (
-    <section
-      id="features"
-      className="mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28"
-    >
-      <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
-          Four screens. That&apos;s the whole job search.
-        </h2>
-        <p className="mt-4 text-balance text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Find the openings, track what you sent, watch the companies you care
-          about, keep your documents where they belong.
-        </p>
-      </div>
-
-      <Tabs defaultValue="matches" className="mt-12">
-        <TabsList className="mx-auto flex-wrap">
-          {PILLARS.map(({ value, label, icon: Icon }) => (
-            <TabsTrigger key={value} value={value}>
-              <Icon />
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        {PILLARS.map((pillar) => (
-          <TabsContent
-            key={pillar.value}
-            value={pillar.value}
-            className="mt-10"
-          >
-            <div className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
-              <div>
-                <h3 className="text-balance text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
-                  {pillar.heading}
-                </h3>
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
-                  {pillar.body}
-                </p>
-                <ul className="mt-6 flex flex-col gap-3">
-                  {pillar.points.map((point) => (
-                    <li key={point} className="flex items-start gap-3">
-                      <RiCheckLine className="mt-0.5 size-4 shrink-0 text-primary" />
-                      <span className="text-sm text-foreground/80">
-                        {point}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <PillarPreview rows={pillar.rows} />
+    <div id="features" className="px-4 py-10 md:py-14">
+      <section className="rounded-2xl bg-surface-sunken px-6 py-16 md:rounded-3xl md:px-12 md:py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-end lg:gap-20">
+            <div>
+              <Eyebrow>What you actually use</Eyebrow>
+              <h2 className="mt-5 text-balance text-[clamp(2rem,3.5vw,3rem)] font-semibold leading-[1.05] tracking-[-0.03em] text-foreground">
+                Four screens. That&apos;s the whole job search.
+              </h2>
             </div>
-          </TabsContent>
-        ))}
-      </Tabs>
-    </section>
+            <p className="text-base leading-relaxed text-muted-foreground lg:pb-2">
+              Find the openings, track what you sent, watch the companies you
+              care about, keep your documents where they belong.
+            </p>
+          </div>
+
+          <Tabs defaultValue="matches" className="mt-12">
+            <TabsList className="flex-wrap bg-background">
+              {PILLARS.map(({ value, label, icon: Icon }) => (
+                <TabsTrigger key={value} value={value}>
+                  <Icon />
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {PILLARS.map((pillar) => (
+              <TabsContent
+                key={pillar.value}
+                value={pillar.value}
+                className="mt-10"
+              >
+                <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+                  <div>
+                    <h3 className="text-balance text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+                      {pillar.heading}
+                    </h3>
+                    <p className="mt-4 max-w-lg text-base leading-relaxed text-muted-foreground">
+                      {pillar.body}
+                    </p>
+                    <ul className="mt-8 flex flex-col gap-3">
+                      {pillar.points.map((point) => (
+                        <li key={point} className="flex items-start gap-3">
+                          <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                            <RiCheckLine className="size-3 text-primary" />
+                          </span>
+                          <span className="text-sm text-foreground/80">
+                            {point}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <PillarPreview rows={pillar.rows} />
+                </div>
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
+      </section>
+    </div>
   );
 }
 
 function PillarPreview({ rows }: { rows: Row[] }) {
   return (
-    <div
+    <ul
       aria-hidden
-      className="rounded-xl border border-border bg-card p-2 shadow-xs"
+      className="flex flex-col gap-2 rounded-2xl bg-background p-3 shadow-md"
     >
-      <div className="flex items-center gap-1.5 px-3 py-2">
-        <span className="size-2 rounded-full bg-border" />
-        <span className="size-2 rounded-full bg-border" />
-        <span className="size-2 rounded-full bg-border" />
-      </div>
-      <ul className="flex flex-col gap-2">
-        {rows.map((row) => (
-          <li
-            key={row.title}
-            className="flex items-center justify-between gap-4 rounded-lg bg-surface-sunken px-4 py-3"
-          >
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-foreground">
-                {row.title}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                {row.meta}
-              </p>
-            </div>
-            <Badge variant={row.badge.variant}>{row.badge.label}</Badge>
-          </li>
-        ))}
-      </ul>
-    </div>
+      {rows.map((row) => (
+        <li
+          key={row.title}
+          className="flex items-center justify-between gap-4 rounded-xl bg-surface-sunken px-4 py-3.5"
+        >
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium text-foreground">
+              {row.title}
+            </p>
+            <p className="truncate text-xs text-muted-foreground">{row.meta}</p>
+          </div>
+          <Badge variant={row.badge.variant}>{row.badge.label}</Badge>
+        </li>
+      ))}
+    </ul>
   );
 }

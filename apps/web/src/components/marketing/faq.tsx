@@ -1,4 +1,5 @@
 import { RiAddLine } from '@remixicon/react';
+import { Eyebrow } from '@/components/marketing/eyebrow';
 
 const FAQ = [
   {
@@ -15,7 +16,7 @@ const FAQ = [
   },
   {
     q: 'What happens to my résumé?',
-    a: 'It is stored on your account and read once to pre-fill your profile, using keyword extraction on our own servers. It is never sent to a model provider and never shown to a recruiter.',
+    a: 'It is stored on your account and read once to pre-fill your profile, using keyword extraction on our own servers. It is never sent to a third party and never shown to a recruiter.',
   },
   {
     q: 'Which markets are covered?',
@@ -29,17 +30,25 @@ const FAQ = [
 
 export function Faq() {
   return (
-    <section className="mx-auto max-w-3xl px-4 py-20 md:px-6 md:py-28">
-      <h2 className="text-balance text-center text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-        Questions people actually ask
-      </h2>
+    <section className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:py-20 lg:grid-cols-[1fr_1.6fr] lg:gap-20">
+      <div className="lg:sticky lg:top-28 lg:self-start">
+        <Eyebrow>Questions</Eyebrow>
+        <h2 className="mt-5 text-balance text-[clamp(2rem,3.5vw,3rem)] font-semibold leading-[1.05] tracking-[-0.03em] text-foreground">
+          Questions people actually ask
+        </h2>
+      </div>
 
-      <div className="mt-12 divide-y divide-border border-y border-border">
+      <div className="flex flex-col gap-3">
         {FAQ.map(({ q, a }) => (
-          <details key={q} className="group py-5">
+          <details
+            key={q}
+            className="group rounded-2xl bg-surface-sunken px-5 py-4 md:px-6 md:py-5"
+          >
             <summary className="flex cursor-pointer list-none items-start justify-between gap-6 text-left text-base font-medium text-foreground marker:content-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">
               {q}
-              <RiAddLine className="mt-0.5 size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-45" />
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-background transition-transform group-open:rotate-45">
+                <RiAddLine className="size-4 text-muted-foreground" />
+              </span>
             </summary>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               {a}

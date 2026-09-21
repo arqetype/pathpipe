@@ -13,33 +13,29 @@ const SOURCES = [
 
 export function Sources() {
   return (
-    <section className="border-y border-border bg-surface-sunken">
-      <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 md:py-16">
-        <p className="text-center font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Openings read from the employer&apos;s own job board
-        </p>
-
-        <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-4 md:gap-x-12">
-          {SOURCES.map((name) => (
-            <li
-              key={name}
-              className="text-base font-semibold tracking-tight text-foreground/45 transition-colors hover:text-foreground/70 md:text-lg"
-            >
-              {name}
-            </li>
-          ))}
-        </ul>
-
-        <p className="mt-8 text-center text-sm text-muted-foreground">
-          No scraped listings, no ghost jobs from six months ago.{' '}
+    <section className="mx-auto max-w-7xl px-6 py-12 md:py-16">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+        <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
+          Read from the employer&apos;s own job board.{' '}
           <Link
             href="/data-sources"
-            className="text-foreground/80 underline underline-offset-4 transition-colors hover:text-foreground"
+            className="text-foreground underline underline-offset-4 transition-colors hover:text-primary"
           >
             Every source, credited
           </Link>
           .
         </p>
+
+        <ul className="flex flex-wrap items-center gap-2 lg:justify-end">
+          {SOURCES.map((name) => (
+            <li
+              key={name}
+              className="rounded-full border border-border bg-surface-sunken px-4 py-2 text-sm font-medium text-foreground/70"
+            >
+              {name}
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

@@ -41,8 +41,8 @@ const socials = [
 
 export function Footer() {
   return (
-    <footer>
-      <div className="mx-auto max-w-7xl px-4 py-16 md:px-6">
+    <footer className="overflow-hidden border-t border-border bg-surface-sunken">
+      <div className="mx-auto max-w-7xl px-6 pt-16">
         <div className="grid gap-10 md:grid-cols-[1.5fr_repeat(3,1fr)]">
           <div className="flex flex-col gap-4">
             <Link
@@ -64,7 +64,7 @@ export function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex size-8 items-center justify-center rounded-md border bg-background text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+                  className="flex size-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <Icon className="size-4" />
                 </Link>
@@ -74,7 +74,7 @@ export function Footer() {
 
           {sections.map((section) => (
             <div key={section.label} className="flex flex-col gap-3">
-              <span className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 {section.label}
               </span>
               <ul className="flex flex-col gap-2">
@@ -93,12 +93,19 @@ export function Footer() {
           ))}
         </div>
 
-        <p className="text-xs text-muted-foreground mt-14 w-full text-center sm:text-left">
-          <span className="select-none inline-flex items-center gap-1">
-            &copy; {new Date().getFullYear()} Arqetype - Made with{' '}
+        <p className="mt-14 border-t border-border pt-6 text-xs text-muted-foreground">
+          <span className="inline-flex select-none items-center gap-1">
+            &copy; {new Date().getFullYear()} Arqetype — made with{' '}
             <RiHeart2Line className="size-4" /> and{' '}
             <RiDrinksLine className="size-4" /> in France.
           </span>
+        </p>
+
+        <p
+          aria-hidden
+          className="mt-10 select-none text-center text-[clamp(4rem,15vw,12rem)] font-semibold leading-[0.78] tracking-[-0.05em] text-foreground/[0.06]"
+        >
+          pathpipe
         </p>
       </div>
     </footer>

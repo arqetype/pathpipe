@@ -20,7 +20,8 @@ const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
 export const metadata: Metadata = {
   title: 'pathpipe',
-  description: 'A job tracking application with suggestions',
+  description:
+    'Job openings read at the source, scored against your profile, and tracked from applied to offer.',
 };
 
 type RootLayoutProps = Readonly<{

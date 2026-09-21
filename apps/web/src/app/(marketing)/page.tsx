@@ -1,7 +1,6 @@
 import { Hero } from '@/components/marketing/hero';
 import { Sources } from '@/components/marketing/sources';
 import { Pillars } from '@/components/marketing/pillars';
-import { Replaces } from '@/components/marketing/replaces';
 import { FeaturesGrid } from '@/components/marketing/features-grid';
 import { HowItWorks } from '@/components/marketing/how-it-works';
 import { OpenSource } from '@/components/marketing/open-source';
@@ -15,7 +14,6 @@ export default function LandingPage() {
       <Hero />
       <Sources />
       <Pillars />
-      <Replaces />
       <FeaturesGrid />
       <HowItWorks />
       <OpenSource />
