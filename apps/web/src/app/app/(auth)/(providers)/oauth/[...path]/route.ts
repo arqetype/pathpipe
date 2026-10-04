@@ -21,7 +21,7 @@ export async function GET(
 
   const base = process.env.APP_URL ?? request.nextUrl.origin;
   const apiResponse = await fetch(
-    `${process.env.NEXT_API_URL || process.env.NEXT_PUBLIC_API_URL}/auth/${path}${request.nextUrl.search}`,
+    `${process.env.NEXT_API_URL}/auth/${path}${request.nextUrl.search}`,
     { redirect: 'manual' },
   );
 

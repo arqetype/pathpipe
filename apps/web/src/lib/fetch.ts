@@ -62,7 +62,7 @@ const fetchWithAuth = cache(
     }
 
     const response: ResponseOk | ResponseError = await fetch(
-      `${process.env.NEXT_API_URL || process.env.NEXT_PUBLIC_API_URL}${path}`,
+      `${process.env.NEXT_API_URL}${path}`,
       {
         ...options,
         headers,
@@ -97,7 +97,7 @@ const fetchPublic = cache(
     };
 
     const response: ResponseOk | ResponseError = await fetch(
-      `${process.env.NEXT_API_URL || process.env.NEXT_PUBLIC_API_URL}${path}`,
+      `${process.env.NEXT_API_URL}${path}`,
       {
         ...options,
         headers,
@@ -137,7 +137,7 @@ export const getRaw = cache(async (path: string): Promise<Response | null> => {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_API_URL || process.env.NEXT_PUBLIC_API_URL}${path}`,
+    `${process.env.NEXT_API_URL}${path}`,
     {
       headers,
       credentials: 'include',
