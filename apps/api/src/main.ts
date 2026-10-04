@@ -2,10 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
-import { json, urlencoded } from 'express';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.enableCors({
     origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
@@ -14,8 +14,8 @@ async function bootstrap() {
   app.use(cookieParser());
   // Express' default 100kb JSON limit rejects a full ATS board batch — a
   // large listing's descriptions alone can run several megabytes.
-  app.use(json({ limit: '25mb' }));
-  app.use(urlencoded({ extended: true, limit: '25mb' }));
+  app.useBodyParser('json', { limit: '25mb' });
+  app.useBodyParser('urlencoded', { extended: true, limit: '25mb' });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
