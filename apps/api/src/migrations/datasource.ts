@@ -14,7 +14,6 @@ import { JobPostingInteraction } from '@repo/db/entities/job-posting-interaction
 import { JobEvent } from '@repo/db/entities/job-event';
 import { JobPreference } from '@repo/db/entities/job-preference';
 import { JobSource } from '@repo/db/entities/job-source';
-import { ApiKey } from '@repo/db/entities/api-key';
 import { UserFile } from '@repo/db/entities/user-file';
 
 export const AppDataSource = new DataSource({
@@ -38,7 +37,6 @@ export const AppDataSource = new DataSource({
     JobEvent,
     JobPreference,
     JobSource,
-    ApiKey,
     UserFile,
   ],
   migrations: [resolve(__dirname, 'common/*.{ts,js}')],

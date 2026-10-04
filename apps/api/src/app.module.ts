@@ -25,7 +25,6 @@ import { JobPostingInteraction } from '@repo/db/entities/job-posting-interaction
 import { JobEvent } from '@repo/db/entities/job-event';
 import { JobPreference } from '@repo/db/entities/job-preference';
 import { JobSource } from '@repo/db/entities/job-source';
-import { ApiKey } from '@repo/db/entities/api-key';
 import { UserFile } from '@repo/db/entities/user-file';
 import { JobPostingModule } from './features/job-posting/job-posting.module';
 import { JobPreferenceModule } from './features/job-preference/job-preference.module';
@@ -47,7 +46,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
         resolve(process.cwd(), '.env'),
       ],
     }),
-    TypeOrmModule.forFeature([ApiKey]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -72,7 +70,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
           JobEvent,
           JobPreference,
           JobSource,
-          ApiKey,
           UserFile,
         ],
         synchronize: false,

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Logo } from '@repo/ui/branding/logo';
-import { SIGNUP_CLOSED } from '@/lib/signup-closed';
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -52,7 +51,7 @@ const NAV_SECTIONS = [
   },
 ] as const;
 
-export function MarketingNavbar() {
+export function MarketingNavbar({ signupClosed }: { signupClosed: boolean }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -137,7 +136,7 @@ export function MarketingNavbar() {
             >
               Sign in
             </Link>
-            {!SIGNUP_CLOSED && (
+            {!signupClosed && (
               <Link
                 href="/app/sign-up"
                 className="inline-flex h-9 items-center rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
@@ -148,7 +147,7 @@ export function MarketingNavbar() {
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-            {!SIGNUP_CLOSED && (
+            {!signupClosed && (
               <Link
                 href="/app/sign-up"
                 className="inline-flex h-8 items-center rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground"

@@ -6,10 +6,8 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { createHash, timingSafeEqual } from 'crypto';
 import type { Request } from 'express';
-import { ApiKey } from '@repo/db/entities/api-key';
 import {
   AUTH_MODE_KEY,
   type AuthMode,
@@ -25,8 +23,6 @@ export class JwtAuthGuard implements CanActivate {
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
-    @InjectRepository(ApiKey)
-    private readonly apiKeyRepository: Repository<ApiKey>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -52,27 +48,22 @@ export class JwtAuthGuard implements CanActivate {
         throw new UnauthorizedException('No API key provided');
       }
 
-      return this.validateApiKey(request, apiKey);
+      return this.validateApiKey(apiKey);
     }
 
     return this.validateJwtCookie(request);
   }
 
-  private async validateApiKey(
-    request: Request,
-    apiKey: string,
-  ): Promise<boolean> {
-    const foundKey = await this.apiKeyRepository.findOne({
-      where: { key: apiKey, isActive: true },
-      relations: { user: true },
-    });
+  private validateApiKey(apiKey: string): boolean {
+    const expected = this.configService.get<string>('NEST_INTERNAL_API_KEY');
+    const digest = (value: string) =>
+      createHash('sha256').update(value).digest();
 
-    if (!foundKey || !foundKey.user) {
+    // Unset key rejects everything
+    if (!expected || !timingSafeEqual(digest(apiKey), digest(expected))) {
       throw new UnauthorizedException('Invalid API key');
     }
 
-    request.apiKey = foundKey;
-    request.user = foundKey.user;
     return true;
   }
 

@@ -74,6 +74,8 @@ services:
       NEST_JWT_EXPIRATION_TIME: ${NEST_JWT_EXPIRATION_TIME}
       NEST_FRONT_URL: ${NEST_FRONT_URL}
       CORS_ORIGIN: ${CORS_ORIGIN}
+      NEST_INTERNAL_API_KEY: ${NEST_INTERNAL_API_KEY}
+      SIGNUP_CLOSED: ${SIGNUP_CLOSED:-false}
       NEST_GOOGLE_CLIENT_ID: ${NEST_GOOGLE_CLIENT_ID}
       NEST_GOOGLE_CLIENT_SECRET: ${NEST_GOOGLE_CLIENT_SECRET}
       NEST_GOOGLE_CALLBACK_URL: ${NEST_GOOGLE_CALLBACK_URL}
@@ -106,9 +108,7 @@ services:
     environment:
       APP_URL: ${APP_URL}
       NEXT_API_URL: http://api:4000
-      # NOTE: NEXT_PUBLIC_* vars are baked at build time — this runtime value is ignored by client code.
-      # Set NEXT_PUBLIC_API_URL as a GitHub Actions secret to affect the built JS.
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      SIGNUP_CLOSED: ${SIGNUP_CLOSED:-false}
       NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY}
       NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}
     depends_on:

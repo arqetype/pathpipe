@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { RiCheckLine } from '@remixicon/react';
 import { PageHeader } from '@/components/marketing/page-header';
-import { SIGNUP_CLOSED } from '@/lib/signup-closed';
+import { isSignupClosed } from '@/lib/signup-closed';
 import { CONTACT_EMAIL } from '@/lib/site';
 import { buttonVariants } from '@repo/ui/components/button';
 import { cn } from '@repo/ui/lib/utils';
@@ -21,7 +21,9 @@ const INCLUDED = [
   'Résumé parsing to pre-fill your profile',
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const signupClosed = await isSignupClosed();
+
   return (
     <>
       <PageHeader
@@ -51,10 +53,10 @@ export default function PricingPage() {
           </ul>
 
           <Link
-            href={SIGNUP_CLOSED ? '/contact' : '/app/sign-up'}
+            href={signupClosed ? '/contact' : '/app/sign-up'}
             className={cn(buttonVariants({ size: 'lg' }), 'mt-8 w-full')}
           >
-            {SIGNUP_CLOSED ? 'Ask for an invite' : 'Create your account'}
+            {signupClosed ? 'Ask for an invite' : 'Create your account'}
           </Link>
         </div>
 

@@ -10,8 +10,6 @@ import {
   Req,
   UnauthorizedException,
   BadRequestException,
-  Delete,
-  Param,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto, SignInResponseDto } from '@repo/db/dto/auth/sign-in.dto';
@@ -48,9 +46,6 @@ import { User } from '@repo/db/entities/user';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { GoogleCallbackGuard } from './guards/google-callback.guard';
 import { LinkedinCallbackGuard } from './guards/linkedin-callback.guard';
-import { ApiKeyService } from './api-key.service';
-import { UserRole } from '@repo/db/types/user/roles';
-import { Roles } from '../common/decorators/roles.decorator';
 import { UserService } from '../features/user/user.service';
 
 @Controller('auth')
@@ -58,7 +53,6 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    private readonly apiKeyService: ApiKeyService,
   ) {}
 
   // SIGN IN / SIGN UP FLOW
@@ -217,11 +211,8 @@ export class AuthController {
     }
 
     if (req.user) {
-      const token = this.authService.generateJwtToken((req.user as User).email);
-
-      return res.redirect(
-        `${process.env.NEST_FRONT_URL}/app/google/callback?token=${token}`,
-      );
+      this.authService.signIn((req.user as User).email, res);
+      return res.redirect(`${process.env.NEST_FRONT_URL}/app`);
     }
   }
 
@@ -244,39 +235,12 @@ export class AuthController {
     }
 
     if (req.user) {
-      const token = this.authService.generateJwtToken((req.user as User).email);
-
-      return res.redirect(
-        `${process.env.NEST_FRONT_URL}/app/linkedin/callback?token=${token}`,
-      );
+      this.authService.signIn((req.user as User).email, res);
+      return res.redirect(`${process.env.NEST_FRONT_URL}/app`);
     }
 
     return res.redirect(
       `${process.env.NEST_FRONT_URL}/app/sign-in?error=linkedin_auth_failed`,
     );
-  }
-
-  // API KEYS MANAGEMENT FOR ADMIN
-  @HttpCode(HttpStatus.OK)
-  @Roles(UserRole.ADMIN)
-  @Get('api-keys')
-  getApiKeys(@CurrentUser() user: User) {
-    return this.apiKeyService.findAll(user.id);
-  }
-
-  @HttpCode(HttpStatus.CREATED)
-  @Roles(UserRole.ADMIN)
-  @Post('api-keys')
-  async createApiKey(@CurrentUser() user: User, @Body('name') name: string) {
-    const apiKey = await this.apiKeyService.create(name, user);
-
-    return apiKey;
-  }
-
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Roles(UserRole.ADMIN)
-  @Delete('api-keys/:id/revoke')
-  revokeApiKey(@Param('id') id: string) {
-    return this.apiKeyService.revoke(id);
   }
 }

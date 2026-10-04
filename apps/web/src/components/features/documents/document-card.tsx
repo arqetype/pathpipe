@@ -42,7 +42,7 @@ export function DocumentCard({
         {/* Styled anchors rather than Buttons rendering them: Base UI's button
             keeps native <button> semantics and warns when asked to be a link. */}
         <a
-          href={`${process.env.NEXT_PUBLIC_API_URL}/files/${file.id}/download`}
+          href={`/app/files/${file.id}/download`}
           target="_blank"
           rel="noreferrer"
           title={`Open ${file.name}`}
@@ -51,7 +51,7 @@ export function DocumentCard({
           <RiEyeLine className="size-4" />
         </a>
         <a
-          href={`${process.env.NEXT_PUBLIC_API_URL}/files/${file.id}/download?download`}
+          href={`/app/files/${file.id}/download?download`}
           title={`Download ${file.name}`}
           className={cn(buttonVariants({ variant: 'ghost', size: 'icon-sm' }))}
         >

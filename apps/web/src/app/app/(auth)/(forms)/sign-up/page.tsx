@@ -2,10 +2,10 @@ import { CardContent, CardFooter } from '@repo/ui/components/card';
 import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 import { SignUpForm } from '@/components/features/auth/forms/sign-up-form';
-import { SIGNUP_CLOSED } from '@/lib/signup-closed';
+import { isSignupClosed } from '@/lib/signup-closed';
 
-export default function SignUpPage() {
-  if (!SIGNUP_CLOSED) return <SignUpForm />;
+export default async function SignUpPage() {
+  if (!(await isSignupClosed())) return <SignUpForm />;
 
   return (
     <>

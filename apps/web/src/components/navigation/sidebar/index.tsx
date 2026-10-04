@@ -6,7 +6,6 @@ import {
   RiBuildingLine,
   RiEyeLine,
   RiHome5Line,
-  RiKeyLine,
   RiFileListLine,
   RiFolder3Line,
   RiRadarLine,
@@ -46,7 +45,6 @@ const userNavItems = [
 const adminNavItems = [
   { title: 'Discovery', href: '/app/discover', icon: RiRadarLine },
   { title: 'Companies', href: '/app/companies', icon: RiBuildingLine },
-  { title: 'API Keys', href: '/app/api-keys', icon: RiKeyLine },
 ];
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
