@@ -136,13 +136,10 @@ export const getRaw = cache(async (path: string): Promise<Response | null> => {
     headers['Cookie'] = `auth-token=${authToken.value}`;
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_API_URL}${path}`,
-    {
-      headers,
-      credentials: 'include',
-    },
-  );
+  const response = await fetch(`${process.env.NEXT_API_URL}${path}`, {
+    headers,
+    credentials: 'include',
+  });
 
   return response.ok ? response : null;
 });
