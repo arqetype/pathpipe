@@ -1,9 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { RiArrowRightLine } from '@remixicon/react';
-import { SIGNUP_CLOSED } from '@/lib/signup-closed';
+import { isSignupClosed } from '@/lib/signup-closed';
 
-export function Cta() {
+export async function Cta() {
+  const signupClosed = await isSignupClosed();
+
   return (
     <div className="px-4 pb-10 md:pb-14">
       <section className="dark relative isolate overflow-hidden rounded-2xl px-6 py-20 text-center text-foreground md:rounded-3xl md:py-28">
@@ -27,10 +29,10 @@ export function Cta() {
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href={SIGNUP_CLOSED ? '/contact' : '/app/sign-up'}
+            href={signupClosed ? '/contact' : '/app/sign-up'}
             className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-7 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto"
           >
-            {SIGNUP_CLOSED ? 'Ask for an invite' : 'Get started free'}
+            {signupClosed ? 'Ask for an invite' : 'Get started free'}
             <RiArrowRightLine className="size-4" />
           </Link>
           <Link

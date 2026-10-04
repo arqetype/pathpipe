@@ -6,6 +6,7 @@ import CookieBanner from '../../components/cookie-banner/cookie-banner';
 import { CookieConsentProvider } from '@/components/providers/cookie-consent-provider';
 import { MarketingNavbar } from '@/components/marketing/navbar';
 import { Footer } from '@/components/marketing/footer';
+import { isSignupClosed } from '@/lib/signup-closed';
 
 export const metadata: Metadata = {
   title: 'pathpipe: Job Tracking Application',
@@ -23,10 +24,11 @@ export default async function MarketingLayout({
   const cookieStore = await cookies();
 
   const initialConsent = cookieStore.get('cookieConsent')?.value === 'true';
+  const signupClosed = await isSignupClosed();
 
   return (
     <CookieConsentProvider initialConsent={initialConsent}>
-      <MarketingNavbar />
+      <MarketingNavbar signupClosed={signupClosed} />
       <main>{children}</main>
       <Footer />
       <CookieBanner />

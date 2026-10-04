@@ -25,12 +25,12 @@ export function OAuthButtons() {
 
   const handleGoogleSignIn = () => {
     setIsLoading('google');
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+    window.location.href = '/app/oauth/google';
   };
 
   const handleLinkedInSignIn = () => {
     setIsLoading('linkedin');
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/linkedin`;
+    window.location.href = '/app/oauth/linkedin';
   };
 
   return (

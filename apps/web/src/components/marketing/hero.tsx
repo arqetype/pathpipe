@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { RiArrowRightLine } from '@remixicon/react';
-import { SIGNUP_CLOSED } from '@/lib/signup-closed';
+import { isSignupClosed } from '@/lib/signup-closed';
 
 const FEED = [
   {
@@ -33,7 +33,9 @@ const FEED = [
   },
 ];
 
-export function Hero() {
+export async function Hero() {
+  const signupClosed = await isSignupClosed();
+
   return (
     <>
       <section className="mx-auto max-w-4xl px-6 py-14 md:py-24">
@@ -50,10 +52,10 @@ export function Hero() {
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center md:mt-9">
           <Link
-            href={SIGNUP_CLOSED ? '/contact' : '/app/sign-up'}
+            href={signupClosed ? '/contact' : '/app/sign-up'}
             className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-7 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            {SIGNUP_CLOSED ? 'Ask for an invite' : 'Get started free'}
+            {signupClosed ? 'Ask for an invite' : 'Get started free'}
             <RiArrowRightLine className="size-4" />
           </Link>
           <Link

@@ -89,7 +89,7 @@ export function DocumentSelect({
         // A styled anchor, not a Button rendering one: Base UI's button keeps
         // native <button> semantics and warns when asked to be something else.
         <a
-          href={`${process.env.NEXT_PUBLIC_API_URL}/files/${value}/download`}
+          href={`/app/files/${value}/download`}
           target="_blank"
           rel="noreferrer"
           title={`Open this ${label}`}
